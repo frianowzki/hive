@@ -92,6 +92,32 @@ library HiveTypes {
         uint256 cycleCount;
     }
 
+    // ═══ HiveID Types ═══
+
+    enum VerificationType {
+        None,
+        KYC,    // Individual
+        KYB     // Organization
+    }
+
+    enum AccountType {
+        User,       // Regular user (buy/sell)
+        Project,    // Token launcher
+        Investor    // VC / institutional
+    }
+
+    struct HiveIdentity {
+        bytes32 usernameHash;
+        address primaryWallet;
+        address hiveWallet;
+        AccountType accountType;
+        VerificationType verification;
+        bytes32 zkProofHash;
+        uint256 createdAt;
+        uint256 nonce;
+        bool exists;
+    }
+
     // ═══ Constants ═══
 
     uint256 internal constant BPS_MAX = 10_000;
