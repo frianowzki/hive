@@ -6,12 +6,21 @@ import "../src/points/HivePoints.sol";
 import "../src/launch/HiveLaunchPad.sol";
 import "../src/maker/HiveMarketMaker.sol";
 import "../src/council/HiveCouncil.sol";
+import "../src/registry/HiveRegistry.sol";
+import "../src/treasury/HoneyPot.sol";
+import "../src/strategy/Strategy.sol";
+import "../src/drone/Drone.sol";
+import "../src/queen/Queen.sol";
 
 contract HiveTest is Test {
     HivePoints public points;
     HiveLaunchPad public launchPad;
     HiveMarketMaker public marketMaker;
     HiveCouncil public council;
+    HiveRegistry public registry;
+    HoneyPot public honeypot;
+    Strategy public strategy;
+    Queen public queen;
 
     address public admin = address(this);
     address public user1 = address(0x1);
@@ -32,7 +41,6 @@ contract HiveTest is Test {
     }
 
     function testPointsBuy() public {
-        // Warp past early window to avoid multiplier
         vm.warp(block.timestamp + 2 days);
         points.awardBuy(user1, 1 ether);
         assertEq(points.totalFor(user1), 1 ether);
@@ -40,7 +48,6 @@ contract HiveTest is Test {
     }
 
     function testPointsBuyEarly() public {
-        // Early multiplier applies (1.5x)
         points.awardBuy(user1, 1 ether);
         uint256 expected = (1 ether * 15_000) / 10_000;
         assertEq(points.totalFor(user1), expected);
@@ -48,7 +55,7 @@ contract HiveTest is Test {
 
     function testPointsLP() public {
         points.awardLP(user1, 1 ether, 2 days);
-        uint256 expected = (1 ether * 2 * 20_000) / 10_000; // 2x LP multiplier
+        uint256 expected = (1 ether * 2 * 20_000) / 10_000;
         assertEq(points.totalFor(user1), expected);
     }
 
@@ -58,20 +65,18 @@ contract HiveTest is Test {
     }
 
     function testPointsReferral() public {
-        vm.warp(block.timestamp + 2 days); // Avoid early multiplier
-        points.awardBuy(user2, 1 ether); // Make user2 active
+        vm.warp(block.timestamp + 2 days);
+        points.awardBuy(user2, 1 ether);
         vm.prank(user1);
         points.setReferral(user2);
         points.awardBuy(user1, 1 ether);
 
-        // user1 gets 1 ether points
         assertEq(points.totalFor(user1), 1 ether);
-        // user2 gets 1 ether + 5% referral bonus
         assertGt(points.totalFor(user2), 1 ether);
     }
 
     function testPointsRank() public {
-        vm.warp(block.timestamp + 2 days); // Avoid early multiplier
+        vm.warp(block.timestamp + 2 days);
         points.awardBuy(user1, 2 ether);
         points.awardBuy(user2, 1 ether);
 
@@ -103,7 +108,7 @@ contract HiveTest is Test {
     }
 
     function testBuySale() public {
-        vm.warp(block.timestamp + 2 days); // Avoid early multiplier
+        vm.warp(block.timestamp + 2 days);
         uint256 saleId = launchPad.createSale(
             project,
             address(0x1234),
@@ -125,8 +130,6 @@ contract HiveTest is Test {
 
         HiveLaunchPad.Sale memory sale = launchPad.getSale(saleId);
         assertEq(sale.totalRaised, 0.5 ether);
-
-        // Points awarded (no early multiplier)
         assertEq(points.totalFor(user1), 0.5 ether);
     }
 
@@ -192,7 +195,6 @@ contract HiveTest is Test {
         vm.prank(user1);
         marketMaker.addLiquidity{value: 1 ether}(address(0x1234));
 
-        // LP position should exist
         (uint256 lpTokens, , , , ) = marketMaker.lpPositions(address(0x1234), user1);
         assertGt(lpTokens, 0);
     }
@@ -200,11 +202,9 @@ contract HiveTest is Test {
     function testSwap() public {
         marketMaker.createPool(address(0x1234), 50, 30);
 
-        // Add initial liquidity
         vm.deal(admin, 10 ether);
         marketMaker.addLiquidity{value: 10 ether}(address(0x1234));
 
-        // Pool should have ETH reserve
         (, , uint256 ethReserve, , , , , ) = marketMaker.pools(address(0x1234));
         assertEq(ethReserve, 10 ether);
     }
@@ -214,16 +214,12 @@ contract HiveTest is Test {
 
         vm.deal(admin, 10 ether);
         marketMaker.addLiquidity{value: 10 ether}(address(0x1234));
-
-        // Price is ethReserve * 1e18 / tokenReserve
-        // With only ETH added, tokenReserve is 0, so price should be 0
-        // This is expected - need both sides for price
     }
 
     // ═══ Council Tests ═══
 
     function testPropose() public {
-        vm.warp(block.timestamp + 2 days); // Avoid early multiplier
+        vm.warp(block.timestamp + 2 days);
         points.awardBuy(user1, 200 ether);
 
         vm.prank(user1);
@@ -239,7 +235,7 @@ contract HiveTest is Test {
     }
 
     function testVote() public {
-        vm.warp(block.timestamp + 2 days); // Avoid early multiplier
+        vm.warp(block.timestamp + 2 days);
         points.awardBuy(user1, 200 ether);
         points.awardBuy(user2, 100 ether);
 
@@ -253,10 +249,10 @@ contract HiveTest is Test {
         );
 
         vm.prank(user1);
-        council.vote(id, 1); // For
+        council.vote(id, 1);
 
         vm.prank(user2);
-        council.vote(id, 0); // Against
+        council.vote(id, 0);
 
         HiveCouncil.Proposal memory proposal = council.getProposal(id);
         assertEq(proposal.forVotes, 200 ether);
@@ -264,7 +260,7 @@ contract HiveTest is Test {
     }
 
     function testProposalState() public {
-        vm.warp(block.timestamp + 2 days); // Avoid early multiplier
+        vm.warp(block.timestamp + 2 days);
         points.awardBuy(user1, 200 ether);
 
         vm.prank(user1);
@@ -278,14 +274,13 @@ contract HiveTest is Test {
 
         assertEq(council.proposalState(id), "Active");
 
-        // Fast forward past voting period
         vm.warp(block.timestamp + 3 days + 1);
         assertEq(council.proposalState(id), "QuorumNotReached");
     }
 
     function testExecuteProposal() public {
-        vm.warp(block.timestamp + 2 days); // Avoid early multiplier
-        points.awardBuy(user1, 2000 ether); // Enough for quorum
+        vm.warp(block.timestamp + 2 days);
+        points.awardBuy(user1, 2000 ether);
 
         vm.prank(user1);
         uint256 id = council.propose(
@@ -303,5 +298,127 @@ contract HiveTest is Test {
         council.execute(id);
 
         assertEq(council.proposalState(id), "Executed");
+    }
+
+    // ═══ Registry Tests ═══
+
+    function testRegistryRegister() public {
+        registry = new HiveRegistry();
+        registry.register("TestAgent", 100);
+        assertEq(registry.agentCount(), 1);
+        assertTrue(registry.isRegistered(address(this)));
+    }
+
+    function testRegistryHeartbeat() public {
+        registry = new HiveRegistry();
+        registry.register("TestAgent", 100);
+
+        registry.heartbeat();
+        assertTrue(registry.isAlive(address(this)));
+    }
+
+    function testRegistryLiveness() public {
+        registry = new HiveRegistry();
+        registry.register("TestAgent", 100);
+
+        assertTrue(registry.isAlive(address(this)));
+
+        // Fast forward past liveness threshold
+        vm.roll(block.number + 600);
+        assertFalse(registry.isAlive(address(this)));
+    }
+
+    // ═══ HoneyPot Tests ═══
+
+    function testHoneyPotDeposit() public {
+        queen = new Queen("TestHive", 100);
+        honeypot = queen.honeypot();
+
+        vm.deal(address(this), 10 ether);
+        (bool success, ) = address(honeypot).call{value: 10 ether}("");
+        assertTrue(success);
+    }
+
+    function testHoneyPotAllocation() public {
+        queen = new Queen("TestHive", 100);
+        honeypot = queen.honeypot();
+
+        vm.deal(address(this), 10 ether);
+        (bool success, ) = address(honeypot).call{value: 10 ether}("");
+        assertTrue(success);
+
+        // Default allocation: 40/40/10/10
+        (uint256 s, uint256 w, uint256 v, uint256 r) = honeypot.allocation();
+        assertEq(s, 4000);
+        assertEq(w, 4000);
+        assertEq(v, 1000);
+        assertEq(r, 1000);
+    }
+
+    function testHoneyPotPause() public {
+        queen = new Queen("TestHive", 100);
+        honeypot = queen.honeypot();
+
+        assertFalse(honeypot.paused());
+        // Only queen can pause
+        vm.prank(address(queen));
+        honeypot.emergencyPause();
+        assertTrue(honeypot.paused());
+    }
+
+    // ═══ Drone Tests ═══
+
+    function testDroneSpawn() public {
+        queen = new Queen("TestHive", 100);
+
+        vm.deal(address(queen), 5 ether);
+        address droneAddr = queen.spawnDrone("Snipe airdrops", Drone.DroneType.Sniper, 1 ether);
+
+        assertTrue(droneAddr != address(0));
+        assertEq(queen.droneCount(), 1);
+    }
+
+    function testDroneTerminate() public {
+        queen = new Queen("TestHive", 100);
+
+        vm.deal(address(queen), 5 ether);
+        queen.spawnDrone("Research", Drone.DroneType.Researcher, 1 ether);
+
+        queen.terminateDrone(0);
+        Drone drone = queen.getDrone(0);
+        assertTrue(drone.terminated());
+    }
+
+    // ═══ Queen Tests ═══
+
+    function testQueenBirth() public {
+        queen = new Queen("Hive-1", 100);
+
+        assertTrue(queen.alive());
+        assertEq(queen.name(), "Hive-1");
+        assertEq(queen.droneCount(), 0);
+    }
+
+    function testQueenHibernation() public {
+        queen = new Queen("Hive-1", 100);
+
+        assertFalse(queen.hibernating());
+        queen.hibernate();
+        assertTrue(queen.hibernating());
+        queen.wake();
+        assertFalse(queen.hibernating());
+    }
+
+    function testQueenDie() public {
+        queen = new Queen("Hive-1", 100);
+
+        queen.die("unprofitable");
+        assertFalse(queen.alive());
+    }
+
+    function testQueenCreatePool() public {
+        queen = new Queen("Hive-1", 100);
+        queen.createPool(address(0x1234), 50, 30);
+        // Pool created via market maker
     }
 }
