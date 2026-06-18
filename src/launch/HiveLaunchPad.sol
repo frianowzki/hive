@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {PrecompileConsumer} from "../libraries/PrecompileConsumer.sol";
-import {Points} from "../points/Points.sol";
+import {RitualPrecompileConsumer} from "../libraries/RitualPrecompileConsumer.sol";
+import {HivePoints} from "../points/HivePoints.sol";
 
 /// @title LaunchPad — Hive Token Sale Engine
 /// @notice Enables projects to launch token sales with built-in vesting
 
-contract LaunchPad is PrecompileConsumer {
+contract HiveLaunchPad is RitualPrecompileConsumer {
     // ═══ State ═══
 
     address public admin;
-    Points public points;
+    HivePoints public points;
 
     struct Sale {
         address project;
@@ -70,7 +70,7 @@ contract LaunchPad is PrecompileConsumer {
 
     constructor(address _points) {
         admin = msg.sender;
-        points = Points(_points);
+        points = HivePoints(_points);
     }
 
     // ═══ Sale Creation ═══

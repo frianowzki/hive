@@ -2,16 +2,16 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Test.sol";
-import "../src/points/Points.sol";
-import "../src/launch/LaunchPad.sol";
-import "../src/maker/MarketMaker.sol";
-import "../src/council/Council.sol";
+import "../src/points/HivePoints.sol";
+import "../src/launch/HiveLaunchPad.sol";
+import "../src/maker/HiveMarketMaker.sol";
+import "../src/council/HiveCouncil.sol";
 
 contract HiveTest is Test {
-    Points public points;
-    LaunchPad public launchPad;
-    MarketMaker public marketMaker;
-    Council public council;
+    HivePoints public points;
+    HiveLaunchPad public launchPad;
+    HiveMarketMaker public marketMaker;
+    HiveCouncil public council;
 
     address public admin = address(this);
     address public user1 = address(0x1);
@@ -19,10 +19,10 @@ contract HiveTest is Test {
     address public project = address(0x3);
 
     function setUp() public {
-        points = new Points();
-        launchPad = new LaunchPad(address(points));
-        marketMaker = new MarketMaker(address(points));
-        council = new Council(address(points));
+        points = new HivePoints();
+        launchPad = new HiveLaunchPad(address(points));
+        marketMaker = new HiveMarketMaker(address(points));
+        council = new HiveCouncil(address(points));
     }
 
     // ═══ Points Tests ═══
@@ -98,7 +98,7 @@ contract HiveTest is Test {
         );
 
         assertEq(saleId, 0);
-        LaunchPad.Sale memory sale = launchPad.getSale(saleId);
+        HiveLaunchPad.Sale memory sale = launchPad.getSale(saleId);
         assertEq(sale.hardCap, 10 ether);
     }
 
@@ -123,7 +123,7 @@ contract HiveTest is Test {
         vm.prank(user1);
         launchPad.buy{value: 0.5 ether}(saleId);
 
-        LaunchPad.Sale memory sale = launchPad.getSale(saleId);
+        HiveLaunchPad.Sale memory sale = launchPad.getSale(saleId);
         assertEq(sale.totalRaised, 0.5 ether);
 
         // Points awarded (no early multiplier)
@@ -152,7 +152,7 @@ contract HiveTest is Test {
         vm.prank(user1);
         launchPad.buy{value: 0.5 ether}(saleId);
 
-        LaunchPad.Sale memory sale = launchPad.getSale(saleId);
+        HiveLaunchPad.Sale memory sale = launchPad.getSale(saleId);
         assertEq(sale.totalRaised, 0.5 ether);
     }
 
@@ -230,7 +230,7 @@ contract HiveTest is Test {
         uint256 id = council.propose(
             "Increase fees",
             "Proposal to increase trading fees to 0.5%",
-            Council.ProposalType.General,
+            HiveCouncil.ProposalType.General,
             address(0),
             ""
         );
@@ -247,7 +247,7 @@ contract HiveTest is Test {
         uint256 id = council.propose(
             "Test proposal",
             "Description",
-            Council.ProposalType.General,
+            HiveCouncil.ProposalType.General,
             address(0),
             ""
         );
@@ -258,7 +258,7 @@ contract HiveTest is Test {
         vm.prank(user2);
         council.vote(id, 0); // Against
 
-        Council.Proposal memory proposal = council.getProposal(id);
+        HiveCouncil.Proposal memory proposal = council.getProposal(id);
         assertEq(proposal.forVotes, 200 ether);
         assertEq(proposal.againstVotes, 100 ether);
     }
@@ -271,7 +271,7 @@ contract HiveTest is Test {
         uint256 id = council.propose(
             "Test",
             "Description",
-            Council.ProposalType.General,
+            HiveCouncil.ProposalType.General,
             address(0),
             ""
         );
@@ -291,7 +291,7 @@ contract HiveTest is Test {
         uint256 id = council.propose(
             "Test",
             "Description",
-            Council.ProposalType.General,
+            HiveCouncil.ProposalType.General,
             address(0),
             ""
         );

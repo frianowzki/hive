@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {PrecompileConsumer} from "../libraries/PrecompileConsumer.sol";
-import {Points} from "../points/Points.sol";
+import {RitualPrecompileConsumer} from "../libraries/RitualPrecompileConsumer.sol";
+import {HivePoints} from "../points/HivePoints.sol";
 
 /// @title MarketMaker — Hive Auto-LP Engine
 /// @notice Provides automatic liquidity for tokens launched on Hive
 
-contract MarketMaker is PrecompileConsumer {
+contract HiveMarketMaker is RitualPrecompileConsumer {
     // ═══ State ═══
 
     address public admin;
-    Points public points;
+    HivePoints public points;
 
     struct Pool {
         address token;
@@ -64,7 +64,7 @@ contract MarketMaker is PrecompileConsumer {
 
     constructor(address _points) {
         admin = msg.sender;
-        points = Points(_points);
+        points = HivePoints(_points);
     }
 
     // ═══ Pool Creation ═══

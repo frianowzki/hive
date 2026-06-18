@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {PrecompileConsumer} from "../libraries/PrecompileConsumer.sol";
-import {Points} from "../points/Points.sol";
+import {RitualPrecompileConsumer} from "../libraries/RitualPrecompileConsumer.sol";
+import {HivePoints} from "../points/HivePoints.sol";
 
 /// @title Council — Hive DAO Governance
 /// @notice Enables sale participants to govern the platform
 
-contract Council is PrecompileConsumer {
+contract HiveCouncil is RitualPrecompileConsumer {
     // ═══ State ═══
 
     address public admin;
-    Points public points;
+    HivePoints public points;
 
     struct Proposal {
         address proposer;
@@ -73,7 +73,7 @@ contract Council is PrecompileConsumer {
 
     constructor(address _points) {
         admin = msg.sender;
-        points = Points(_points);
+        points = HivePoints(_points);
     }
 
     // ═══ Proposal Creation ═══

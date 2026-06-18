@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 /// @title Points — Hive Points System (Tokenless)
 /// @notice Tracks user engagement across all Hive modules
 
-contract Points {
+contract HivePoints {
     // ═══ State ═══
 
     struct UserPoints {

@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 /// @title PrecompileConsumer — Base contract for Ritual precompile calls
 /// @notice Provides helpers for calling Ritual precompiles
 
-abstract contract PrecompileConsumer {
+abstract contract RitualPrecompileConsumer {
     // ═══ Precompile Addresses ═══
     address internal constant ONNX_PRECOMPILE = address(0x0800);
     address internal constant HTTP_PRECOMPILE = address(0x0801);
