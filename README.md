@@ -27,6 +27,7 @@ Hive is a **compliant, AI-powered launchpad** built natively on [Ritual Chain](h
 - **Dual Wallet Auth** — Primary wallet (ECDSA, e.g. MetaMask) + Hive wallet (Ritual passkey P-256). User always retains custody
 - **AI-Driven Price Discovery** — Hive Clearing Auction (HCA) with Ritual LLM-powered pricing. Optimal token launch price determined by on-chain AI
 - **Allora Price Feeds** — AI-inferred price predictions from Allora Network via Ritual HTTP precompile. Crowdsourced models supply predictions with confidence intervals
+- **FLock Federated Training** — Self-improving AI via FLock.io federated learning. Training tasks, model submissions, validator voting, winner selection, ONNX deployment via Ritual precompile
 - **AI Agent Gateway** — On-chain chatbot powered by Ritual LLM precompile. Market analysis, token insights, strategy advice — all computed on-chain
 - **Agent Brain (Async + PII)** — Sovereign AI brain with async LLM inference and PII mode. think() → plan() → act() pipeline with confidence threshold. PII mode ensures sensitive strategy data never hits the mempool
 - **On-Chain Governance** — DAO voting with staked-weighted power, delegation, proposal types, quorum enforcement, and time-locked execution
@@ -152,6 +153,7 @@ User (MetaMask) ──→ HiveID ──→ Register (free) ──→ Get Hive Wa
 | **Queen** | `0xDC96...Ae8E` | Brain orchestrator. Interface-based wiring for Strategy, Drone, Registry, LaunchPad, MarketMaker |
 | **HiveAutoStrategy** | `0x1b3A...BEF9` | Automated trading strategies: DCA, Take Profit, Stop Loss, Trailing Stop |
 | **HiveMarketMaker** | `0x9CC5...289b` | AI-driven market making via Ritual LLM |
+| **HiveFLock** | — | Federated learning integration. Training tasks, model submissions, validator voting, winner selection, ONNX deployment via Ritual precompile, FLock API inference |
 
 ### 🏛️ Governance
 
@@ -248,12 +250,13 @@ hive/
 │   └── verifier/
 │       └── HiveVerifier.sol      # ZK proof verifier
 │
-├── test/                         # Test suite (197 tests)
+├── test/                         # Test suite (246 tests)
 │   ├── Hive.t.sol                # Core integration tests
 │   ├── HiveID.t.sol              # HiveID + DKMS privacy tests
 │   ├── HiveSuite.t.sol           # Suite 1: ID, MultiSig, Clearing, etc.
 │   ├── HiveSuite2.t.sol          # Suite 2: Verifier, Relayer, Oracle, etc.
-│   └── AlloraBrain.t.sol         # Allora + HiveBrain async/PII tests
+│   ├── AlloraBrain.t.sol         # Allora + HiveBrain async/PII tests
+│   └── HiveFLock.t.sol           # FLock federated learning tests
 │
 ├── script/
 │   └── Deploy.s.sol              # Deployment script (19 contracts)
@@ -319,7 +322,7 @@ forge build
 forge test -vv
 ```
 
-All 197 tests should pass.
+All 246 tests should pass.
 
 ### Deploy
 
@@ -375,5 +378,5 @@ MIT
 ---
 
 <p align="center">
-  Built on <a href="https://ritual.net">Ritual Chain</a> • Powered by Ritual LLM, HTTP, DKMS, ECIES, and Passkey precompiles • Price feeds by <a href="https://allora.network">Allora Network</a>
+  Built on <a href="https://ritual.net">Ritual Chain</a> • Powered by Ritual LLM, HTTP, DKMS, ECIES, and Passkey precompiles • Price feeds by <a href="https://allora.network">Allora Network</a> • Training by <a href="https://flock.io">FLock.io</a>
 </p>
