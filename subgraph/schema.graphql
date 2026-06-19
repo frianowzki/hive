@@ -1,0 +1,205 @@
+# Hive Subgraph Schema
+# TheGraph protocol for indexing Hive events on Ritual Testnet
+
+type Auction @entity {
+  id: ID!
+  auctionId: BigInt!
+  creator: Bytes!
+  token: Bytes!
+  totalSupply: BigInt!
+  soldAmount: BigInt!
+  minPrice: BigInt!
+  maxPrice: BigInt!
+  currentPrice: BigInt!
+  startTime: BigInt!
+  endTime: BigInt!
+  state: AuctionState!
+  aiAnalysis: String!
+  bids: [Bid!]! @derivedFrom(field: "auction")
+  bidders: [AuctionBidder!]! @derivedFrom(field: "auction")
+  priceHistory: [PriceSnapshot!]! @derivedFrom(field: "auction")
+  totalBidAmount: BigInt!
+  createdAt: BigInt!
+  settledAt: BigInt
+}
+
+enum AuctionState {
+  PENDING
+  ACTIVE
+  CLEARING
+  SETTLED
+  CANCELLED
+}
+
+type Bid @entity {
+  id: ID!
+  auction: Auction!
+  bidder: Bytes!
+  amount: BigInt!
+  maxPrice: BigInt!
+  timestamp: BigInt!
+  filled: Boolean!
+  refunded: Boolean!
+}
+
+type AuctionBidder @entity {
+  id: ID!
+  auction: Auction!
+  bidder: Bytes!
+  totalBid: BigInt!
+  bidCount: BigInt!
+}
+
+type PriceSnapshot @entity {
+  id: ID!
+  auction: Auction!
+  price: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+}
+
+type HiveIdentity @entity {
+  id: ID!
+  username: String!
+  primaryWallet: Bytes!
+  hiveWallet: Bytes
+  verified: Boolean!
+  kycProof: Boolean!
+  kybProof: Boolean!
+  registeredAt: BigInt!
+  lastUpdated: BigInt!
+}
+
+type Staker @entity {
+  id: ID!
+  address: Bytes!
+  stakedAmount: BigInt!
+  tier: StakerTier!
+  lockMultiplier: BigInt!
+  lockedUntil: BigInt!
+  rewardsAccrued: BigInt!
+  autoCompound: Boolean!
+  stakedAt: BigInt!
+  lastCompoundAt: BigInt!
+}
+
+enum StakerTier {
+  BRONZE
+  SILVER
+  GOLD
+  DIAMOND
+}
+
+type GovernanceProposal @entity {
+  id: ID!
+  proposalId: BigInt!
+  proposer: Bytes!
+  proposalType: ProposalType!
+  description: String!
+  target: Bytes!
+  forVotes: BigInt!
+  againstVotes: BigInt!
+  abstainVotes: BigInt!
+  startTime: BigInt!
+  endTime: BigInt!
+  executionTime: BigInt!
+  executed: Boolean!
+  cancelled: Boolean!
+  emergency: Boolean!
+  votes: [Vote!]! @derivedFrom(field: "proposal")
+  state: ProposalState!
+}
+
+enum ProposalType {
+  PARAMETER_CHANGE
+  MODULE_UPGRADE
+  FEE_CHANGE
+  STRATEGY_APPROVAL
+  EMERGENCY
+}
+
+enum ProposalState {
+  PENDING
+  ACTIVE
+  PASSED
+  FAILED
+  EXECUTED
+  CANCELLED
+}
+
+type Vote @entity {
+  id: ID!
+  proposal: GovernanceProposal!
+  voter: Bytes!
+  support: Int! # 0=against, 1=for, 2=abstain
+  weight: BigInt!
+  timestamp: BigInt!
+}
+
+type TreasuryDistribution @entity {
+  id: ID!
+  round: BigInt!
+  totalAmount: BigInt!
+  stakerAmount: BigInt!
+  referrerAmount: BigInt!
+  reserveAmount: BigInt!
+  stakerCount: BigInt!
+  referrerCount: BigInt!
+  timestamp: BigInt!
+}
+
+type Notification @entity {
+  id: ID!
+  user: Bytes!
+  eventType: NotificationType!
+  title: String!
+  message: String!
+  timestamp: BigInt!
+  read: Boolean!
+}
+
+enum NotificationType {
+  SALE_START
+  SALE_END
+  PRICE_ALERT
+  STRATEGY_EXEC
+  GOVERNANCE_VOTE
+  REPUTATION_CHANGE
+  STAKE_CHANGE
+  REFERRAL_BONUS
+  TREASURY_DIST
+  BRAIN_ACTION
+}
+
+type PriceAlert @entity {
+  id: ID!
+  user: Bytes!
+  alertId: BigInt!
+  token: String!
+  threshold: BigInt!
+  above: Boolean!
+  active: Boolean!
+  createdAt: BigInt!
+}
+
+type BrainAction @entity {
+  id: ID!
+  brain: Bytes!
+  actionType: String!
+  contextHash: Bytes!
+  confidence: BigInt!
+  executed: Boolean!
+  success: Boolean
+  timestamp: BigInt!
+}
+
+type RelayedTransaction @entity {
+  id: ID!
+  requestHash: Bytes!
+  primaryWallet: Bytes!
+  hiveWallet: Bytes!
+  to: Bytes!
+  value: BigInt!
+  success: Boolean!
+  timestamp: BigInt!
+}

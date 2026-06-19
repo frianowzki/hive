@@ -1,0 +1,216 @@
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  # ═══ HiveClearing — CCA Auction ═══
+  - kind: ethereum
+    name: HiveClearing
+    network: ritual-testnet
+    source:
+      address: "0x0000000000000000000000000000000000000000" # Replace after deploy
+      abi: HiveClearing
+      startBlock: 0 # Replace with deploy block
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Auction
+        - Bid
+        - AuctionBidder
+        - PriceSnapshot
+      abis:
+        - name: HiveClearing
+          file: ./abis/HiveClearing.json
+      eventHandlers:
+        - event: AuctionCreated(uint256 indexed auctionId, address indexed creator, address token)
+          handler: handleAuctionCreated
+        - event: BidPlaced(uint256 indexed auctionId, address indexed bidder, uint256 amount, uint256 maxPrice)
+          handler: handleBidPlaced
+        - event: PriceUpdated(uint256 indexed auctionId, uint256 newPrice, string aiReasoning)
+          handler: handlePriceUpdated
+        - event: AuctionSettled(uint256 indexed auctionId, uint256 clearingPrice, uint256 totalSold)
+          handler: handleAuctionSettled
+        - event: BidRefunded(uint256 indexed auctionId, address indexed bidder, uint256 amount)
+          handler: handleBidRefunded
+        - event: AuctionCancelled(uint256 indexed auctionId)
+          handler: handleAuctionCancelled
+      file: ./src/clearing.ts
+
+  # ═══ HiveID — Identity ═══
+  - kind: ethereum
+    name: HiveID
+    network: ritual-testnet
+    source:
+      address: "0x0000000000000000000000000000000000000000"
+      abi: HiveID
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - HiveIdentity
+      abis:
+        - name: HiveID
+          file: ./abis/HiveID.json
+      eventHandlers:
+        - event: Registered(bytes32 indexed usernameHash, address indexed primaryWallet, string username)
+          handler: handleRegistered
+        - event: Verified(bytes32 indexed usernameHash, bool kyc, bool kyb)
+          handler: handleVerified
+        - event: WalletLinked(bytes32 indexed usernameHash, address indexed wallet)
+          handler: handleWalletLinked
+      file: ./src/identity.ts
+
+  # ═══ HiveStaking — Staking ═══
+  - kind: ethereum
+    name: HiveStaking
+    network: ritual-testnet
+    source:
+      address: "0x0000000000000000000000000000000000000000"
+      abi: HiveStaking
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Staker
+      abis:
+        - name: HiveStaking
+          file: ./abis/HiveStaking.json
+      eventHandlers:
+        - event: Staked(address indexed user, uint256 amount, uint256 lockPeriod, uint256 multiplier)
+          handler: handleStaked
+        - event: Unstaked(address indexed user, uint256 amount, uint256 penalty)
+          handler: handleUnstaked
+        - event: RewardsClaimed(address indexed user, uint256 amount)
+          handler: handleRewardsClaimed
+        - event: RewardsCompounded(address indexed user, uint256 amount)
+          handler: handleRewardsCompounded
+      file: ./src/staking.ts
+
+  # ═══ HiveGovernance — DAO ═══
+  - kind: ethereum
+    name: HiveGovernance
+    network: ritual-testnet
+    source:
+      address: "0x0000000000000000000000000000000000000000"
+      abi: HiveGovernance
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - GovernanceProposal
+        - Vote
+      abis:
+        - name: HiveGovernance
+          file: ./abis/HiveGovernance.json
+      eventHandlers:
+        - event: ProposalCreated(uint256 indexed id, address indexed proposer, uint8 proposalType, string description, address target, bool emergency)
+          handler: handleProposalCreated
+        - event: VoteCast(uint256 indexed proposalId, address indexed voter, uint8 support, uint256 weight)
+          handler: handleVoteCast
+        - event: ProposalExecuted(uint256 indexed id)
+          handler: handleProposalExecuted
+        - event: ProposalCancelled(uint256 indexed id)
+          handler: handleProposalCancelled
+      file: ./src/governance.ts
+
+  # ═══ HiveTreasury — Fees ═══
+  - kind: ethereum
+    name: HiveTreasury
+    network: ritual-testnet
+    source:
+      address: "0x0000000000000000000000000000000000000000"
+      abi: HiveTreasury
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - TreasuryDistribution
+      abis:
+        - name: HiveTreasury
+          file: ./abis/HiveTreasury.json
+      eventHandlers:
+        - event: DistributionExecuted(uint256 indexed round, uint256 totalAmount, uint256 stakerAmount, uint256 referrerAmount, uint256 reserveAmount)
+          handler: handleDistributionExecuted
+      file: ./src/treasury.ts
+
+  # ═══ HiveNotification — Notifications ═══
+  - kind: ethereum
+    name: HiveNotification
+    network: ritual-testnet
+    source:
+      address: "0x0000000000000000000000000000000000000000"
+      abi: HiveNotification
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Notification
+        - PriceAlert
+      abis:
+        - name: HiveNotification
+          file: ./abis/HiveNotification.json
+      eventHandlers:
+        - event: NotificationSent(address indexed user, uint8 indexed eventType, uint256 timestamp, string title, string message, bytes data)
+          handler: handleNotificationSent
+        - event: PriceAlertSet(address indexed user, uint256 alertId, string token, uint256 threshold, bool above)
+          handler: handlePriceAlertSet
+        - event: PriceAlertTriggered(address indexed user, uint256 alertId, string token, uint256 currentPrice)
+          handler: handlePriceAlertTriggered
+      file: ./src/notification.ts
+
+  # ═══ HiveRelayer — Meta-tx ═══
+  - kind: ethereum
+    name: HiveRelayer
+    network: ritual-testnet
+    source:
+      address: "0x0000000000000000000000000000000000000000"
+      abi: HiveRelayer
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - RelayedTransaction
+      abis:
+        - name: HiveRelayer
+          file: ./abis/HiveRelayer.json
+      eventHandlers:
+        - event: RelayExecuted(bytes32 indexed requestHash, address indexed primaryWallet, address indexed hiveWallet, address to, uint256 value)
+          handler: handleRelayExecuted
+        - event: RelayFailed(bytes32 indexed requestHash, string reason)
+          handler: handleRelayFailed
+      file: ./src/relayer.ts
+
+  # ═══ HiveBrain — AI Agent ═══
+  - kind: ethereum
+    name: HiveBrain
+    network: ritual-testnet
+    source:
+      address: "0x0000000000000000000000000000000000000000"
+      abi: HiveBrain
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - BrainAction
+      abis:
+        - name: HiveBrain
+          file: ./abis/HiveBrain.json
+      eventHandlers:
+        - event: ActionExecuted(bytes32 indexed actionId, address indexed brain, uint8 actionType, bool success)
+          handler: handleActionExecuted
+      file: ./src/brain.ts

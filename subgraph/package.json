@@ -1,0 +1,19 @@
+{
+  "name": "hive-subgraph",
+  "version": "1.0.0",
+  "description": "TheGraph subgraph for Hive DeFi on Ritual Testnet",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ hive-ritual-testnet",
+    "create-local": "graph create --node http://localhost:8020/ hive-ritual-testnet",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 hive-ritual-testnet"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "^0.60.0",
+    "@graphprotocol/graph-ts": "^0.31.0"
+  },
+  "devDependencies": {
+    "assemblyscript": "^0.27.0"
+  }
+}
