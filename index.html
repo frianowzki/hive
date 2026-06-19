@@ -87,16 +87,22 @@
         .sec-lbl::before{content:'';width:16px;height:1.5px;background:var(--accent)}
         .sec-title{font-family:var(--font-display);font-size:2rem;font-weight:800;letter-spacing:-.03em}
 
-        /* ═══ PAGE 2: FEATURES ═══ */
-        .caps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
-        .cap-card{background:rgba(255,255,255,.02);padding:1.4rem;border-radius:12px;border:1px solid var(--border);transition:all .3s;position:relative;overflow:hidden}
-        .cap-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0;transition:opacity .3s}
-        .cap-card:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1);transform:translateY(-2px)}
-        .cap-card:hover::before{opacity:1}
-        .cap-icon{width:36px;height:36px;background:var(--accent-glow);border:1px solid rgba(139,92,246,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:.75rem}
-        .cap-icon svg{width:18px;height:18px;color:var(--accent-light)}
-        .cap-title{font-family:var(--font-display);font-size:.9rem;font-weight:700;margin-bottom:.4rem}
-        .cap-desc{font-size:.75rem;color:var(--text-dim);line-height:1.55}
+        /* ═══ PAGE 2: FEATURES (Collapse Cards) ═══ */
+        .features-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem}
+        .feat-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .4s cubic-bezier(.4,0,.2,1)}
+        .feat-card:hover{border-color:rgba(255,255,255,.12);background:rgba(255,255,255,.05)}
+        .feat-card.active{border-color:var(--accent);background:rgba(139,92,246,.06)}
+        .feat-header{display:flex;align-items:center;gap:.75rem;padding:1.1rem 1.25rem}
+        .feat-icon{width:38px;height:38px;background:var(--accent-glow);border:1px solid rgba(139,92,246,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .3s}
+        .feat-card.active .feat-icon{background:rgba(139,92,246,.2);border-color:var(--accent)}
+        .feat-icon svg{width:18px;height:18px;color:var(--accent-light)}
+        .feat-title{font-family:var(--font-display);font-size:.95rem;font-weight:700;flex:1}
+        .feat-chevron{width:20px;height:20px;color:var(--text-muted);transition:transform .3s, color .3s;flex-shrink:0}
+        .feat-card.active .feat-chevron{transform:rotate(180deg);color:var(--accent-light)}
+        .feat-body{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1), padding .3s;padding:0 1.25rem}
+        .feat-card.active .feat-body{max-height:200px;padding:0 1.25rem 1.1rem}
+        .feat-body p{font-size:.8rem;color:var(--text-dim);line-height:1.65;padding-left:3.4rem}
+        .feat-card.active .feat-body p{border-top:1px solid var(--border);padding-top:.85rem}
 
         /* ═══ PAGE 3: SERVICES ═══ */
         .svc-grid{display:grid;grid-template-columns:repeat(3,1fr)}
@@ -194,7 +200,7 @@
             </div>
         </div>
 
-        <!-- PAGE 2: FEATURES -->
+        <!-- PAGE 2: FEATURES (Collapse Cards) -->
         <div class="page" data-index="1">
             <div class="bg-grid"></div>
             <div class="bg-glow" style="bottom:-150px;left:-150px;background:var(--accent);opacity:.1"></div>
@@ -203,36 +209,54 @@
                     <div class="sec-lbl">What we do</div>
                     <h2 class="sec-title">Features</h2>
                 </div>
-                <div class="caps-grid">
-                    <div class="cap-card fi d1">
-                        <div class="cap-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
-                        <h3 class="cap-title">ZK Identity & Compliance</h3>
-                        <p class="cap-desc">Groth16-based KYC/KYB verification with on-chain identity. Semi-custodial wallets with dual-auth. Full regulatory compliance.</p>
+                <div class="features-grid">
+                    <div class="feat-card active fi d1" onclick="toggleFeat(this)">
+                        <div class="feat-header">
+                            <div class="feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+                            <span class="feat-title">ZK Identity & Compliance</span>
+                            <svg class="feat-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        <div class="feat-body"><p>Groth16-based KYC/KYB verification with on-chain identity. Semi-custodial wallets with dual-auth. Full regulatory compliance without exposing personal data.</p></div>
                     </div>
-                    <div class="cap-card fi d2">
-                        <div class="cap-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 2.4-1.2 4.5-3 5.7V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.3C6.2 13.5 5 11.4 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg></div>
-                        <h3 class="cap-title">AI Decision Engine</h3>
-                        <p class="cap-desc">HiveBrain orchestrates AI operations — price feeds via Allora, federated learning via FLock, autonomous strategies.</p>
+                    <div class="feat-card fi d2" onclick="toggleFeat(this)">
+                        <div class="feat-header">
+                            <div class="feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 2.4-1.2 4.5-3 5.7V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.3C6.2 13.5 5 11.4 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg></div>
+                            <span class="feat-title">AI Decision Engine</span>
+                            <svg class="feat-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        <div class="feat-body"><p>HiveBrain orchestrates AI operations — price feeds via Allora, federated learning via FLock, autonomous strategies. Think → Plan → Act pipeline with confidence threshold.</p></div>
                     </div>
-                    <div class="cap-card fi d3">
-                        <div class="cap-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
-                        <h3 class="cap-title">AI Market Maker</h3>
-                        <p class="cap-desc">Constant-product AMM with AI-driven pricing. Liquidity pools, LP rewards, real-time oracle integration.</p>
+                    <div class="feat-card fi d3" onclick="toggleFeat(this)">
+                        <div class="feat-header">
+                            <div class="feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+                            <span class="feat-title">AI Market Maker</span>
+                            <svg class="feat-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        <div class="feat-body"><p>Constant-product AMM with AI-driven pricing. Liquidity pools, LP rewards, real-time oracle integration. On-chain AI determines optimal token launch price.</p></div>
                     </div>
-                    <div class="cap-card fi d4">
-                        <div class="cap-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg></div>
-                        <h3 class="cap-title">DAO Governance</h3>
-                        <p class="cap-desc">Multi-sig council, proposal system, voting, treasury management. HiveClearing batch auctions for fair launches.</p>
+                    <div class="feat-card fi d4" onclick="toggleFeat(this)">
+                        <div class="feat-header">
+                            <div class="feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg></div>
+                            <span class="feat-title">DAO Governance</span>
+                            <svg class="feat-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        <div class="feat-body"><p>Multi-sig council, proposal system, voting, treasury management. HiveClearing batch auctions for fair token launches with AI-driven price discovery.</p></div>
                     </div>
-                    <div class="cap-card fi d5">
-                        <div class="cap-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-                        <h3 class="cap-title">Security & Privacy</h3>
-                        <p class="cap-desc">Ritual native precompiles — DKMS key management, ECIES encryption, Passkey authentication. Privacy-preserving by design.</p>
+                    <div class="feat-card fi d5" onclick="toggleFeat(this)">
+                        <div class="feat-header">
+                            <div class="feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+                            <span class="feat-title">Security & Privacy</span>
+                            <svg class="feat-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        <div class="feat-body"><p>Ritual native precompiles — DKMS key management, ECIES encryption, Passkey authentication. TEE-bound keys never leave the enclave. Privacy-preserving by design.</p></div>
                     </div>
-                    <div class="cap-card fi d6">
-                        <div class="cap-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8M12 8v8"/></svg></div>
-                        <h3 class="cap-title">Autonomous Agents</h3>
-                        <p class="cap-desc">Queen orchestrator routes tasks to Brain, Strategy, and Drone agents. Automated strategies, points, referrals.</p>
+                    <div class="feat-card fi d6" onclick="toggleFeat(this)">
+                        <div class="feat-header">
+                            <div class="feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8M12 8v8"/></svg></div>
+                            <span class="feat-title">Autonomous Agents</span>
+                            <svg class="feat-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        <div class="feat-body"><p>Queen orchestrator routes tasks to Brain, Strategy, and Drone agents. Automated trading strategies, on-chain points, 4-tier referral engine.</p></div>
                     </div>
                 </div>
             </div>
@@ -373,6 +397,12 @@
 
         function startAutoScroll(){autoScrollTimer=setTimeout(nextPage,autoScrollDuration)}
         function resetAutoScroll(){clearTimeout(autoScrollTimer);startAutoScroll()}
+
+        function toggleFeat(el){
+            const wasActive=el.classList.contains('active');
+            document.querySelectorAll('.feat-card').forEach(c=>c.classList.remove('active'));
+            if(!wasActive)el.classList.add('active');
+        }
 
         let wheelTimeout;
         document.addEventListener('wheel',e=>{e.preventDefault();clearTimeout(wheelTimeout);wheelTimeout=setTimeout(()=>{if(e.deltaY>0)nextPage();else prevPage()},60)},{passive:false});
