@@ -192,7 +192,7 @@ User (MetaMask) ──→ HiveID ──→ Register (free) ──→ Get Hive Wa
 
 ```
 hive/
-├── src/                          # Smart contracts (35 files, ~10,700 LOC)
+├── src/                          # Smart contracts (35 files: 29 deployable contracts + 6 libraries/interfaces, ~10,700 LOC)
 │   ├── agent/
 │   │   ├── HiveAgent.sol         # AI Agent Gateway (LLM precompile)
 │   │   └── HiveBrain.sol         # Sovereign agent brain
@@ -408,5 +408,5 @@ MIT
 ---
 
 <p align="center">
-  Built on <a href="https://ritual.net">Ritual Chain</a> • 35 contracts • 300 tests • Powered by Ritual LLM, HTTP, DKMS, ECIES, and Passkey precompiles • Price feeds by <a href="https://allora.network">Allora Network</a> • Training by <a href="https://flock.io">FLock.io</a> • Secured by <a href="https://eigenlayer.xyz">EigenLayer</a>
+  Built on <a href="https://ritual.net">Ritual Chain</a> • 29 contracts deployed • 300 tests • Powered by Ritual LLM, HTTP, DKMS, ECIES, and Passkey precompiles • Price feeds by <a href="https://allora.network">Allora Network</a> • Training by <a href="https://flock.io">FLock.io</a> • Secured by <a href="https://eigenlayer.xyz">EigenLayer</a>
 </p>
