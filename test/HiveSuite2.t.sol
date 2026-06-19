@@ -150,19 +150,19 @@ contract HiveRelayerTest is Test {
     }
 
     function test_set_paused() public {
-        relayer.setPaused(true);
+        relayer.pause();
         assertTrue(relayer.paused());
     }
 
     function test_set_relay_fee() public {
         relayer.setRelayFee(50);
-        assertEq(relayer.relayFeeBps(), 50);
+        assertEq(relayer.relayFee(), 50);
     }
 
     function test_revert_not_owner() public {
         vm.prank(address(0xBAD));
-        vm.expectRevert("Relayer: not owner");
-        relayer.setPaused(true);
+        vm.expectRevert("HiveRelayer: not owner");
+        relayer.pause();
     }
 }
 

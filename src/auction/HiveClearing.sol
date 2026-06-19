@@ -99,11 +99,12 @@ contract HiveClearing is RitualPrecompileConsumer {
         uint256 maxPrice,
         uint256 duration,
         uint256 clearingInterval
-    ) external returns (uint256 auctionId) {
-        require(minPrice < maxPrice, "HiveClearing: invalid price range");
-        require(duration > 0, "HiveClearing: invalid duration");
+    ) external returns (uint256) {
+        require(minPrice > 0, "HiveClearing: min price zero");
+        require(maxPrice > minPrice, "HiveClearing: max <= min");
+        require(duration > 0, "HiveClearing: zero duration");
 
-        auctionId = auctionCount++;
+        uint256 auctionId = auctionCount++;
 
         auctions[auctionId] = Auction({
             creator: msg.sender,
@@ -115,13 +116,14 @@ contract HiveClearing is RitualPrecompileConsumer {
             currentPrice: (minPrice + maxPrice) / 2, // Start at midpoint
             startTime: block.timestamp,
             endTime: block.timestamp + duration,
-            clearingInterval: clearingInterval > 0 ? clearingInterval : 10,
+            clearingInterval: clearingInterval,
             lastClearingBlock: block.number,
             state: AuctionState.Active,
             aiAnalysis: ""
         });
 
         userAuctions[msg.sender].push(auctionId);
+        priceHistory[auctionId].push((minPrice + maxPrice) / 2);
 
         emit AuctionCreated(auctionId, msg.sender, token);
         return auctionId;
@@ -130,12 +132,9 @@ contract HiveClearing is RitualPrecompileConsumer {
     // ═══ Bid ═══
 
     /// @notice Place a bid in an auction
-    /// @param auctionId The auction to bid in
-    /// @param maxPrice Max price per token the bidder is willing to pay
     function placeBid(uint256 auctionId, uint256 maxPrice) external payable {
         Auction storage auction = auctions[auctionId];
         if (auction.state != AuctionState.Active) revert AuctionNotActive();
-        if (block.timestamp > auction.endTime) revert AuctionNotActive();
         if (msg.value == 0) revert InsufficientBid();
         if (maxPrice < auction.minPrice) revert PriceOutOfRange();
 
@@ -148,25 +147,23 @@ contract HiveClearing is RitualPrecompileConsumer {
             refunded: false
         }));
 
-        totalBidAmount[auctionId] += msg.value;
-
         // Track unique bidders
-        if (bids[auctionId][msg.sender].length == 1) {
+        if (bidders[auctionId].length == 0 || bidders[auctionId][bidders[auctionId].length - 1] != msg.sender) {
             bidders[auctionId].push(msg.sender);
         }
 
+        totalBidAmount[auctionId] += msg.value;
+
         emit BidPlaced(auctionId, msg.sender, msg.value, maxPrice);
 
-        // Trigger price update if enough blocks passed
-        if (block.number - auction.lastClearingBlock >= auction.clearingInterval) {
+        // Update price if interval passed
+        if (block.number >= auction.lastClearingBlock + auction.clearingInterval) {
             _updatePrice(auctionId);
         }
     }
 
-    // ═══ AI Price Discovery ═══
+    // ═══ Price Update ═══
 
-    /// @notice Update price using AI analysis
-    /// @dev Can be called by anyone after clearingInterval blocks
     function updatePrice(uint256 auctionId) external {
         _updatePrice(auctionId);
     }
@@ -177,49 +174,56 @@ contract HiveClearing is RitualPrecompileConsumer {
 
         auction.lastClearingBlock = block.number;
 
-        // Calculate demand metrics
-        uint256 totalBid = totalBidAmount[auctionId];
-        uint256 remainingSupply = auction.totalSupply - auction.soldAmount;
-        uint256 fillRatio = (totalBid * 10000) / (remainingSupply * auction.currentPrice + 1);
-
-        // AI-driven price adjustment
-        uint256 newPrice;
-
-        if (fillRatio > 15000) {
-            // Very high demand (>150%) — price increases significantly
-            newPrice = (auction.currentPrice * 11500) / 10000; // +15%
-        } else if (fillRatio > 12000) {
-            // High demand (120-150%) — moderate increase
-            newPrice = (auction.currentPrice * 10800) / 10000; // +8%
-        } else if (fillRatio > 10000) {
-            // Above average demand (100-120%) — slight increase
-            newPrice = (auction.currentPrice * 10300) / 10000; // +3%
-        } else if (fillRatio > 8000) {
-            // Below average demand (80-100%) — slight decrease
-            newPrice = (auction.currentPrice * 9700) / 10000; // -3%
-        } else if (fillRatio > 5000) {
-            // Low demand (50-80%) — moderate decrease
-            newPrice = (auction.currentPrice * 9200) / 10000; // -8%
-        } else {
-            // Very low demand (<50%) — significant decrease
-            newPrice = (auction.currentPrice * 8500) / 10000; // -15%
-        }
-
-        // Clamp to min/max
-        if (newPrice < auction.minPrice) newPrice = auction.minPrice;
-        if (newPrice > auction.maxPrice) newPrice = auction.maxPrice;
+        uint256 newPrice = _calculateNewPrice(
+            auction.currentPrice,
+            auction.minPrice,
+            auction.maxPrice,
+            totalBidAmount[auctionId],
+            auction.totalSupply - auction.soldAmount
+        );
 
         auction.currentPrice = newPrice;
         priceHistory[auctionId].push(newPrice);
 
-        // Build analysis string
-        string memory analysis = _buildAnalysis(fillRatio, newPrice, auction.currentPrice);
+        string memory analysis = _buildAnalysis(newPrice, auction.currentPrice);
         auction.aiAnalysis = analysis;
 
         emit PriceUpdated(auctionId, newPrice, analysis);
     }
 
-    function _buildAnalysis(uint256 fillRatio, uint256 newPrice, uint256 oldPrice) internal pure returns (string memory) {
+    /// @notice Calculate new price based on demand
+    function _calculateNewPrice(
+        uint256 currentPrice,
+        uint256 minPrice,
+        uint256 maxPrice,
+        uint256 totalBid,
+        uint256 remainingSupply
+    ) internal pure returns (uint256) {
+        uint256 fillRatio = (totalBid * 10000) / (remainingSupply * currentPrice + 1);
+        uint256 newPrice;
+
+        if (fillRatio > 15000) {
+            newPrice = (currentPrice * 11500) / 10000; // +15%
+        } else if (fillRatio > 12000) {
+            newPrice = (currentPrice * 10800) / 10000; // +8%
+        } else if (fillRatio > 10000) {
+            newPrice = (currentPrice * 10300) / 10000; // +3%
+        } else if (fillRatio > 8000) {
+            newPrice = (currentPrice * 9700) / 10000; // -3%
+        } else if (fillRatio > 5000) {
+            newPrice = (currentPrice * 9200) / 10000; // -8%
+        } else {
+            newPrice = (currentPrice * 8500) / 10000; // -15%
+        }
+
+        // Clamp to min/max
+        if (newPrice < minPrice) newPrice = minPrice;
+        if (newPrice > maxPrice) newPrice = maxPrice;
+
+        return newPrice;
+    }
+
+    function _buildAnalysis(uint256 newPrice, uint256 oldPrice) internal pure returns (string memory) {
         if (newPrice > oldPrice) {
             return "Demand exceeds supply. Price increased.";
         } else if (newPrice < oldPrice) {
@@ -239,8 +243,17 @@ contract HiveClearing is RitualPrecompileConsumer {
         auction.state = AuctionState.Settled;
         uint256 clearingPrice = auction.currentPrice;
 
-        // Fill bids that are at or above clearing price
+        // Fill bids
+        _fillBids(auctionId, clearingPrice);
+
+        emit AuctionSettled(auctionId, clearingPrice, auction.soldAmount);
+    }
+
+    /// @notice Fill bids at or above clearing price
+    function _fillBids(uint256 auctionId, uint256 clearingPrice) internal {
+        Auction storage auction = auctions[auctionId];
         address[] storage auctionBidders = bidders[auctionId];
+
         for (uint256 i = 0; i < auctionBidders.length; i++) {
             address bidder = auctionBidders[i];
             Bid[] storage bidderBids = bids[auctionId][bidder];
@@ -267,8 +280,6 @@ contract HiveClearing is RitualPrecompileConsumer {
                 }
             }
         }
-
-        emit AuctionSettled(auctionId, clearingPrice, auction.soldAmount);
     }
 
     // ═══ Refund ═══
@@ -278,7 +289,18 @@ contract HiveClearing is RitualPrecompileConsumer {
         Auction storage auction = auctions[auctionId];
         require(auction.state == AuctionState.Settled, "HiveClearing: not settled");
 
-        Bid[] storage userBids = bids[auctionId][msg.sender];
+        uint256 refundAmount = _calculateRefund(auctionId, msg.sender);
+        require(refundAmount > 0, "HiveClearing: nothing to refund");
+
+        (bool success, ) = msg.sender.call{value: refundAmount}("");
+        require(success, "HiveClearing: refund failed");
+
+        emit BidRefunded(auctionId, msg.sender, refundAmount);
+    }
+
+    /// @notice Calculate refund amount for user
+    function _calculateRefund(uint256 auctionId, address user) internal returns (uint256) {
+        Bid[] storage userBids = bids[auctionId][user];
         uint256 refundAmount = 0;
 
         for (uint256 i = 0; i < userBids.length; i++) {
@@ -289,57 +311,48 @@ contract HiveClearing is RitualPrecompileConsumer {
             }
         }
 
-        if (refundAmount == 0) revert NothingToRefund();
-
-        (bool sent, ) = msg.sender.call{value: refundAmount}("");
-        require(sent, "HiveClearing: refund failed");
-
-        emit BidRefunded(auctionId, msg.sender, refundAmount);
+        return refundAmount;
     }
 
     // ═══ Cancel ═══
 
-    /// @notice Cancel auction (only creator, only before any bids)
+    /// @notice Cancel auction (only creator)
     function cancelAuction(uint256 auctionId) external onlyAuctionCreator(auctionId) {
         Auction storage auction = auctions[auctionId];
         require(auction.state == AuctionState.Active, "HiveClearing: not active");
-        require(totalBidAmount[auctionId] == 0, "HiveClearing: has bids");
+        require(bidders[auctionId].length == 0, "HiveClearing: has bids");
 
         auction.state = AuctionState.Cancelled;
         emit AuctionCancelled(auctionId);
     }
 
-    // ═══ View ═══
+    // ═══ View Functions ═══
 
-    /// @notice Get auction details
     function getAuction(uint256 auctionId) external view returns (Auction memory) {
         return auctions[auctionId];
     }
 
-    /// @notice Get price history for an auction
     function getPriceHistory(uint256 auctionId) external view returns (uint256[] memory) {
         return priceHistory[auctionId];
     }
 
-    /// @notice Get user's bids in an auction
     function getUserBids(uint256 auctionId, address user) external view returns (Bid[] memory) {
         return bids[auctionId][user];
     }
 
-    /// @notice Get number of unique bidders
     function getBidderCount(uint256 auctionId) external view returns (uint256) {
         return bidders[auctionId].length;
     }
 
-    /// @notice Calculate tokens user would receive at current clearing price
     function estimateTokens(uint256 auctionId, address user) external view returns (uint256) {
         Auction storage auction = auctions[auctionId];
         Bid[] storage userBids = bids[auctionId][user];
         uint256 totalTokens = 0;
 
         for (uint256 i = 0; i < userBids.length; i++) {
-            if (userBids[i].maxPrice >= auction.currentPrice && !userBids[i].filled) {
-                totalTokens += (userBids[i].amount * 1e18) / auction.currentPrice;
+            Bid storage bid = userBids[i];
+            if (!bid.filled && bid.maxPrice >= auction.currentPrice) {
+                totalTokens += (bid.amount * 1e18) / auction.currentPrice;
             }
         }
 

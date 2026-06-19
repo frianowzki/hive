@@ -166,13 +166,13 @@ contract HiveLaunchPad is RitualPrecompileConsumer {
             sale.vestingDuration
         );
 
-        uint256 claimable = vested - purchase.claimed;
-        require(claimable > 0, "LaunchPad: nothing claimable");
+        uint256 claimableAmount = vested - purchase.claimed;
+        require(claimableAmount > 0, "LaunchPad: nothing claimable");
 
-        purchase.claimed += claimable;
+        purchase.claimed += claimableAmount;
 
         // Transfer tokens (in production, call token.transfer)
-        emit TokensClaimed(saleId, msg.sender, claimable);
+        emit TokensClaimed(saleId, msg.sender, claimableAmount);
     }
 
     /// @notice Get claimable amount

@@ -1,88 +1,116 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
-/// @title HiveRelayer — Meta-transaction relayer for Hive wallets
-/// @notice Primary wallet signs, relayer submits from hive wallet
-/// @dev Enables gasless transfers for users within Hive ecosystem
+/**
+ * @title HiveRelayer
+ * @notice Meta-transaction relayer for Hive
+ * @dev Primary wallet signs, relayer executes from hive wallet
+ * @author Hive Team
+ */
 
 contract HiveRelayer {
-    // ═══ Types ═══
-
-    struct RelayRequest {
-        address primaryWallet;      // Who initiated (signer)
-        address hiveWallet;         // Hive wallet (actual sender)
-        address to;                 // Recipient
-        uint256 value;              // ETH amount
-        bytes data;                 // Calldata (for ERC20 etc.)
-        uint256 nonce;              // Replay protection
-        uint256 deadline;           // Expiration
-        bytes signature;            // Primary wallet signature
-    }
-
-    // ═══ State ═══
-
-    mapping(address => uint256) public nonces; // primaryWallet => nonce
-    mapping(bytes32 => bool) public executed;  // requestHash => executed
+    // ═══════════════════════════════════════════════════════════════
+    //                           STATE
+    // ═══════════════════════════════════════════════════════════════
 
     address public owner;
     bool public paused;
 
-    // Fee
-    uint256 public relayFeeBps = 10; // 0.1% fee
+    /// @notice Nonce per primary wallet (replay protection)
+    mapping(address => uint256) public nonces;
 
-    // ═══ Events ═══
+    /// @notice Executed request hashes
+    mapping(bytes32 => bool) public executed;
 
-    event RelayExecuted(
-        bytes32 indexed requestHash,
-        address indexed primaryWallet,
-        address indexed hiveWallet,
-        address to,
-        uint256 value
-    );
+    /// @notice Relay fee (in wei)
+    uint256 public relayFee = 0.001 ether;
+
+    /// @notice Total relays executed
+    uint256 public totalRelays;
+
+    // ═══════════════════════════════════════════════════════════════
+    //                          EVENTS
+    // ═══════════════════════════════════════════════════════════════
+
+    event RelayExecuted(bytes32 indexed requestHash, address indexed primaryWallet, address indexed hiveWallet, address to, uint256 value);
     event RelayFailed(bytes32 indexed requestHash, string reason);
+    event FeeUpdated(uint256 oldFee, uint256 newFee);
+    event Paused(address indexed by);
+    event Unpaused(address indexed by);
 
-    // ═══ Errors ═══
+    // ═══════════════════════════════════════════════════════════════
+    //                          ERRORS
+    // ═══════════════════════════════════════════════════════════════
 
-    error RelayPaused();
-    error InvalidSignature();
     error Expired();
-    error AlreadyExecuted();
     error NonceMismatch();
-    error RelayExecutionFailed();
+    error AlreadyExecuted();
+    error InvalidSignature();
+    error InsufficientFee();
 
-    // ═══ Modifiers ═══
+    // ═══════════════════════════════════════════════════════════════
+    //                         MODIFIERS
+    // ═══════════════════════════════════════════════════════════════
 
-    modifier whenNotPaused() {
-        if (paused) revert RelayPaused();
+    modifier onlyOwner() {
+        require(msg.sender == owner, "HiveRelayer: not owner");
         _;
     }
 
-    // ═══ Constructor ═══
+    modifier whenNotPaused() {
+        require(!paused, "HiveRelayer: paused");
+        _;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    //                       CONSTRUCTOR
+    // ═══════════════════════════════════════════════════════════════
 
     constructor() {
         owner = msg.sender;
     }
 
-    // ═══ Relay ═══
+    // ═══════════════════════════════════════════════════════════════
+    //                       RELAY FUNCTIONS
+    // ═══════════════════════════════════════════════════════════════
 
     /// @notice Execute a relay request
-    /// @param req The relay request with signature
-    function relay(RelayRequest calldata req) external whenNotPaused returns (bool) {
+    /// @param primaryWallet The wallet that signed the request
+    /// @param hiveWallet The hive wallet to execute from
+    /// @param to Destination address
+    /// @param value ETH value to send
+    /// @param data Calldata
+    /// @param nonce Request nonce
+    /// @param deadline Request deadline
+    /// @param signature ECDSA signature from primaryWallet
+    function relay(
+        address primaryWallet,
+        address hiveWallet,
+        address to,
+        uint256 value,
+        bytes calldata data,
+        uint256 nonce,
+        uint256 deadline,
+        bytes calldata signature
+    ) external payable whenNotPaused returns (bool) {
         // Check deadline
-        if (block.timestamp > req.deadline) revert Expired();
+        if (block.timestamp > deadline) revert Expired();
 
         // Check nonce
-        if (req.nonce != nonces[req.primaryWallet]) revert NonceMismatch();
+        if (nonce != nonces[primaryWallet]) revert NonceMismatch();
+
+        // Check fee
+        if (msg.value < relayFee) revert InsufficientFee();
 
         // Compute request hash
         bytes32 requestHash = keccak256(abi.encode(
-            req.primaryWallet,
-            req.hiveWallet,
-            req.to,
-            req.value,
-            req.data,
-            req.nonce,
-            req.deadline
+            primaryWallet,
+            hiveWallet,
+            to,
+            value,
+            data,
+            nonce,
+            deadline
         ));
 
         // Check not already executed
@@ -94,40 +122,45 @@ contract HiveRelayer {
             requestHash
         ));
 
-        (address signer, ) = _recoverSigner(messageHash, req.signature);
-        if (signer != req.primaryWallet) revert InvalidSignature();
+        address signer = _recoverSigner(messageHash, signature);
+        if (signer != primaryWallet) revert InvalidSignature();
 
         // Mark as executed
         executed[requestHash] = true;
-        nonces[req.primaryWallet]++;
+        nonces[primaryWallet]++;
+        totalRelays++;
 
-        // Execute the transfer from hive wallet
-        // NOTE: In production, the relayer would have permission to execute
-        // from the hive wallet. For now, we emit the event for off-chain processing.
-        if (req.data.length > 0) {
-            (bool success, ) = req.to.call{value: req.value}(req.data);
-            if (!success) {
-                emit RelayFailed(requestHash, "execution failed");
-                return false;
-            }
-        } else {
-            (bool success, ) = req.to.call{value: req.value}("");
-            if (!success) {
-                emit RelayFailed(requestHash, "transfer failed");
-                return false;
-            }
+        // Execute the transfer
+        bool success = _executeTransfer(to, value, data);
+        if (!success) {
+            emit RelayFailed(requestHash, "execution failed");
+            return false;
         }
 
-        emit RelayExecuted(requestHash, req.primaryWallet, req.hiveWallet, req.to, req.value);
+        emit RelayExecuted(requestHash, primaryWallet, hiveWallet, to, value);
         return true;
     }
 
-    // ═══ Signature Recovery ═══
+    /// @notice Internal transfer execution
+    function _executeTransfer(address to, uint256 value, bytes calldata data) internal returns (bool) {
+        if (data.length > 0) {
+            (bool success, ) = to.call{value: value}(data);
+            return success;
+        } else {
+            (bool success, ) = to.call{value: value}("");
+            return success;
+        }
+    }
 
-    function _recoverSigner(bytes32 messageHash, bytes memory signature)
+    // ═══════════════════════════════════════════════════════════════
+    //                    SIGNATURE RECOVERY
+    // ═══════════════════════════════════════════════════════════════
+
+    /// @notice Recover signer from signature
+    function _recoverSigner(bytes32 messageHash, bytes calldata signature)
         internal
         pure
-        returns (address signer, bool valid)
+        returns (address)
     {
         require(signature.length == 65, "Relayer: invalid sig length");
 
@@ -136,19 +169,20 @@ contract HiveRelayer {
         uint8 v;
 
         assembly {
-            r := mload(add(signature, 32))
-            s := mload(add(signature, 64))
-            v := byte(0, mload(add(signature, 96)))
+            r := calldataload(signature.offset)
+            s := calldataload(add(signature.offset, 32))
+            v := byte(0, calldataload(add(signature.offset, 64)))
         }
 
         if (v < 27) v += 27;
         require(v == 27 || v == 28, "Relayer: invalid v");
 
-        signer = ecrecover(messageHash, v, r, s);
-        valid = signer != address(0);
+        return ecrecover(messageHash, v, r, s);
     }
 
-    // ═══ Encode Helpers ═══
+    // ═══════════════════════════════════════════════════════════════
+    //                      ENCODE HELPERS
+    // ═══════════════════════════════════════════════════════════════
 
     /// @notice Encode an ERC20 transfer for relay
     function encodeERC20Transfer(address token, address to, uint256 amount)
@@ -168,27 +202,67 @@ contract HiveRelayer {
         return abi.encodeWithSignature("approve(address,uint256)", spender, amount);
     }
 
-    // ═══ View ═══
+    /// @notice Encode a contract call for relay
+    function encodeCall(address target, bytes calldata data)
+        external
+        pure
+        returns (bytes memory)
+    {
+        return abi.encodeWithSelector(bytes4(data[:4]), data[4:]);
+    }
 
+    // ═══════════════════════════════════════════════════════════════
+    //                      VIEW FUNCTIONS
+    // ═══════════════════════════════════════════════════════════════
+
+    /// @notice Get nonce for primary wallet
     function getNonce(address primaryWallet) external view returns (uint256) {
         return nonces[primaryWallet];
     }
 
+    /// @notice Check if request was executed
     function isExecuted(bytes32 requestHash) external view returns (bool) {
         return executed[requestHash];
     }
 
-    // ═══ Admin ═══
+    // ═══════════════════════════════════════════════════════════════
+    //                      ADMIN FUNCTIONS
+    // ═══════════════════════════════════════════════════════════════
 
-    function setPaused(bool _paused) external {
-        require(msg.sender == owner, "Relayer: not owner");
-        paused = _paused;
+    /// @notice Update relay fee
+    function setRelayFee(uint256 _fee) external onlyOwner {
+        uint256 old = relayFee;
+        relayFee = _fee;
+        emit FeeUpdated(old, _fee);
     }
 
-    function setRelayFee(uint256 _bps) external {
-        require(msg.sender == owner, "Relayer: not owner");
-        relayFeeBps = _bps;
+    /// @notice Pause relayer
+    function pause() external onlyOwner {
+        paused = true;
+        emit Paused(msg.sender);
     }
 
+    /// @notice Unpause relayer
+    function unpause() external onlyOwner {
+        paused = false;
+        emit Unpaused(msg.sender);
+    }
+
+    /// @notice Transfer ownership
+    function transferOwnership(address newOwner) external onlyOwner {
+        require(newOwner != address(0), "HiveRelayer: zero address");
+        owner = newOwner;
+    }
+
+    /// @notice Withdraw collected fees
+    function withdrawFees(address to) external onlyOwner {
+        require(to != address(0), "HiveRelayer: zero address");
+        uint256 balance = address(this).balance;
+        require(balance > 0, "HiveRelayer: no fees");
+        (bool success, ) = to.call{value: balance}("");
+        require(success, "HiveRelayer: transfer failed");
+    }
+
+    /// @notice Fallback to receive ETH
     receive() external payable {}
 }
