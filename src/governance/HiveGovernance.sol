@@ -16,6 +16,11 @@ contract HiveGovernance {
     // ═══════════════════════════════════════════════════════════════
 
     address public owner;
+
+    // Timelock for critical admin functions
+    uint256 public constant ADMIN_DELAY = 24 hours;
+    mapping(bytes32 => uint256) public pendingActions;
+    address public pendingOwner;
     IStaking public staking;
     IMultiSig public multiSig;
 
@@ -428,7 +433,27 @@ contract HiveGovernance {
 
     /// @notice Transfer ownership
     function transferOwnership(address newOwner) external onlyOwner {
-        require(newOwner != address(0), "HiveGovernance: zero address");
-        owner = newOwner;
+        require(newOwner != address(0), "zero address");
+        pendingOwner = newOwner;
+    }
+
+    function acceptOwnership() external {
+        require(msg.sender == pendingOwner, "not pending owner");
+        owner = pendingOwner;
+        pendingOwner = address(0);
+    }
+
+    function scheduleAdminAction(address target, bytes calldata data) external onlyOwner {
+        bytes32 actionHash = keccak256(abi.encode(target, data));
+        pendingActions[actionHash] = block.timestamp + ADMIN_DELAY;
+    }
+
+    function executeAdminAction(address target, bytes calldata data) external onlyOwner {
+        bytes32 actionHash = keccak256(abi.encode(target, data));
+        require(pendingActions[actionHash] != 0, "not scheduled");
+        require(block.timestamp >= pendingActions[actionHash], "timelock not expired");
+        delete pendingActions[actionHash];
+        (bool success, ) = target.call(data);
+        require(success, "action failed");
     }
 }

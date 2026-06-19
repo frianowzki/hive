@@ -405,6 +405,9 @@ contract HiveTokenTest is Test {
         vm.prank(project);
         token.transferOwnership(user1);
 
+        vm.prank(user1);
+        token.acceptOwnership();
+
         assertEq(token.owner(), user1);
     }
 }

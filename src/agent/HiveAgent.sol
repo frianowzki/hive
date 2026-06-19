@@ -182,4 +182,13 @@ contract HiveAgent is RitualPrecompileConsumer {
         paused = _paused;
         emit AgentPaused(_paused);
     }
+
+    // ═══ Ownership ═══
+
+    /// @notice Transfer ownership to a new address
+    function transferOwnership(address newOwner) external onlyOwner {
+        require(newOwner != address(0), "zero address");
+        owner = newOwner;
+    }
+
 }

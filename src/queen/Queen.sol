@@ -330,4 +330,13 @@ contract Queen is RitualPrecompileConsumer {
     }
 
     receive() external payable {}
+
+    // ═══ Ownership ═══
+
+    /// @notice Transfer ownership to a new address
+    function transferOwnership(address newOwner) external onlyOwner {
+        require(newOwner != address(0), "zero address");
+        owner = newOwner;
+    }
+
 }

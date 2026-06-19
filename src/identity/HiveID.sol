@@ -383,4 +383,13 @@ contract HiveID {
     function isRegistered(address primaryWallet) external view returns (bool) {
         return primaryToIdentity[primaryWallet] != bytes32(0);
     }
+
+    // ═══ Ownership ═══
+
+    /// @notice Transfer ownership to a new address
+    function transferOwnership(address newOwner) external onlyOwner {
+        require(newOwner != address(0), "zero address");
+        owner = newOwner;
+    }
+
 }

@@ -228,4 +228,14 @@ contract HiveOracle is RitualPrecompileConsumer {
     }
 
     receive() external payable {}
+
+    // ═══ Ownership ═══
+
+    /// @notice Transfer ownership to a new address
+    function transferOwnership(address newOwner) external {
+        require(msg.sender == owner, "not owner");
+        require(newOwner != address(0), "zero address");
+        owner = newOwner;
+    }
+
 }

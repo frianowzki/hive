@@ -55,6 +55,10 @@ contract HiveToken {
     // ═══ Roles ═══
 
     address public owner;
+
+    uint256 public constant ADMIN_DELAY = 24 hours;
+    mapping(bytes32 => uint256) public pendingActions;
+    address public pendingOwner;
     address public minter;      // HiveLaunchPad contract
 
     // ═══ Events ═══
@@ -268,7 +272,28 @@ contract HiveToken {
     }
 
     function transferOwnership(address newOwner) external onlyOwner {
-        owner = newOwner;
+        require(newOwner != address(0), "zero address");
+        pendingOwner = newOwner;
+    }
+
+    function acceptOwnership() external {
+        require(msg.sender == pendingOwner, "not pending owner");
+        owner = pendingOwner;
+        pendingOwner = address(0);
+    }
+
+    function scheduleAdminAction(address target, bytes calldata data) external onlyOwner {
+        bytes32 actionHash = keccak256(abi.encode(target, data));
+        pendingActions[actionHash] = block.timestamp + ADMIN_DELAY;
+    }
+
+    function executeAdminAction(address target, bytes calldata data) external onlyOwner {
+        bytes32 actionHash = keccak256(abi.encode(target, data));
+        require(pendingActions[actionHash] != 0, "not scheduled");
+        require(block.timestamp >= pendingActions[actionHash], "timelock not expired");
+        delete pendingActions[actionHash];
+        (bool success, ) = target.call(data);
+        require(success, "action failed");
     }
 
     // ═══ View ═══
