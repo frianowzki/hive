@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import "forge-std/Test.sol";
 import "../src/agent/HiveAgent.sol";
-import "../src/auction/CCAEngine.sol";
+import "../src/auction/HiveClearing.sol";
 import "../src/reputation/HiveReputation.sol";
 import "../src/multisig/HiveMultiSig.sol";
 import "../src/portfolio/HivePortfolio.sol";
@@ -39,29 +39,29 @@ contract HiveAgentTest is Test {
     }
 }
 
-// ═══ CCAEngine Test ═══
+// ═══ HiveClearing Test ═══
 
-contract CCAEngineTest is Test {
-    CCAEngine cca;
+contract HiveClearingTest is Test {
+    HiveClearing cca;
     address creator = address(0x1);
     address buyer1 = address(0x2);
     address tokenAddr = address(0x3);
 
     function setUp() public {
-        cca = new CCAEngine();
+        cca = new HiveClearing();
     }
 
     function test_createAuction() public {
         vm.prank(creator);
         uint256 id = cca.createAuction(tokenAddr, 1000e18, 0.001 ether, 0.1 ether, 1 days, 10);
 
-        CCAEngine.Auction memory a = cca.getAuction(id);
+        HiveClearing.Auction memory a = cca.getAuction(id);
         assertEq(a.creator, creator);
         assertEq(a.token, tokenAddr);
         assertEq(a.totalSupply, 1000e18);
         assertEq(a.minPrice, 0.001 ether);
         assertEq(a.maxPrice, 0.1 ether);
-        assertEq(uint8(a.state), uint8(CCAEngine.AuctionState.Active));
+        assertEq(uint8(a.state), uint8(HiveClearing.AuctionState.Active));
     }
 
     function test_placeBid() public {
@@ -85,7 +85,7 @@ contract CCAEngineTest is Test {
 
         vm.deal(buyer1, 1 ether);
         vm.prank(buyer1);
-        vm.expectRevert(CCAEngine.AuctionNotActive.selector);
+        vm.expectRevert(HiveClearing.AuctionNotActive.selector);
         cca.placeBid{value: 0.5 ether}(id, 0.05 ether);
     }
 
@@ -96,8 +96,8 @@ contract CCAEngineTest is Test {
         vm.prank(creator);
         cca.cancelAuction(id);
 
-        CCAEngine.Auction memory a = cca.getAuction(id);
-        assertEq(uint8(a.state), uint8(CCAEngine.AuctionState.Cancelled));
+        HiveClearing.Auction memory a = cca.getAuction(id);
+        assertEq(uint8(a.state), uint8(HiveClearing.AuctionState.Cancelled));
     }
 
     function test_revert_cancel_with_bids() public {
@@ -109,7 +109,7 @@ contract CCAEngineTest is Test {
         cca.placeBid{value: 0.5 ether}(id, 0.05 ether);
 
         vm.prank(creator);
-        vm.expectRevert("CCA: has bids");
+        vm.expectRevert("HiveClearing: has bids");
         cca.cancelAuction(id);
     }
 }

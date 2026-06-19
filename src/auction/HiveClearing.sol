@@ -3,11 +3,11 @@ pragma solidity ^0.8.20;
 
 import "../libraries/RitualPrecompileConsumer.sol";
 
-/// @title CCAEngine — Continuous Clearing Auction with AI-Driven Pricing
+/// @title HiveClearing — Continuous Clearing Auction with AI-Driven Pricing
 /// @notice Token sale mechanism where price is continuously determined by demand
 /// @dev Combines CCA mechanics with Ritual LLM for optimal price discovery
 
-contract CCAEngine is RitualPrecompileConsumer {
+contract HiveClearing is RitualPrecompileConsumer {
     // ═══ Types ═══
 
     enum AuctionState {
@@ -79,7 +79,7 @@ contract CCAEngine is RitualPrecompileConsumer {
     // ═══ Modifiers ═══
 
     modifier onlyAuctionCreator(uint256 auctionId) {
-        require(msg.sender == auctions[auctionId].creator, "CCA: not creator");
+        require(msg.sender == auctions[auctionId].creator, "HiveClearing: not creator");
         _;
     }
 
@@ -100,8 +100,8 @@ contract CCAEngine is RitualPrecompileConsumer {
         uint256 duration,
         uint256 clearingInterval
     ) external returns (uint256 auctionId) {
-        require(minPrice < maxPrice, "CCA: invalid price range");
-        require(duration > 0, "CCA: invalid duration");
+        require(minPrice < maxPrice, "HiveClearing: invalid price range");
+        require(duration > 0, "HiveClearing: invalid duration");
 
         auctionId = auctionCount++;
 
@@ -233,8 +233,8 @@ contract CCAEngine is RitualPrecompileConsumer {
     /// @notice Settle auction after end time
     function settle(uint256 auctionId) external {
         Auction storage auction = auctions[auctionId];
-        require(block.timestamp >= auction.endTime, "CCA: not ended");
-        require(auction.state == AuctionState.Active, "CCA: not active");
+        require(block.timestamp >= auction.endTime, "HiveClearing: not ended");
+        require(auction.state == AuctionState.Active, "HiveClearing: not active");
 
         auction.state = AuctionState.Settled;
         uint256 clearingPrice = auction.currentPrice;
@@ -262,7 +262,7 @@ contract CCAEngine is RitualPrecompileConsumer {
                         (bool success, ) = auction.token.call(
                             abi.encodeWithSignature("transfer(address,uint256)", bidder, tokensToReceive)
                         );
-                        require(success, "CCA: token transfer failed");
+                        require(success, "HiveClearing: token transfer failed");
                     }
                 }
             }
@@ -276,7 +276,7 @@ contract CCAEngine is RitualPrecompileConsumer {
     /// @notice Refund unfilled or partially filled bids
     function claimRefund(uint256 auctionId) external {
         Auction storage auction = auctions[auctionId];
-        require(auction.state == AuctionState.Settled, "CCA: not settled");
+        require(auction.state == AuctionState.Settled, "HiveClearing: not settled");
 
         Bid[] storage userBids = bids[auctionId][msg.sender];
         uint256 refundAmount = 0;
@@ -292,7 +292,7 @@ contract CCAEngine is RitualPrecompileConsumer {
         if (refundAmount == 0) revert NothingToRefund();
 
         (bool sent, ) = msg.sender.call{value: refundAmount}("");
-        require(sent, "CCA: refund failed");
+        require(sent, "HiveClearing: refund failed");
 
         emit BidRefunded(auctionId, msg.sender, refundAmount);
     }
@@ -302,8 +302,8 @@ contract CCAEngine is RitualPrecompileConsumer {
     /// @notice Cancel auction (only creator, only before any bids)
     function cancelAuction(uint256 auctionId) external onlyAuctionCreator(auctionId) {
         Auction storage auction = auctions[auctionId];
-        require(auction.state == AuctionState.Active, "CCA: not active");
-        require(totalBidAmount[auctionId] == 0, "CCA: has bids");
+        require(auction.state == AuctionState.Active, "HiveClearing: not active");
+        require(totalBidAmount[auctionId] == 0, "HiveClearing: has bids");
 
         auction.state = AuctionState.Cancelled;
         emit AuctionCancelled(auctionId);
