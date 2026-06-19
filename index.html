@@ -25,8 +25,7 @@
 
         /* NAV */
         .navbar{position:fixed;top:0;left:0;right:0;z-index:1000;padding:0 3rem;height:56px;display:flex;justify-content:space-between;align-items:center;background:transparent}
-        .logo{font-family:var(--font-display);font-size:1.1rem;font-weight:700;display:flex;align-items:center;gap:.5rem;letter-spacing:-.02em}
-        .logo svg{width:22px;height:22px}
+        .logo{font-family:var(--font-display);font-size:1.35rem;font-weight:700;display:flex;align-items:center;letter-spacing:-.02em}
         .nav-links{display:flex;gap:1.5rem;list-style:none;align-items:center}
         .nav-links a{font-size:.7rem;font-weight:500;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);transition:color .3s;cursor:pointer;padding:.4rem 0;position:relative}
         .nav-links a::after{content:'';position:absolute;bottom:0;left:0;width:0;height:1.5px;background:var(--accent);transition:width .3s}
@@ -40,11 +39,11 @@
         .page-inner{width:100%;max-width:1100px;margin:0 auto;position:relative;z-index:2}
 
         /* PAGE DOTS */
-        .page-dots{position:fixed;right:1.5rem;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:.6rem;opacity:0;transition:opacity .5s}
+        .page-dots{position:fixed;right:1.5rem;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:.5rem;opacity:0;transition:opacity .5s}
         .page-dots.visible{opacity:1}
-        .dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.15);cursor:pointer;transition:all .3s}
-        .dot:hover{background:rgba(255,255,255,0.4)}
-        .dot.active{background:var(--accent);box-shadow:0 0 8px rgba(139,92,246,0.4)}
+        .dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.12);cursor:pointer;transition:all .3s}
+        .dot:hover{background:rgba(255,255,255,0.35)}
+        .dot.active{background:var(--accent);box-shadow:0 0 6px rgba(139,92,246,0.4)}
 
         /* AUTO-SCROLL BAR */
         .scroll-bar{position:fixed;bottom:0;left:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent-light));z-index:100;transition:width linear;box-shadow:0 0 8px rgba(139,92,246,0.3)}
@@ -93,7 +92,7 @@
         .sec-lbl::before{content:'';width:16px;height:1.5px;background:var(--accent)}
         .sec-title{font-family:var(--font-display);font-size:2rem;font-weight:800;letter-spacing:-.03em}
 
-        /* ═══ PAGE 2: CAPS ═══ */
+        /* ═══ PAGE 2: FEATURES ═══ */
         .caps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
         .cap-card{background:rgba(255,255,255,.02);padding:1.4rem;border-radius:12px;border:1px solid var(--border);transition:all .3s;position:relative;overflow:hidden}
         .cap-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0;transition:opacity .3s}
@@ -182,13 +181,10 @@
 </head>
 <body>
     <nav class="navbar">
-        <div class="logo">
-            <svg viewBox="0 0 32 32" fill="none"><path d="M16 2L4 9v14l12 7 12-7V9L16 2z" fill="url(#hg)"/><path d="M16 8l-6 3.5v7L16 22l6-3.5v-7L16 8z" fill="#000" opacity=".3"/><path d="M16 11l-3 1.75v3.5L16 18l3-1.75v-3.5L16 11z" fill="url(#hg2)"/><defs><linearGradient id="hg" x1="4" y1="2" x2="28" y2="30"><stop stop-color="#8b5cf6"/><stop offset="1" stop-color="#a78bfa"/></linearGradient><linearGradient id="hg2" x1="13" y1="11" x2="19" y2="18"><stop stop-color="#a78bfa"/><stop offset="1" stop-color="#c084fc"/></linearGradient></defs></svg>
-            Hive
-        </div>
+        <div class="logo">Hive</div>
         <ul class="nav-links">
             <li><a data-page="0" class="active">Home</a></li>
-            <li><a data-page="1">Capabilities</a></li>
+            <li><a data-page="1">Features</a></li>
             <li><a data-page="2">Services</a></li>
             <li><a data-page="3">Projects</a></li>
             <li><a data-page="4">About</a></li>
@@ -214,30 +210,29 @@
             <div class="bg-glow" style="top:-150px;right:-100px;background:var(--accent);opacity:.12"></div>
             <div class="page-inner">
                 <div class="hero-content">
-                    <div class="hero-badge fi"><span class="hero-badge-dot"></span>Ritual Testnet • Chain ID 1979 • Live</div>
+                    <div class="hero-badge fi"><span class="hero-badge-dot"></span>Live on Ritual Testnet</div>
                     <h1 class="fi d1">The <span class="g">compliant AI launchpad</span> for forward-thinking DeFi.</h1>
                     <p class="hero-desc fi d2">Fully on-chain, zk-proofed AI launchpad built on Ritual Testnet. AI market makers, federated learning, EigenLayer AVS, and DAO governance — all with KYC/KYB compliance.</p>
                     <div class="hero-actions fi d3">
-                        <a href="#" class="btn btn-p" onclick="goToPage(5);return false">Launch App<svg class="btn-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
-                        <a href="#" class="btn btn-o" onclick="goToPage(1);return false">Explore Platform</a>
+                        <a href="#contact" class="btn btn-p" onclick="goToPage(5);return false">Open Hive<svg class="btn-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
                     </div>
                     <div class="hero-stats fi d4">
                         <div class="stat"><div class="stat-val">29</div><div class="stat-lbl">Contracts Deployed</div></div>
                         <div class="stat"><div class="stat-val">300</div><div class="stat-lbl">Tests Passing</div></div>
-                        <div class="stat"><div class="stat-val"><span class="g">Live</span></div><div class="stat-lbl">On Testnet</div></div>
+                        <div class="stat"><div class="stat-val"><span class="g">Live</span></div><div class="stat-lbl">On Ritual Testnet</div></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- PAGE 2: CAPABILITIES -->
+        <!-- PAGE 2: FEATURES -->
         <div class="page" data-index="1">
             <div class="bg-grid"></div>
             <div class="bg-glow" style="bottom:-150px;left:-150px;background:var(--accent);opacity:.1"></div>
             <div class="page-inner">
                 <div class="sec-hdr fi">
                     <div class="sec-lbl">What we do</div>
-                    <h2 class="sec-title">Capabilities</h2>
+                    <h2 class="sec-title">Features</h2>
                 </div>
                 <div class="caps-grid">
                     <div class="cap-card fi d1">
@@ -279,7 +274,6 @@
             <div class="bg-grid"></div>
             <div class="page-inner">
                 <div class="sec-hdr fi">
-                    <div class="sec-lbl">Our stack</div>
                     <h2 class="sec-title">What we build</h2>
                 </div>
                 <div class="svc-grid">
@@ -364,7 +358,6 @@
             <div class="bg-grid"></div>
             <div class="bg-glow" style="top:50%;left:50%;transform:translate(-50%,-50%);background:var(--accent);opacity:.12"></div>
             <div class="page-inner">
-                <h2 class="contact-title fi">Don't be shy, say hello.</h2>
                 <p class="contact-sub fi d1">Interested in building on Hive? Want to integrate with our AI launchpad? Or just want to chat about Ritual Testnet? Reach out.</p>
                 <div class="contact-actions fi d2">
                     <a href="https://github.com/frianowzki/hive" target="_blank" class="btn btn-p">View on GitHub<svg class="btn-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg></a>
@@ -392,8 +385,8 @@
         <p>© 2026 Hive. Built on <a href="https://ritual.net" target="_blank">Ritual Testnet</a>.</p>
         <div class="mini-footer-links">
             <a href="https://github.com/frianowzki/hive" target="_blank">GitHub</a>
-            <a href="https://github.com/frianowzki/hive/blob/master/FINAL_AUDIT_REPORT.md" target="_blank">Audit</a>
-            <a href="https://github.com/frianowzki/hive/blob/master/README.md" target="_blank">Docs</a>
+            <a href="https://x.com/widyakrnwn" target="_blank">X</a>
+            <a href="https://discord.gg/ritual-net" target="_blank">Discord</a>
         </div>
     </div>
 
