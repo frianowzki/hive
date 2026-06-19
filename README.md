@@ -142,7 +142,7 @@ User (MetaMask) ──→ HiveID ──→ Register (free) ──→ Get Hive Wa
 | **HiveReferral** | `0x6fc9...41ED` | 4-tier referral engine with fee sharing |
 | **HiveOracle** | `0x5D72...1aEbE` | Price feed via Ritual HTTP precompile + Allora Network. AI-inferred price predictions with confidence intervals, batch fetching, price history |
 | **HiveToken** | `0xDA81...5ec3` | ERC20 token with vesting schedules and transfer restrictions |
-| **HiveStaking** | `0x93dd...b408` | 4-tier staking (Bronze → Diamond). Lock multiplier, auto-compound, voting power |
+| **HiveStaking** | `0x93dd...b408` | 4-tier staking with Treasury integration. setTreasury() for fee notifications. Lock multiplier, auto-compound, voting power |
 | **HiveTreasury** | `0x90fb...8C18` | Fee collector & distributor. Multi-sig controlled. Auto-distributes: 60% stakers, 25% referrers, 15% reserve |
 
 ### 🤖 AI & Agent Layer
@@ -150,12 +150,12 @@ User (MetaMask) ──→ HiveID ──→ Register (free) ──→ Get Hive Wa
 | Contract | Address | Description |
 |----------|---------|-------------|
 | **HiveAgent** | `0x8424...4327` | AI Agent Gateway via Ritual LLM precompile. On-chain chatbot for market analysis, token insights, strategy advice |
-| **HiveBrain** | `0x0ad0...42B4` | Sovereign agent brain with async LLM inference and PII mode. think() → plan() → act() pipeline, confidence threshold, 11 action types, on-chain memory, PII-safe private inference |
-| **Queen** | `0xDC96...Ae8E` | Brain orchestrator. Interface-based wiring for Strategy, Drone, Registry, LaunchPad, MarketMaker |
-| **HiveAutoStrategy** | `0x1b3A...BEF9` | Automated trading strategies: DCA, Take Profit, Stop Loss, Trailing Stop |
+| **HiveBrain** | `0x0ad0...42B4` | Sovereign agent brain with async LLM, PII mode, Oracle price feeds, and FLock model integration. 14 action types (incl. RunFlockInference, DeployFlockModel, GetOraclePrice). Cross-contract calls to HiveOracle and HiveFLock |
+| **Queen** | `0xDC96...Ae8E` | Central orchestrator with AI integration. runCycle() calls Brain.think(). getOraclePrice(). setDivision() wires 9 modules (honeypot, strategy, registry, launchPad, marketMaker, council, brain, oracle, flock) |
+| **HiveAutoStrategy** | `0x1b3A...BEF9` | Automated trading with Oracle integration. DCA, TP, SL, Trailing Stop. fetchPrice() calls HiveOracle.getBestPrice() |
 | **HiveMarketMaker** | `0x9CC5...289b` | AI-driven market making via Ritual LLM |
-| **HiveFLock** | — | Federated learning integration. Training tasks, model submissions, validator voting, winner selection, ONNX deployment via Ritual precompile, FLock API inference |
-| **HiveEigenLayer** | — | EigenLayer AVS integration. Operator registration, delegation, slashing (5 reasons), service tasks, fee distribution, heartbeat monitoring |
+| **HiveFLock** | — | Federated learning with Brain integration. setBrain() wiring. deployModel() notifies Brain. Training tasks, model validation, ONNX deployment, FLock API inference |
+| **HiveEigenLayer** | — | EigenLayer AVS with cross-contract wiring. 4 operator roles. setHiveStaking/Brain/FLock/Treasury. Fee distribution notifies HiveTreasury |
 
 ### 🏛️ Governance
 
@@ -168,7 +168,7 @@ User (MetaMask) ──→ HiveID ──→ Register (free) ──→ Get Hive Wa
 
 | Contract | Address | Description |
 |----------|---------|-------------|
-| **HiveFactory** | `0x0241...63c6` | Master wiring contract. Single entry point connecting all modules. initialize() wires HiveID, Clearing, Reputation, Referral, Portfolio, Verifier, Treasury |
+| **HiveFactory** | `0x0241...63c6` | Master wiring contract. 25 module references. wireAll() connects AI layer (Brain↔Oracle↔FLock), security layer (EigenLayer↔Staking↔Treasury), Queen orchestration, and AutoStrategy pricing |
 | **HiveChat** | `0x615F...85B6` | Encrypted P2P messaging via Ritual ECIES precompile |
 | **HiveLaunchPad** | `0x1187...d572` | Token launch platform with HCA mechanics |
 | **HiveCouncil** | `0xD79F...3D94` | Council governance (multi-representative) |
@@ -192,7 +192,7 @@ User (MetaMask) ──→ HiveID ──→ Register (free) ──→ Get Hive Wa
 
 ```
 hive/
-├── src/                          # Smart contracts (32 files, ~8,100 LOC)
+├── src/                          # Smart contracts (35 files, ~10,600 LOC)
 │   ├── agent/
 │   │   ├── HiveAgent.sol         # AI Agent Gateway (LLM precompile)
 │   │   └── HiveBrain.sol         # Sovereign agent brain
@@ -302,6 +302,33 @@ hive/
 | **Currency** | RITUAL |
 | **Deployer** | `0x4b171E1217b71E37777B7F56d89cCB441C1De301` |
 
+
+### Interconnections
+
+All modules connected via `HiveFactory.wireAll()`:
+
+```
+                    ┌─────────────┐
+                    │ HiveFactory │
+                    │ (25 modules)│
+                    └──────┬──────┘
+                           │
+        ┌──────────────────┼──────────────────┐
+        │                  │                  │
+   wireAILayer()     wireSecurityLayer()   wireQueen()
+        │                  │                  │
+  ┌─────┴─────┐     ┌─────┴──────┐    ┌─────┴──────┐
+  │Brain↔Oracle│    │EigenLayer↔ │    │Queen↔Brain │
+  │Brain↔FLock │    │Staking↔    │    │Queen↔Oracle│
+  │FLock→Brain │    │Treasury    │    │Queen↔FLock │
+  └───────────┘     └────────────┘    └────────────┘
+```
+
+**AI Chain:** HiveBrain ↔ HiveOracle (prices) ↔ HiveFLock (models)
+**Security Chain:** HiveEigenLayer ↔ HiveStaking ↔ HiveTreasury
+**Orchestration:** Queen → Brain (think) → Strategy (execute) → Registry (heartbeat)
+**User Flow:** HiveAutoStrategy → HiveOracle (fetchPrice) → HiveMarketMaker (swap)
+
 ---
 
 ## Quickstart
@@ -381,5 +408,5 @@ MIT
 ---
 
 <p align="center">
-  Built on <a href="https://ritual.net">Ritual Chain</a> • Powered by Ritual LLM, HTTP, DKMS, ECIES, and Passkey precompiles • Price feeds by <a href="https://allora.network">Allora Network</a> • Training by <a href="https://flock.io">FLock.io</a> • Secured by <a href="https://eigenlayer.xyz">EigenLayer</a>
+  Built on <a href="https://ritual.net">Ritual Chain</a> • 35 contracts • 300 tests • Powered by Ritual LLM, HTTP, DKMS, ECIES, and Passkey precompiles • Price feeds by <a href="https://allora.network">Allora Network</a> • Training by <a href="https://flock.io">FLock.io</a> • Secured by <a href="https://eigenlayer.xyz">EigenLayer</a>
 </p>

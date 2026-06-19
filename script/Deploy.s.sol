@@ -83,7 +83,7 @@ contract DeployHive is Script {
         console.log("HiveAgent deployed at:", address(agent));
 
         // HiveBrain requires queen address
-        HiveBrain brain = new HiveBrain(address(0));
+        HiveBrain brain = new HiveBrain(address(0), address(0), address(0));
         console.log("HiveBrain deployed at:", address(brain));
 
         HiveChat chat = new HiveChat();

@@ -23,7 +23,10 @@ contract HiveBrain is RitualPrecompileConsumer {
         CreateProposal,
         Alert,
         FetchAlloraPrice,   // New: fetch price from Allora
-        PrivateInference    // New: PII-mode inference
+        PrivateInference,   // New: PII-mode inference
+        RunFlockInference,  // New: run FLock model inference
+        DeployFlockModel,   // New: deploy winning FLock model
+        GetOraclePrice      // New: fetch price from HiveOracle
     }
 
     struct Thought {
@@ -89,6 +92,12 @@ contract HiveBrain is RitualPrecompileConsumer {
 
     // Oracle reference (for Allora price data)
     address public oracle;
+    address public flock;           // HiveFLock contract
+    uint256 public flockTaskId;     // Active FLock task for Brain
+
+    // Oracle price cache (token => last known price)
+    mapping(address => uint256) public lastOraclePrices;
+    mapping(address => uint256) public lastOracleTimestamps;
 
     // ═══ Events ═══
 
@@ -103,12 +112,18 @@ contract HiveBrain is RitualPrecompileConsumer {
     event ModeChanged(bool autonomous);
     event PiiModeChanged(bool piiMode);
     event OracleSet(address indexed oracle);
+    event FlockSet(address indexed flock);
+    event OraclePriceFetched(address indexed token, uint256 price, uint256 timestamp);
+    event FlockInferenceRun(uint256 indexed taskId, address indexed model, bytes32 resultHash);
+    event FlockModelDeployed(uint256 indexed taskId, address indexed model);
 
     // ═══ Constructor ═══
 
-    constructor(address _queen) {
+    constructor(address _queen, address _oracle, address _flock) {
         owner = msg.sender;
         queen = _queen;
+        oracle = _oracle;
+        flock = _flock;
     }
 
     // ═══ Think — Synchronous LLM (fast, simple analysis) ═══
@@ -426,6 +441,9 @@ contract HiveBrain is RitualPrecompileConsumer {
         else if (_contains(response, "spawn")) actionType = ActionType.SpawnDrone;
         else if (_contains(response, "adjust_fees")) actionType = ActionType.AdjustFees;
         else if (_contains(response, "allora")) actionType = ActionType.FetchAlloraPrice;
+        else if (_contains(response, "flock")) actionType = ActionType.RunFlockInference;
+        else if (_contains(response, "oracle")) actionType = ActionType.GetOraclePrice;
+        else if (_contains(response, "deploy_model")) actionType = ActionType.DeployFlockModel;
 
         return ActionPlan({
             actionType: actionType,
@@ -472,6 +490,69 @@ contract HiveBrain is RitualPrecompileConsumer {
         require(msg.sender == owner, "Brain: not owner");
         oracle = _oracle;
         emit OracleSet(_oracle);
+    }
+
+    function setFlock(address _flock) external {
+        require(msg.sender == owner, "Brain: not owner");
+        flock = _flock;
+        emit FlockSet(_flock);
+    }
+
+    function setFlockTaskId(uint256 _taskId) external {
+        require(msg.sender == owner, "Brain: not owner");
+        flockTaskId = _taskId;
+    }
+
+    /// @notice Fetch price from HiveOracle and cache it
+    function getOraclePrice(address token) external returns (uint256 price) {
+        require(msg.sender == owner || msg.sender == queen, "Brain: not authorized");
+        require(oracle != address(0), "Brain: no oracle");
+
+        // Call HiveOracle.getBestPrice(token)
+        (bool success, bytes memory data) = oracle.staticcall(
+            abi.encodeWithSignature("getBestPrice(address)", token)
+        );
+
+        if (success && data.length >= 32) {
+            price = abi.decode(data, (uint256));
+            lastOraclePrices[token] = price;
+            lastOracleTimestamps[token] = block.timestamp;
+            emit OraclePriceFetched(token, price, block.timestamp);
+        } else {
+            price = lastOraclePrices[token]; // fallback to cached
+        }
+    }
+
+    /// @notice Run inference on a deployed FLock model
+    function runFlockInference(uint256 taskId, bytes calldata input) external returns (bytes32 resultHash) {
+        require(msg.sender == owner || msg.sender == queen, "Brain: not authorized");
+        require(flock != address(0), "Brain: no flock");
+
+        // Call HiveFLock.runInference(taskId, input)
+        (bool success, bytes memory data) = flock.call(
+            abi.encodeWithSignature("runInference(uint256,bytes)", taskId, input)
+        );
+
+        if (success && data.length >= 32) {
+            resultHash = abi.decode(data, (bytes32));
+            emit FlockInferenceRun(taskId, address(flock), resultHash);
+        }
+    }
+
+    /// @notice Deploy a winning FLock model for on-chain inference
+    function deployFlockModel(uint256 taskId) external returns (bool) {
+        require(msg.sender == owner || msg.sender == queen, "Brain: not authorized");
+        require(flock != address(0), "Brain: no flock");
+
+        (bool success, ) = flock.call(
+            abi.encodeWithSignature("deployModel(uint256)", taskId)
+        );
+
+        if (success) {
+            flockTaskId = taskId;
+            emit FlockModelDeployed(taskId, flock);
+        }
+        return success;
     }
 
     // ═══ View ═══

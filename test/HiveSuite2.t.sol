@@ -464,7 +464,7 @@ contract HiveFactoryTest is Test {
     function test_initialize() public {
         assertTrue(factory.initialized());
 
-        (address[7] memory modules, bool init) = factory.getSystemInfo();
+        (address[25] memory modules, bool init) = factory.getSystemInfo();
         assertTrue(init);
         assertEq(modules[0], address(hiveID));
         assertEq(modules[1], address(verifier));
@@ -498,7 +498,7 @@ contract HiveFactoryTest is Test {
         address newVerifier = address(0x9E99);
         factory.updateModule("verifier", newVerifier);
 
-        (address[7] memory modules, ) = factory.getSystemInfo();
+        (address[25] memory modules, ) = factory.getSystemInfo();
         assertEq(modules[1], newVerifier);
     }
 

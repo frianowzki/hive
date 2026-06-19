@@ -146,11 +146,20 @@ contract HiveFLock is RitualPrecompileConsumer {
         _;
     }
 
+    event BrainSet(address indexed brain);
+
     // ═══ Constructor ═══
 
     constructor(address _brain) {
         owner = msg.sender;
         brain = _brain;
+    }
+
+    // ═══ Configuration ═══
+
+    function setBrain(address _brain) external onlyOwner {
+        brain = _brain;
+        emit BrainSet(_brain);
     }
 
     // ═══ FLock Configuration ═══
@@ -385,6 +394,18 @@ contract HiveFLock is RitualPrecompileConsumer {
         deployedModels[taskId] = modelHash;
         deployedAt[taskId] = block.timestamp;
 
+        // Notify Brain about deployed model
+        if (brain != address(0)) {
+            (bool success, ) = brain.call(
+                abi.encodeWithSignature(
+                    "storeMemory(string,string)",
+                    string(abi.encodePacked("flock_model_", _uint2str(taskId))),
+                    string(abi.encodePacked("deployed:", _bytes32ToHex(modelHash)))
+                )
+            );
+            success; // silence unused warning
+        }
+
         emit ModelDeployed(taskId, modelHash, block.timestamp);
     }
 
@@ -515,6 +536,32 @@ contract HiveFLock is RitualPrecompileConsumer {
     function transferOwnership(address newOwner) external onlyOwner {
         require(newOwner != address(0), "zero address");
         owner = newOwner;
+    }
+
+    // ═══ Helpers ═══
+
+    function _uint2str(uint256 value) internal pure returns (string memory) {
+        if (value == 0) return "0";
+        uint256 temp = value;
+        uint256 digits;
+        while (temp != 0) { digits++; temp /= 10; }
+        bytes memory buffer = new bytes(digits);
+        while (value != 0) {
+            digits -= 1;
+            buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));
+            value /= 10;
+        }
+        return string(buffer);
+    }
+
+    function _bytes32ToHex(bytes32 b) internal pure returns (string memory) {
+        bytes memory hexChars = "0123456789abcdef";
+        bytes memory result = new bytes(64);
+        for (uint256 i = 0; i < 32; i++) {
+            result[i * 2] = hexChars[uint8(b[i]) >> 4];
+            result[i * 2 + 1] = hexChars[uint8(b[i]) & 0x0f];
+        }
+        return string(result);
     }
 
 }

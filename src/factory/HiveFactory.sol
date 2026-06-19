@@ -10,19 +10,51 @@ import "../portfolio/HivePortfolio.sol";
 import "../relayer/HiveRelayer.sol";
 
 /// @title HiveFactory — Master wiring contract
-/// @notice Connects all Hive modules into a unified system
-/// @dev Single entry point for cross-contract operations
+/// @notice Connects ALL Hive modules into a unified system
+/// @dev Single entry point for cross-contract operations and module wiring
 
 contract HiveFactory {
     // ═══ Module References ═══
 
+    // Layer 1: Identity & Verification
     HiveID public hiveID;
     HiveVerifier public verifier;
     HiveReputation public reputation;
+
+    // Layer 2: Core DeFi
+    address public launchPad;
+    address public marketMaker;
+    address public clearing;
+    address public staking;
+    address public treasury;
+
+    // Layer 3: AI & Intelligence
+    address public brain;
+    address public agent;
+    address public strategy;
+    address public autoStrategy;
+
+    // Layer 4: Federated Learning & EigenLayer
+    address public flock;
+    address public eigenLayer;
+
+    // Layer 5: Governance & Social
+    address public governance;
+    address public council;
+    address public multiSig;
+
+    // Layer 6: User Features
     HiveOracle public oracle;
     HiveReferral public referral;
     HivePortfolio public portfolio;
+    address public chat;
+    address public points;
+    address public notification;
     HiveRelayer public relayer;
+
+    // Layer 7: Orchestration
+    address public queen;
+    address public registry;
 
     address public owner;
     bool public initialized;
@@ -40,7 +72,6 @@ contract HiveFactory {
 
     // ═══ Initialization ═══
 
-    /// @notice Initialize all modules (called once)
     function initialize(
         address _hiveID,
         address _verifier,
@@ -61,22 +92,151 @@ contract HiveFactory {
         portfolio = HivePortfolio(_portfolio);
         relayer = HiveRelayer(payable(_relayer));
 
-        // Wire modules together
-        // Wire modules together
-        // NOTE: hiveID.addVerifier() and reputation.authorize() must be called
-        // by their respective owners separately
-
         initialized = true;
         emit SystemInitialized();
     }
 
+    /// @notice Wire all extended modules (AI, DeFi, Governance layers)
+    function wireExtended(
+        address _launchPad,
+        address _marketMaker,
+        address _clearing,
+        address _staking,
+        address _treasury,
+        address _brain,
+        address _agent,
+        address _strategy,
+        address _autoStrategy,
+        address _flock,
+        address _eigenLayer,
+        address _governance,
+        address _council,
+        address _multiSig,
+        address _chat,
+        address _points,
+        address _notification,
+        address _queen,
+        address _registry
+    ) external {
+        require(msg.sender == owner, "Factory: not owner");
+
+        launchPad = _launchPad;
+        marketMaker = _marketMaker;
+        clearing = _clearing;
+        staking = _staking;
+        treasury = _treasury;
+        brain = _brain;
+        agent = _agent;
+        strategy = _strategy;
+        autoStrategy = _autoStrategy;
+        flock = _flock;
+        eigenLayer = _eigenLayer;
+        governance = _governance;
+        council = _council;
+        multiSig = _multiSig;
+        chat = _chat;
+        points = _points;
+        notification = _notification;
+        queen = _queen;
+        registry = _registry;
+
+        emit ModuleUpdated("wireExtended", _brain);
+    }
+
+    // ═══ Cross-Module Wiring ═══
+
+    function wireAILayer() external {
+        require(msg.sender == owner, "Factory: not owner");
+        if (brain != address(0) && address(oracle) != address(0)) {
+            (bool _ok, ) = brain.call(abi.encodeWithSignature("setOracle(address)", address(oracle)));
+            _ok;
+        }
+        if (brain != address(0) && flock != address(0)) {
+            (bool _ok, ) = brain.call(abi.encodeWithSignature("setFlock(address)", flock));
+            _ok;
+        }
+        if (flock != address(0) && brain != address(0)) {
+            (bool _ok, ) = flock.call(abi.encodeWithSignature("setBrain(address)", brain));
+            _ok;
+        }
+    }
+
+    function wireSecurityLayer() external {
+        require(msg.sender == owner, "Factory: not owner");
+        if (eigenLayer != address(0) && staking != address(0)) {
+            (bool _ok, ) = eigenLayer.call(abi.encodeWithSignature("setHiveStaking(address)", staking));
+            _ok;
+        }
+        if (eigenLayer != address(0) && brain != address(0)) {
+            (bool _ok, ) = eigenLayer.call(abi.encodeWithSignature("setHiveBrain(address)", brain));
+            _ok;
+        }
+        if (eigenLayer != address(0) && flock != address(0)) {
+            (bool _ok, ) = eigenLayer.call(abi.encodeWithSignature("setHiveFLock(address)", flock));
+            _ok;
+        }
+        if (eigenLayer != address(0) && treasury != address(0)) {
+            (bool _ok, ) = eigenLayer.call(abi.encodeWithSignature("setHiveTreasury(address)", treasury));
+            _ok;
+        }
+        if (staking != address(0) && treasury != address(0)) {
+            (bool _ok, ) = staking.call(abi.encodeWithSignature("setTreasury(address)", treasury));
+            _ok;
+        }
+    }
+
+    function wireQueen() external {
+        require(msg.sender == owner, "Factory: not owner");
+        require(queen != address(0), "Factory: no queen");
+
+        if (brain != address(0)) {
+            (bool _ok, ) = queen.call(abi.encodeWithSignature("setDivision(string,address)", "brain", brain));
+            _ok;
+        }
+        if (address(oracle) != address(0)) {
+            (bool _ok, ) = queen.call(abi.encodeWithSignature("setDivision(string,address)", "oracle", address(oracle)));
+            _ok;
+        }
+        if (flock != address(0)) {
+            (bool _ok, ) = queen.call(abi.encodeWithSignature("setDivision(string,address)", "flock", flock));
+            _ok;
+        }
+        if (registry != address(0)) {
+            (bool _ok, ) = queen.call(abi.encodeWithSignature("setDivision(string,address)", "registry", registry));
+            _ok;
+        }
+        if (launchPad != address(0)) {
+            (bool _ok, ) = queen.call(abi.encodeWithSignature("setDivision(string,address)", "launchPad", launchPad));
+            _ok;
+        }
+        if (marketMaker != address(0)) {
+            (bool _ok, ) = queen.call(abi.encodeWithSignature("setDivision(string,address)", "marketMaker", marketMaker));
+            _ok;
+        }
+        if (council != address(0)) {
+            (bool _ok, ) = queen.call(abi.encodeWithSignature("setDivision(string,address)", "council", council));
+            _ok;
+        }
+    }
+
+    function wireAutoStrategy() external {
+        require(msg.sender == owner, "Factory: not owner");
+        if (autoStrategy != address(0) && address(oracle) != address(0)) {
+            (bool _ok, ) = autoStrategy.call(abi.encodeWithSignature("setOracle(address)", address(oracle)));
+            _ok;
+        }
+    }
+
+    function wireAll() external {
+        require(msg.sender == owner, "Factory: not owner");
+        this.wireAILayer();
+        this.wireSecurityLayer();
+        this.wireQueen();
+        this.wireAutoStrategy();
+    }
+
     // ═══ Cross-Module Operations ═══
 
-    /// @notice Complete onboarding after user has registered on HiveID
-    /// @dev User must call hiveID.register() first, then this for referral + reputation
-    /// @param usernameHash The registered username hash
-    /// @param username The username string
-    /// @param referralCode Optional referral code
     function completeOnboarding(
         bytes32 usernameHash,
         string calldata username,
@@ -84,30 +244,17 @@ contract HiveFactory {
     ) external {
         require(hiveID.isRegistered(msg.sender), "Factory: not registered on HiveID");
 
-        // Record referral if code provided
         if (referralCode != bytes32(0)) {
             referral.registerReferral(usernameHash, referralCode);
-
-            // Record referral activity for reputation
             bytes32 referrerHash = referral.getReferrer(usernameHash);
             if (referrerHash != bytes32(0)) {
-                reputation.recordActivity(
-                    referrerHash,
-                    HiveReputation.ActivityType.Referral,
-                    username
-                );
+                reputation.recordActivity(referrerHash, HiveReputation.ActivityType.Referral, username);
             }
         }
 
-        // Record early adopter bonus
-        reputation.recordActivity(
-            usernameHash,
-            HiveReputation.ActivityType.EarlyAdopter,
-            "registered"
-        );
+        reputation.recordActivity(usernameHash, HiveReputation.ActivityType.EarlyAdopter, "registered");
     }
 
-    /// @notice Verify user and update reputation
     function verifyAndUpdateReputation(
         bytes32 usernameHash,
         HiveVerifier.ProofType proofType,
@@ -115,67 +262,25 @@ contract HiveFactory {
         bytes calldata publicSignals,
         bytes32 nullifierHash
     ) external {
-        // Verify proof
         verifier.verifyProof(usernameHash, proofType, proof, publicSignals, nullifierHash);
-
-        // Update HiveID verification status
-        // (In production, this would be called by the verifier contract)
-        // For now, emit event
     }
 
-    /// @notice Record a sale participation and update all relevant modules
-    function recordSaleParticipation(
-        bytes32 usernameHash,
-        address token,
-        uint256 amount,
-        uint256 price
-    ) external {
-        // Record in reputation
-        reputation.recordActivity(
-            usernameHash,
-            HiveReputation.ActivityType.SaleParticipation,
-            string(abi.encodePacked("bought ", token))
-        );
-
-        // Record in portfolio
+    function recordSaleParticipation(bytes32 usernameHash, address token, uint256 amount, uint256 price) external {
+        reputation.recordActivity(usernameHash, HiveReputation.ActivityType.SaleParticipation, string(abi.encodePacked("bought ", token)));
         portfolio.recordAcquisition(usernameHash, token, amount, price);
-
-        // Distribute referral fee if applicable
-        // referral.distributeFeeShare(usernameHash, feeAmount);
     }
 
-    /// @notice Record a trade and update modules
-    function recordTrade(
-        bytes32 usernameHash,
-        address token,
-        uint256 amount,
-        uint256 price,
-        bool isBuy
-    ) external {
+    function recordTrade(bytes32 usernameHash, address token, uint256 amount, uint256 price, bool isBuy) external {
         if (isBuy) {
             portfolio.recordAcquisition(usernameHash, token, amount, price);
         } else {
             portfolio.recordDisposal(usernameHash, token, amount, price);
-
-            // Record successful trade for reputation
-            reputation.recordActivity(
-                usernameHash,
-                HiveReputation.ActivityType.SuccessfulTrade,
-                string(abi.encodePacked("sold ", token))
-            );
+            reputation.recordActivity(usernameHash, HiveReputation.ActivityType.SuccessfulTrade, string(abi.encodePacked("sold ", token)));
         }
     }
 
-    /// @notice Record governance vote
-    function recordGovernanceVote(
-        bytes32 usernameHash,
-        bytes32 proposalId
-    ) external {
-        reputation.recordActivity(
-            usernameHash,
-            HiveReputation.ActivityType.GovernanceVote,
-            string(abi.encodePacked("voted on ", proposalId))
-        );
+    function recordGovernanceVote(bytes32 usernameHash, bytes32 proposalId) external {
+        reputation.recordActivity(usernameHash, HiveReputation.ActivityType.GovernanceVote, string(abi.encodePacked("voted on ", proposalId)));
     }
 
     // ═══ Module Update ═══
@@ -183,31 +288,30 @@ contract HiveFactory {
     function updateModule(string calldata moduleName, address newAddr) external {
         require(msg.sender == owner, "Factory: not owner");
 
-        if (keccak256(bytes(moduleName)) == keccak256("hiveID")) {
-            hiveID = HiveID(newAddr);
-        } else if (keccak256(bytes(moduleName)) == keccak256("verifier")) {
-            verifier = HiveVerifier(newAddr);
-        } else if (keccak256(bytes(moduleName)) == keccak256("reputation")) {
-            reputation = HiveReputation(newAddr);
-        } else if (keccak256(bytes(moduleName)) == keccak256("oracle")) {
-            oracle = HiveOracle(payable(newAddr));
-        } else if (keccak256(bytes(moduleName)) == keccak256("referral")) {
-            referral = HiveReferral(payable(newAddr));
-        } else if (keccak256(bytes(moduleName)) == keccak256("portfolio")) {
-            portfolio = HivePortfolio(newAddr);
-        } else if (keccak256(bytes(moduleName)) == keccak256("relayer")) {
-            relayer = HiveRelayer(payable(newAddr));
-        }
+        if (keccak256(bytes(moduleName)) == keccak256("hiveID")) hiveID = HiveID(newAddr);
+        else if (keccak256(bytes(moduleName)) == keccak256("verifier")) verifier = HiveVerifier(newAddr);
+        else if (keccak256(bytes(moduleName)) == keccak256("reputation")) reputation = HiveReputation(newAddr);
+        else if (keccak256(bytes(moduleName)) == keccak256("oracle")) oracle = HiveOracle(payable(newAddr));
+        else if (keccak256(bytes(moduleName)) == keccak256("referral")) referral = HiveReferral(payable(newAddr));
+        else if (keccak256(bytes(moduleName)) == keccak256("portfolio")) portfolio = HivePortfolio(newAddr);
+        else if (keccak256(bytes(moduleName)) == keccak256("relayer")) relayer = HiveRelayer(payable(newAddr));
+        else if (keccak256(bytes(moduleName)) == keccak256("brain")) brain = newAddr;
+        else if (keccak256(bytes(moduleName)) == keccak256("flock")) flock = newAddr;
+        else if (keccak256(bytes(moduleName)) == keccak256("eigenLayer")) eigenLayer = newAddr;
+        else if (keccak256(bytes(moduleName)) == keccak256("staking")) staking = newAddr;
+        else if (keccak256(bytes(moduleName)) == keccak256("treasury")) treasury = newAddr;
+        else if (keccak256(bytes(moduleName)) == keccak256("queen")) queen = newAddr;
+        else if (keccak256(bytes(moduleName)) == keccak256("launchPad")) launchPad = newAddr;
+        else if (keccak256(bytes(moduleName)) == keccak256("marketMaker")) marketMaker = newAddr;
+        else if (keccak256(bytes(moduleName)) == keccak256("governance")) governance = newAddr;
+        else if (keccak256(bytes(moduleName)) == keccak256("council")) council = newAddr;
 
         emit ModuleUpdated(moduleName, newAddr);
     }
 
-    // ═══ View — System Info ═══
+    // ═══ View ═══
 
-    function getSystemInfo() external view returns (
-        address[7] memory modules,
-        bool _initialized
-    ) {
+    function getSystemInfo() external view returns (address[25] memory modules, bool _initialized) {
         modules[0] = address(hiveID);
         modules[1] = address(verifier);
         modules[2] = address(reputation);
@@ -215,6 +319,24 @@ contract HiveFactory {
         modules[4] = address(referral);
         modules[5] = address(portfolio);
         modules[6] = address(relayer);
+        modules[7] = launchPad;
+        modules[8] = marketMaker;
+        modules[9] = clearing;
+        modules[10] = staking;
+        modules[11] = treasury;
+        modules[12] = brain;
+        modules[13] = agent;
+        modules[14] = strategy;
+        modules[15] = autoStrategy;
+        modules[16] = flock;
+        modules[17] = eigenLayer;
+        modules[18] = governance;
+        modules[19] = council;
+        modules[20] = multiSig;
+        modules[21] = chat;
+        modules[22] = points;
+        modules[23] = queen;
+        modules[24] = registry;
         _initialized = initialized;
     }
 

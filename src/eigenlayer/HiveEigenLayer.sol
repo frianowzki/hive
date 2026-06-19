@@ -74,6 +74,9 @@ contract HiveEigenLayer {
 
     address public owner;
     address public hiveStaking;         // HiveStaking contract reference
+    address public hiveBrain;           // HiveBrain contract reference
+    address public hiveFLock;           // HiveFLock contract reference
+    address public hiveTreasury;        // HiveTreasury contract reference
 
     // EigenLayer contract references
     IDelegationManager public delegationManager;
@@ -126,6 +129,10 @@ contract HiveEigenLayer {
     event ServiceTaskCompleted(uint256 indexed taskId, address indexed operator);
     event FeesDistributed(address indexed operator, uint256 amount);
     event ConfigUpdated(string param, uint256 value);
+    event HiveStakingSet(address indexed staking);
+    event HiveBrainSet(address indexed brain);
+    event HiveFLockSet(address indexed flock);
+    event HiveTreasurySet(address indexed treasury);
 
     // ═══ Errors ═══
 
@@ -166,6 +173,28 @@ contract HiveEigenLayer {
         minStakeForOperator = 0.1 ether;
         heartbeatInterval = 1 hours;
         slashPercentage = 1000; // 10% default slash
+    }
+
+    // ═══ Hive Module Setters ═══
+
+    function setHiveStaking(address _staking) external onlyOwner {
+        hiveStaking = _staking;
+        emit HiveStakingSet(_staking);
+    }
+
+    function setHiveBrain(address _brain) external onlyOwner {
+        hiveBrain = _brain;
+        emit HiveBrainSet(_brain);
+    }
+
+    function setHiveFLock(address _flock) external onlyOwner {
+        hiveFLock = _flock;
+        emit HiveFLockSet(_flock);
+    }
+
+    function setHiveTreasury(address _treasury) external onlyOwner {
+        hiveTreasury = _treasury;
+        emit HiveTreasurySet(_treasury);
     }
 
     // ═══ EigenLayer Configuration ═══
@@ -396,6 +425,13 @@ contract HiveEigenLayer {
         operators[operator].totalFeesEarned += msg.value;
         (bool sent, ) = operator.call{value: msg.value}("");
         if (sent) {
+            // Notify treasury about fee distribution
+            if (hiveTreasury != address(0)) {
+                (bool _ok, ) = hiveTreasury.call(
+                    abi.encodeWithSignature("collectFees(string)", "eigenlayer")
+                );
+                _ok;
+            }
             emit FeesDistributed(operator, msg.value);
         }
     }
@@ -461,6 +497,7 @@ contract HiveEigenLayer {
         slashPercentage = _percentage;
         emit ConfigUpdated("slashPercentage", _percentage);
     }
+
 
     function setPaused(bool _paused) external onlyOwner {
         paused = _paused;

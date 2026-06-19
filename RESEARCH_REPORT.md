@@ -211,7 +211,7 @@ EigenLayer docs are behind Cloudflare protection. Need browser access for detail
 
 ## 6. Nillion nilDB → HiveID (Private KYC)
 
-### Status: IN PROGRESS (see nillion/prototype)
+### Status: SKIPPED — Using Ritual native privacy instead (DKMS 0x0803, ECIES, FHE 0x0807). No external dependency needed.
 
 ### SDK Installed
 ```bash
@@ -241,7 +241,7 @@ Need to subscribe via Developer Portal (developer.nillion.com) — requires Meta
 
 | # | Integration | Effort | Impact | Phase |
 |---|-----------|--------|--------|-------|
-| 1 | Nillion nilDB | 2-3d | HIGH | 1 |
+| 1 | ~~Nillion nilDB~~ | — | SKIPPED | — | Using Ritual native privacy |
 | 2 | Ritual LLM Precompile | 3-5d | HIGH | 2 |
 | 3 | Allora Price Feeds | 3-5d | HIGH | 2 |
 | 4 | FLock Training | 5-7d | HIGH | 3 |
@@ -252,7 +252,7 @@ Need to subscribe via Developer Portal (developer.nillion.com) — requires Meta
 
 ## Recommended Execution Order
 
-1. **Nillion** (subscribe + production) → Phase 1 differentiator
+1. ~~**Nillion**~~ SKIPPED — Ritual native privacy (DKMS, ECIES, FHE) is superior: no subscription, TEE hardware security, same-block latency
 2. **Ritual LLM** (on-chain inference) → HiveBrain intelligence
 3. **Allora** (price feeds) → HiveMarketMaker accuracy
 4. **FLock** (federated training) → Market maker evolution

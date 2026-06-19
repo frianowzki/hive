@@ -51,6 +51,7 @@ contract HiveAutoStrategy is RitualPrecompileConsumer {
     uint256 public strategyCount;
     mapping(address => uint256) public tokenPrices;
     address public owner;
+    address public oracle;          // HiveOracle for price feeds
     bool public paused;
 
     // ═══ Events ═══
@@ -60,6 +61,7 @@ contract HiveAutoStrategy is RitualPrecompileConsumer {
     event StrategyCancelled(uint256 indexed strategyId);
     event StrategyPaused(uint256 indexed strategyId);
     event StrategyResumed(uint256 indexed strategyId);
+    event OracleSet(address indexed oracle);
 
     // ═══ Errors ═══
 
@@ -70,6 +72,14 @@ contract HiveAutoStrategy is RitualPrecompileConsumer {
 
     constructor() {
         owner = msg.sender;
+    }
+
+    // ═══ Configuration ═══
+
+    function setOracle(address _oracle) external {
+        require(msg.sender == owner, "AutoStrategy: not owner");
+        oracle = _oracle;
+        emit OracleSet(_oracle);
     }
 
     // ═══ Create DCA ═══
@@ -244,6 +254,23 @@ contract HiveAutoStrategy is RitualPrecompileConsumer {
     function updatePrice(address token, uint256 price) external {
         require(msg.sender == owner, "not authorized");
         tokenPrices[token] = price;
+    }
+
+    /// @notice Fetch price from HiveOracle and cache it
+    function fetchPrice(address token) external returns (uint256 price) {
+        require(msg.sender == owner, "not authorized");
+        if (oracle != address(0)) {
+            (bool success, bytes memory data) = oracle.staticcall(
+                abi.encodeWithSignature("getBestPrice(address)", token)
+            );
+            if (success && data.length >= 32) {
+                price = abi.decode(data, (uint256));
+                tokenPrices[token] = price;
+            }
+        }
+        if (price == 0) {
+            price = tokenPrices[token];
+        }
     }
 
     // ═══ View ═══

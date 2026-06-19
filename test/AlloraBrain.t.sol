@@ -215,7 +215,7 @@ contract HiveBrainAsyncTest is Test {
     event OracleSet(address indexed oracle);
 
     function setUp() public {
-        brain = new HiveBrain(queen);
+        brain = new HiveBrain(queen, address(0), address(0));
     }
 
     // ═══ Constructor ═══

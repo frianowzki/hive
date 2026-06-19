@@ -105,6 +105,18 @@ contract HiveStaking {
         lastRewardUpdate = block.timestamp;
     }
 
+    // ═══ Configuration ═══
+
+    address public treasury;        // HiveTreasury for fee notifications
+
+    function setTreasury(address _treasury) external {
+        require(msg.sender == owner, "HiveStaking: not owner");
+        treasury = _treasury;
+    }
+
+    event TreasurySet(address indexed treasury);
+    event StakeNotificationSent(address indexed staker, uint256 amount);
+
     // ═══════════════════════════════════════════════════════════════
     //                      STAKE / UNSTAKE
     // ═══════════════════════════════════════════════════════════════

@@ -67,6 +67,11 @@ contract Queen is RitualPrecompileConsumer {
     IHiveMarketMaker public marketMaker;
     IHiveCouncil public council;
 
+    // AI Layer references
+    address public brain;           // HiveBrain
+    address public oracle;          // HiveOracle
+    address public flock;           // HiveFLock
+
     // Drones
     address[] public drones;
     uint256 public droneCount;
@@ -140,6 +145,9 @@ contract Queen is RitualPrecompileConsumer {
         else if (keccak256(bytes(divName)) == keccak256("launchPad")) launchPad = IHiveLaunchPad(addr);
         else if (keccak256(bytes(divName)) == keccak256("marketMaker")) marketMaker = IHiveMarketMaker(addr);
         else if (keccak256(bytes(divName)) == keccak256("council")) council = IHiveCouncil(addr);
+        else if (keccak256(bytes(divName)) == keccak256("brain")) brain = addr;
+        else if (keccak256(bytes(divName)) == keccak256("oracle")) oracle = addr;
+        else if (keccak256(bytes(divName)) == keccak256("flock")) flock = addr;
         else revert("Queen: unknown division");
         emit DivisionSet(divName, addr);
     }
@@ -155,6 +163,15 @@ contract Queen is RitualPrecompileConsumer {
         totalCycles++;
 
         string memory currentState = _buildState();
+
+        // Ask Brain to think (if wired)
+        if (brain != address(0)) {
+            (bool _ok, ) = brain.call(
+                abi.encodeWithSignature("think(string)", currentState)
+            );
+            _ok;
+        }
+
         uint256 cycleId = strategy.generateStrategy(currentState);
         strategy.executeCycle(cycleId);
 
@@ -163,6 +180,30 @@ contract Queen is RitualPrecompileConsumer {
         }
 
         emit CycleExecuted(cycleId, 0);
+    }
+
+    // ═══ AI Integration ═══
+
+    function getOraclePrice(address token) external returns (uint256 price) {
+        require(msg.sender == owner, "Queen: not owner");
+        require(oracle != address(0), "Queen: no oracle");
+        (bool success, bytes memory data) = oracle.staticcall(
+            abi.encodeWithSignature("getBestPrice(address)", token)
+        );
+        if (success && data.length >= 32) {
+            price = abi.decode(data, (uint256));
+        }
+    }
+
+    function think(string calldata context) external returns (uint256 thoughtId) {
+        require(msg.sender == owner, "Queen: not owner");
+        require(brain != address(0), "Queen: no brain");
+        (bool success, bytes memory data) = brain.call(
+            abi.encodeWithSignature("think(string)", context)
+        );
+        if (success && data.length >= 32) {
+            thoughtId = abi.decode(data, (uint256));
+        }
     }
 
     // ═══ Drone Management ═══
