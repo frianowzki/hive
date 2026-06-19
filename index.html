@@ -45,14 +45,12 @@
         .dot:hover{background:rgba(255,255,255,0.35)}
         .dot.active{background:var(--accent);box-shadow:0 0 6px rgba(139,92,246,0.4)}
 
-        /* AUTO-SCROLL BAR */
-        .scroll-bar{position:fixed;bottom:0;left:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent-light));z-index:100;transition:width linear;box-shadow:0 0 8px rgba(139,92,246,0.3)}
-
         /* FOOTER */
-        .mini-footer{position:fixed;bottom:0;left:0;right:0;z-index:100;padding:.6rem 3rem;display:flex;justify-content:space-between;align-items:center;background:transparent;font-size:.65rem;color:var(--text-muted)}
+        .mini-footer{position:fixed;bottom:0;left:0;right:0;z-index:100;padding:.6rem 3rem;display:flex;justify-content:space-between;align-items:center;background:transparent;font-size:.7rem;color:var(--text-muted)}
+        .mini-footer p{font-family:var(--font-display);font-size:.7rem;font-weight:500;letter-spacing:.02em}
         .mini-footer a{color:var(--text-dim)}
-        .mini-footer-links{display:flex;gap:1.25rem}
-        .mini-footer-links a{color:var(--text-muted);transition:color .3s}
+        .mini-footer-links{display:flex;gap:1.5rem}
+        .mini-footer-links a{font-family:var(--font-display);font-size:.7rem;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);transition:color .3s}
         .mini-footer-links a:hover{color:var(--text)}
 
         /* BG */
@@ -66,9 +64,6 @@
 
         /* ═══ PAGE 1: HERO ═══ */
         .hero-content{max-width:640px}
-        .hero-badge{display:inline-flex;align-items:center;gap:.4rem;padding:.35rem .8rem;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.15);border-radius:100px;font-size:.65rem;font-weight:600;color:var(--accent-light);margin-bottom:1.25rem;letter-spacing:.04em}
-        .hero-badge-dot{width:5px;height:5px;background:var(--green);border-radius:50%;animation:pulse 2s ease-in-out infinite}
-        @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.3)}50%{box-shadow:0 0 0 5px transparent}}
         .hero h1{font-family:var(--font-display);font-size:3.2rem;font-weight:800;line-height:1.08;letter-spacing:-.04em;margin-bottom:1rem}
         .hero h1 .g{background:linear-gradient(135deg,var(--accent-light),var(--accent),#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
         .hero-desc{font-size:.95rem;color:var(--text-dim);margin-bottom:1.75rem;line-height:1.65;max-width:480px}
@@ -109,25 +104,11 @@
         .svc-item::before{content:'';position:absolute;inset:0;background:var(--accent-glow);opacity:0;transition:opacity .3s}
         .svc-item:hover{border-color:var(--accent);z-index:2}
         .svc-item:hover::before{opacity:1}
-        .svc-arrow{color:var(--accent);font-size:.8rem;transition:transform .3s;position:relative;z-index:2}
-        .svc-item:hover .svc-arrow{transform:translateX(3px)}
         .svc-name{font-size:.8rem;font-weight:500;color:var(--text-dim);transition:color .3s;position:relative;z-index:2}
         .svc-item:hover .svc-name{color:var(--text)}
         .svc-icon{width:16px;height:16px;color:var(--accent);position:relative;z-index:2;flex-shrink:0}
 
-        /* ═══ PAGE 4: PROJECTS ═══ */
-        .proj-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
-        .proj-card{position:relative;height:200px;background:rgba(255,255,255,.02);border-radius:12px;overflow:hidden;border:1px solid var(--border);cursor:pointer;transition:all .3s}
-        .proj-card:hover{border-color:rgba(255,255,255,.1);transform:translateY(-2px)}
-        .proj-card.large{grid-column:span 2;height:220px}
-        .proj-bg{position:absolute;inset:0;background:linear-gradient(135deg,#0a0a0a,#050505)}
-        .proj-bg::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 50%,var(--accent-glow),transparent 50%)}
-        .proj-content{position:absolute;bottom:0;left:0;right:0;padding:1.25rem;background:linear-gradient(to top,rgba(0,0,0,.95),rgba(0,0,0,.5) 60%,transparent)}
-        .proj-tag{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--accent-light);margin-bottom:.3rem}
-        .proj-title{font-family:var(--font-display);font-size:1rem;font-weight:700}
-        .proj-meta{font-size:.7rem;color:var(--text-muted);margin-top:.2rem}
-
-        /* ═══ PAGE 5: ABOUT ═══ */
+        /* ═══ PAGE 4: ABOUT ═══ */
         .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;align-items:start}
         .about-text h3{font-family:var(--font-display);font-size:1.35rem;font-weight:700;margin-bottom:1rem}
         .about-text p{font-size:.85rem;color:var(--text-dim);line-height:1.7;margin-bottom:.6rem}
@@ -144,9 +125,8 @@
         .team-link{display:inline-block;margin-top:.4rem;font-size:.65rem;font-weight:600;padding:.3rem .6rem;background:var(--accent-glow);border:1px solid rgba(139,92,246,.15);border-radius:5px;color:var(--accent-light);transition:all .3s}
         .team-link:hover{background:rgba(139,92,246,.2);border-color:var(--accent)}
 
-        /* ═══ PAGE 6: CONTACT ═══ */
+        /* ═══ PAGE 5: CONTACT ═══ */
         .contact-page{text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center}
-        .contact-title{font-family:var(--font-display);font-size:2.5rem;font-weight:800;margin-bottom:1rem;letter-spacing:-.03em}
         .contact-sub{font-size:.95rem;color:var(--text-dim);max-width:440px;margin:0 auto 2rem;line-height:1.65}
         .contact-actions{display:flex;gap:.75rem;margin-bottom:2.5rem}
         .contact-info{display:flex;gap:2.5rem}
@@ -160,8 +140,6 @@
             .caps-grid{grid-template-columns:repeat(2,1fr)}
             .svc-grid{grid-template-columns:repeat(2,1fr)}
             .about-grid{grid-template-columns:1fr}
-            .proj-grid{grid-template-columns:1fr}
-            .proj-card.large{grid-column:span 1}
         }
         @media(max-width:768px){
             .navbar{padding:0 1.5rem}
@@ -186,9 +164,8 @@
             <li><a data-page="0" class="active">Home</a></li>
             <li><a data-page="1">Features</a></li>
             <li><a data-page="2">Services</a></li>
-            <li><a data-page="3">Projects</a></li>
-            <li><a data-page="4">About</a></li>
-            <li><a data-page="5">Contact</a></li>
+            <li><a data-page="3">About</a></li>
+            <li><a data-page="4">Contact</a></li>
         </ul>
     </nav>
 
@@ -198,9 +175,7 @@
         <div class="dot" data-page="2"></div>
         <div class="dot" data-page="3"></div>
         <div class="dot" data-page="4"></div>
-        <div class="dot" data-page="5"></div>
     </div>
-    <div class="scroll-bar" id="scrollBar"></div>
 
     <div class="pages-wrapper">
 
@@ -210,13 +185,12 @@
             <div class="bg-glow" style="top:-150px;right:-100px;background:var(--accent);opacity:.12"></div>
             <div class="page-inner">
                 <div class="hero-content">
-                    <div class="hero-badge fi"><span class="hero-badge-dot"></span>Live on Ritual Testnet</div>
-                    <h1 class="fi d1">The <span class="g">compliant AI launchpad</span> for forward-thinking DeFi.</h1>
-                    <p class="hero-desc fi d2">Fully on-chain, zk-proofed AI launchpad built on Ritual Testnet. AI market makers, federated learning, EigenLayer AVS, and DAO governance — all with KYC/KYB compliance.</p>
-                    <div class="hero-actions fi d3">
-                        <a href="#contact" class="btn btn-p" onclick="goToPage(5);return false">Open Hive<svg class="btn-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+                    <h1 class="fi">The <span class="g">compliant AI launchpad</span> for forward-thinking DeFi.</h1>
+                    <p class="hero-desc fi d1">Fully on-chain, zk-proofed AI launchpad built on Ritual Testnet. AI market makers, federated learning, EigenLayer AVS, and DAO governance — all with KYC/KYB compliance.</p>
+                    <div class="hero-actions fi d2">
+                        <a href="#contact" class="btn btn-p" onclick="goToPage(4);return false">Open Hive<svg class="btn-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
                     </div>
-                    <div class="hero-stats fi d4">
+                    <div class="hero-stats fi d3">
                         <div class="stat"><div class="stat-val">29</div><div class="stat-lbl">Contracts Deployed</div></div>
                         <div class="stat"><div class="stat-val">300</div><div class="stat-lbl">Tests Passing</div></div>
                         <div class="stat"><div class="stat-val"><span class="g">Live</span></div><div class="stat-lbl">On Ritual Testnet</div></div>
@@ -296,30 +270,8 @@
             </div>
         </div>
 
-        <!-- PAGE 4: PROJECTS -->
+        <!-- PAGE 4: ABOUT -->
         <div class="page" data-index="3">
-            <div class="bg-grid"></div>
-            <div class="bg-glow" style="right:-150px;top:-100px;background:var(--accent);opacity:.1"></div>
-            <div class="page-inner">
-                <div class="sec-hdr fi">
-                    <div class="sec-lbl">Our work</div>
-                    <h2 class="sec-title">Latest projects</h2>
-                </div>
-                <div class="proj-grid">
-                    <div class="proj-card large fi d1"><div class="proj-bg"></div><div class="proj-content"><div class="proj-tag">Core Infrastructure</div><h3 class="proj-title">HiveFactory — Master Wiring System</h3><p class="proj-meta">25 module references • Single-tx wiring • AI + Security + Queen layers</p></div></div>
-                    <div class="proj-card fi d2"><div class="proj-bg"></div><div class="proj-content"><div class="proj-tag">AI Layer</div><h3 class="proj-title">HiveBrain + HiveOracle</h3><p class="proj-meta">Allora price feeds • Ritual LLM • FLock</p></div></div>
-                    <div class="proj-card fi d3"><div class="proj-bg"></div><div class="proj-content"><div class="proj-tag">Security</div><h3 class="proj-title">EigenLayer AVS</h3><p class="proj-meta">4 operator roles • Slashing • Fees</p></div></div>
-                    <div class="proj-card fi d4"><div class="proj-bg"></div><div class="proj-content"><div class="proj-tag">DeFi</div><h3 class="proj-title">HiveClearing Batch Auctions</h3><p class="proj-meta">HCA mechanics • Fair price discovery</p></div></div>
-                    <div class="proj-card fi d5"><div class="proj-bg"></div><div class="proj-content"><div class="proj-tag">Governance</div><h3 class="proj-title">Queen Orchestrator</h3><p class="proj-meta">Division routing • Brain integration</p></div></div>
-                </div>
-                <div style="text-align:center;margin-top:1.5rem" class="fi d6">
-                    <a href="https://github.com/frianowzki/hive" target="_blank" class="btn btn-o">View All on GitHub<svg class="btn-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg></a>
-                </div>
-            </div>
-        </div>
-
-        <!-- PAGE 5: ABOUT -->
-        <div class="page" data-index="4">
             <div class="bg-grid"></div>
             <div class="page-inner">
                 <div class="sec-hdr fi">
@@ -353,17 +305,17 @@
             </div>
         </div>
 
-        <!-- PAGE 6: CONTACT -->
-        <div class="page contact-page" data-index="5">
+        <!-- PAGE 5: CONTACT -->
+        <div class="page contact-page" data-index="4">
             <div class="bg-grid"></div>
             <div class="bg-glow" style="top:50%;left:50%;transform:translate(-50%,-50%);background:var(--accent);opacity:.12"></div>
             <div class="page-inner">
-                <p class="contact-sub fi d1">Interested in building on Hive? Want to integrate with our AI launchpad? Or just want to chat about Ritual Testnet? Reach out.</p>
-                <div class="contact-actions fi d2">
+                <p class="contact-sub fi">Interested in building on Hive? Want to integrate with our AI launchpad? Or just want to chat about Ritual Testnet? Reach out.</p>
+                <div class="contact-actions fi d1">
                     <a href="https://github.com/frianowzki/hive" target="_blank" class="btn btn-p">View on GitHub<svg class="btn-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg></a>
                     <a href="mailto:friokurniawan@gmail.com" class="btn btn-o">Email Us</a>
                 </div>
-                <div class="contact-info fi d3">
+                <div class="contact-info fi d2">
                     <div class="contact-info-item">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                         <span>Ritual Testnet (Chain ID 1979)</span>
@@ -391,7 +343,7 @@
     </div>
 
     <script>
-        let currentPage=0;const totalPages=6;let autoScroll=true;let autoScrollTimer=null;const autoScrollDuration=8000;let dotsTimeout;
+        let currentPage=0;const totalPages=5;let autoScroll=true;let autoScrollTimer=null;const autoScrollDuration=8000;let dotsTimeout;
 
         function goToPage(index){
             if(index===currentPage||index<0||index>=totalPages)return;
@@ -423,12 +375,8 @@
             clearTimeout(dotsTimeout);
             dotsTimeout=setTimeout(()=>{d.classList.remove('visible')},3000);
         }
-        function startAutoScroll(){
-            const bar=document.getElementById('scrollBar');
-            bar.style.transition='none';bar.style.width='0%';
-            requestAnimationFrame(()=>{bar.style.transition='width '+autoScrollDuration+'ms linear';bar.style.width='100%'});
-            autoScrollTimer=setTimeout(nextPage,autoScrollDuration);
-        }
+
+        function startAutoScroll(){autoScrollTimer=setTimeout(nextPage,autoScrollDuration)}
         function resetAutoScroll(){clearTimeout(autoScrollTimer);startAutoScroll()}
 
         let wheelTimeout;
