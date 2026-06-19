@@ -138,7 +138,6 @@ User (MetaMask) ──→ HiveID ──→ Register (free) ──→ Get Hive Wa
 | **HiveToken** | `0xDA81...5ec3` | ERC20 token with vesting schedules and transfer restrictions |
 | **HiveStaking** | `0x93dd...b408` | 4-tier staking (Bronze → Diamond). Lock multiplier, auto-compound, voting power |
 | **HiveTreasury** | `0x90fb...8C18` | Fee collector & distributor. Multi-sig controlled. Auto-distributes: 60% stakers, 25% referrers, 15% reserve |
-| **HoneyPot** | `—` | Legacy fee collector (superseded by HiveTreasury, not deployed) |
 
 ### 🤖 AI & Agent Layer
 
@@ -146,7 +145,7 @@ User (MetaMask) ──→ HiveID ──→ Register (free) ──→ Get Hive Wa
 |----------|---------|-------------|
 | **HiveAgent** | `0x8424...4327` | AI Agent Gateway via Ritual LLM precompile. On-chain chatbot for market analysis, token insights, strategy advice |
 | **HiveBrain** | `0x0ad0...42B4` | Sovereign agent brain. think() → plan() → act() pipeline with confidence threshold (≥70%). 9 action types, on-chain memory, success rate tracking |
-| **Queen** | `0xDC96...Ae8E` | Brain orchestrator. Interface-based wiring for HoneyPot, Strategy, Drone, Registry, LaunchPad, MarketMaker |
+| **Queen** | `0xDC96...Ae8E` | Brain orchestrator. Interface-based wiring for Strategy, Drone, Registry, LaunchPad, MarketMaker |
 | **HiveAutoStrategy** | `0x1b3A...BEF9` | Automated trading strategies: DCA, Take Profit, Stop Loss, Trailing Stop |
 | **HiveMarketMaker** | `0x9CC5...289b` | AI-driven market making via Ritual LLM |
 
@@ -242,7 +241,6 @@ hive/
 │   │   └── HiveToken.sol         # ERC20 + vesting
 │   ├── treasury/
 │   │   ├── HiveTreasury.sol      # Fee collector & distributor
-│   │   └── HoneyPot.sol          # Legacy fee collector
 │   └── verifier/
 │       └── HiveVerifier.sol      # ZK proof verifier
 │
