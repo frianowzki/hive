@@ -1,0 +1,134 @@
+{
+  "network": {
+    "name": "Ritual Testnet",
+    "chainId": 1979,
+    "rpc": "https://rpc.ritualfoundation.org",
+    "explorer": "https://explorer.ritualfoundation.org",
+    "currency": "RITUAL"
+  },
+  "deployer": "0x4b171E1217b71E37777B7F56d89cCB441C1De301",
+  "compiler": {
+    "version": "0.8.20",
+    "optimizer": true,
+    "optimizerRuns": 100,
+    "viaIR": true
+  },
+  "deploymentDate": "2026-06-19",
+  "contracts": [
+    {
+      "name": "HiveID",
+      "address": "0x013c6D5a4fa5D50a92261C4189a8F56900408A01",
+      "source": "src/identity/HiveID.sol",
+      "constructorArgs": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "constructorArgsDecoded": ["uint256(0) — registrationFee"]
+    },
+    {
+      "name": "HiveMultiSig",
+      "address": "0xd450caB1dCe65ac7bB089Cf8dA9F20f37544B1B6",
+      "source": "src/multisig/HiveMultiSig.sol",
+      "constructorArgsDecoded": ["address[]([deployer])", "uint256(1) — threshold", "bytes32(0) — hiveIdHash"]
+    },
+    {
+      "name": "HiveVerifier",
+      "address": "0xDD2A524E0Bda702ed5f9b1740Dd145Ce2de23Eb6",
+      "source": "src/verifier/HiveVerifier.sol",
+      "constructorArgs": "none"
+    },
+    {
+      "name": "HiveRelayer",
+      "address": "0xa2FCc065f174e9BE536A090DD344B9C8b8Dc513c",
+      "source": "src/relayer/HiveRelayer.sol",
+      "constructorArgs": "none"
+    },
+    {
+      "name": "HiveOracle",
+      "address": "0x5D72F3faf4ada60E1beCa310a2FA82b7B731aEbE",
+      "source": "src/oracle/HiveOracle.sol",
+      "constructorArgs": "none"
+    },
+    {
+      "name": "HiveStaking",
+      "address": "0x93dd206181e3519c9f9CAC38aaE5d67b6009b408",
+      "source": "src/staking/HiveStaking.sol",
+      "constructorArgs": "none"
+    },
+    {
+      "name": "HiveTreasury",
+      "address": "0x90fbd495c888ae010e40FD299E143FabFcf08C18",
+      "source": "src/treasury/HiveTreasury.sol",
+      "constructorArgsDecoded": ["address(0xd450caB1dCe65ac7bB089Cf8dA9F20f37544B1B6) — multiSig"]
+    },
+    {
+      "name": "HiveReputation",
+      "address": "0x4cbe69CC563D548e2DA214c6c7C16fC32b69526A",
+      "source": "src/reputation/HiveReputation.sol",
+      "constructorArgs": "none"
+    },
+    {
+      "name": "HiveReferral",
+      "address": "0x6fc9D8aBFa06867D5932DA9C473D46B0224041ED",
+      "source": "src/referral/HiveReferral.sol",
+      "constructorArgs": "none"
+    },
+    {
+      "name": "HiveClearing",
+      "address": "0x631969799907Dc4914988298A7795783e24c20CC",
+      "source": "src/auction/HiveClearing.sol",
+      "constructorArgs": "none"
+    },
+    {
+      "name": "HivePortfolio",
+      "address": "0x81E38ad29B869De5dd99bC5da1386b65Ef2Da066",
+      "source": "src/portfolio/HivePortfolio.sol",
+      "constructorArgs": "none"
+    },
+    {
+      "name": "HiveAutoStrategy",
+      "address": "0x1b3A537D4572c1020Bc72c9f4951704966d3BEF9",
+      "source": "src/strategy/HiveAutoStrategy.sol",
+      "constructorArgs": "none"
+    },
+    {
+      "name": "HiveToken",
+      "address": "0xDA8185F0742b46A8B6D413Dc10eFC25E9FBd5ec3",
+      "source": "src/token/HiveToken.sol",
+      "constructorArgsDecoded": ["string('Hive Token')", "string('HIVE')", "uint8(18)", "address(deployer)", "bytes32(0)", "string('')"]
+    },
+    {
+      "name": "HiveAgent",
+      "address": "0x842441aB565a3C6C8183ABB08a735B2DEA184327",
+      "source": "src/agent/HiveAgent.sol",
+      "constructorArgs": "none"
+    },
+    {
+      "name": "HiveBrain",
+      "address": "0x0ad0234d3EA8bd41ee571b1B317fA98d46E642B4",
+      "source": "src/agent/HiveBrain.sol",
+      "constructorArgsDecoded": ["address(0) — queen"]
+    },
+    {
+      "name": "HiveChat",
+      "address": "0x615F139dDFb2f2f486133B3a2D9F74Dd2bA785B6",
+      "source": "src/chat/HiveChat.sol",
+      "constructorArgs": "none"
+    },
+    {
+      "name": "HiveGovernance",
+      "address": "0xeadd2aB5D8f1Ead852927Dd56c34b365603c2702",
+      "source": "src/governance/HiveGovernance.sol",
+      "constructorArgsDecoded": ["address(0x93dd20...) — staking", "address(0xd450ca...) — multiSig"]
+    },
+    {
+      "name": "HiveNotification",
+      "address": "0x9a04677f219384Fe35E29E968d43e8BDC6392C42",
+      "source": "src/notification/HiveNotification.sol",
+      "constructorArgsDecoded": ["address(0x013c6D...) — hiveID"]
+    },
+    {
+      "name": "HiveFactory",
+      "address": "0x0241cfB0a6620f57988C75Cd06dA2914b21463c6",
+      "source": "src/factory/HiveFactory.sol",
+      "constructorArgs": "none"
+    }
+  ]
+}
