@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hive — Compliant AI Launchpad on Ritual Chain</title>
+    <title>Hive — Compliant AI Launchpad on Ritual Testnet</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -174,6 +174,8 @@
             width: 100%;
             max-width: 1200px;
             margin: 0 auto;
+            position: relative;
+            z-index: 2;
         }
 
         /* ═══════════════════════════════════════════
@@ -1095,7 +1097,6 @@
             <li><a data-page="3">Projects</a></li>
             <li><a data-page="4">About</a></li>
             <li><a data-page="5">Contact</a></li>
-            <li><a href="https://github.com/frianowzki/hive" target="_blank" class="nav-cta">GitHub</a></li>
         </ul>
     </nav>
 
@@ -1127,10 +1128,6 @@
          AUTO-SCROLL BAR
          ═══════════════════════════════════════════ -->
     <div class="auto-scroll-bar" id="autoScrollBar"></div>
-    <div class="auto-scroll-toggle" id="autoScrollToggle">
-        <span class="dot"></span>
-        <span id="toggleLabel">Auto-scroll on</span>
-    </div>
 
     <!-- ═══════════════════════════════════════════
          PAGES
@@ -1146,13 +1143,13 @@
                     <div>
                         <div class="hero-badge fade-in">
                             <span class="hero-badge-dot"></span>
-                            Ritual Chain • Chain ID 1979 • Testnet Live
+                            Ritual Testnet • Chain ID 1979 • Testnet Live
                         </div>
                         <h1 class="fade-in d1">
                             The <span class="gradient">compliant AI launchpad</span> for forward-thinking DeFi.
                         </h1>
                         <p class="hero-desc fade-in d2">
-                            Fully on-chain, zk-proofed AI launchpad built on Ritual Chain. 
+                            Fully on-chain, zk-proofed AI launchpad built on Ritual Testnet. 
                             AI market makers, federated learning, EigenLayer AVS, and DAO governance — 
                             all with KYC/KYB compliance.
                         </p>
@@ -1352,9 +1349,9 @@
                 <div class="about-content">
                     <div class="about-text fade-in d1">
                         <h3>Building the future of compliant DeFi</h3>
-                        <p>Hive is a fully on-chain AI launchpad built on Ritual Chain (Chain ID 1979). We combine zero-knowledge proofs, artificial intelligence, and decentralized governance to create a compliant, privacy-preserving DeFi ecosystem.</p>
+                        <p>Hive is a fully on-chain AI launchpad built on Ritual Testnet (Chain ID 1979). We combine zero-knowledge proofs, artificial intelligence, and decentralized governance to create a compliant, privacy-preserving DeFi ecosystem.</p>
                         <p>Our architecture features 29 smart contracts, all fully interconnected and tested with 300 passing tests. From ZK-based KYC/KYB to AI-driven market making, every component is designed for security, scalability, and compliance.</p>
-                        <p>We leverage Ritual Chain's native precompiles — LLM inference, HTTP requests, DKMS key management, ECIES encryption, and Passkey authentication — to deliver capabilities that traditional EVM chains cannot match.</p>
+                        <p>We leverage Ritual Testnet's native precompiles — LLM inference, HTTP requests, DKMS key management, ECIES encryption, and Passkey authentication — to deliver capabilities that traditional EVM chains cannot match.</p>
                         <div class="about-features">
                             <div class="about-feat"><span class="about-feat-check">✓</span> 29 Contracts Deployed</div>
                             <div class="about-feat"><span class="about-feat-check">✓</span> 300 Tests Passing</div>
@@ -1368,7 +1365,7 @@
                             <div>
                                 <div class="team-role">Founder / Lead Dev</div>
                                 <h4 class="team-name">Frian</h4>
-                                <p class="team-bio">Full-stack Web3 builder. DeFi architect. Leading Hive's smart contract development, AI integration, and Ritual Chain optimization.</p>
+                                <p class="team-bio">Full-stack Web3 builder. DeFi architect. Leading Hive's smart contract development, AI integration, and Ritual Testnet optimization.</p>
                                 <a href="https://github.com/frianowzki" target="_blank" class="team-link">GitHub</a>
                             </div>
                         </div>
@@ -1395,7 +1392,7 @@
                 <h2 class="contact-title fade-in d1">Don't be shy, say hello.</h2>
                 <p class="contact-sub fade-in d2">
                     Interested in building on Hive? Want to integrate with our AI launchpad? 
-                    Or just want to chat about Ritual Chain? Reach out.
+                    Or just want to chat about Ritual Testnet? Reach out.
                 </p>
                 <div class="contact-actions fade-in d3">
                     <a href="https://github.com/frianowzki/hive" target="_blank" class="btn btn-primary">
@@ -1426,7 +1423,7 @@
          MINI FOOTER
          ═══════════════════════════════════════════ -->
     <div class="mini-footer">
-        <p>© 2026 Hive. Built on <a href="https://ritual.net" target="_blank">Ritual Chain</a>.</p>
+        <p>© 2026 Hive. Built on <a href="https://ritual.net" target="_blank">Ritual Testnet</a>.</p>
         <div class="mini-footer-links">
             <a href="https://github.com/frianowzki/hive" target="_blank">GitHub</a>
             <a href="https://github.com/frianowzki/hive/blob/master/FINAL_AUDIT_REPORT.md" target="_blank">Audit</a>
@@ -1446,44 +1443,44 @@
         let autoScroll = true;
         let autoScrollTimer = null;
         let autoScrollDuration = 8000; // 8 seconds per page
-        let isTransitioning = false;
 
         // ═══════════════════════════════════════
         // PAGE NAVIGATION
         // ═══════════════════════════════════════
         function goToPage(index) {
-            if (isTransitioning || index === currentPage || index < 0 || index >= totalPages) return;
-            isTransitioning = true;
+            if (index === currentPage || index < 0 || index >= totalPages) return;
 
             const pages = document.querySelectorAll('.page');
             const dots = document.querySelectorAll('.page-dot');
             const navLinks = document.querySelectorAll('.nav-links a[data-page]');
 
-            // Exit current
-            pages[currentPage].classList.remove('active');
-            pages[currentPage].classList.add('exit-up');
+            // Hide all pages immediately
+            pages.forEach(p => {
+                p.classList.remove('active', 'exit-up');
+                p.style.opacity = '0';
+                p.style.pointerEvents = 'none';
+            });
 
-            // Enter new
-            setTimeout(() => {
-                pages[currentPage].classList.remove('exit-up');
-                currentPage = index;
-                pages[currentPage].classList.add('active');
+            // Show target page
+            currentPage = index;
+            const targetPage = pages[currentPage];
+            targetPage.classList.add('active');
+            targetPage.style.opacity = '1';
+            targetPage.style.pointerEvents = 'all';
+            targetPage.style.transform = 'translateY(0)';
 
-                // Update indicators
-                dots.forEach(d => d.classList.remove('active'));
-                dots[currentPage].classList.add('active');
+            // Update indicators
+            dots.forEach(d => d.classList.remove('active'));
+            if (dots[currentPage]) dots[currentPage].classList.add('active');
 
-                navLinks.forEach(l => l.classList.remove('active'));
-                navLinks[currentPage].classList.add('active');
+            navLinks.forEach(l => l.classList.remove('active'));
+            if (navLinks[currentPage]) navLinks[currentPage].classList.add('active');
 
-                // Animate elements
-                animatePage(currentPage);
+            // Animate elements
+            animatePage(currentPage);
 
-                isTransitioning = false;
-
-                // Reset auto-scroll
-                if (autoScroll) resetAutoScroll();
-            }, 400);
+            // Reset auto-scroll
+            if (autoScroll) resetAutoScroll();
         }
 
         function nextPage() {
@@ -1622,7 +1619,7 @@
 
         // Console
         console.log('%c🐝 Hive', 'font-size: 2rem; font-weight: bold; color: #8b5cf6;');
-        console.log('%cCompliant AI Launchpad on Ritual Chain', 'font-size: 1rem; color: #a0a0a0;');
+        console.log('%cCompliant AI Launchpad on Ritual Testnet', 'font-size: 1rem; color: #a0a0a0;');
         console.log('%c29 contracts • 300 tests • Chain ID 1979', 'font-size: 0.9rem; color: #666;');
     </script>
 </body>
