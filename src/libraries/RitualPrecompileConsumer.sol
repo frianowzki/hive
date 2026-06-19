@@ -11,6 +11,7 @@ abstract contract RitualPrecompileConsumer {
     address internal constant LLM_PRECOMPILE = address(0x0802);
     address internal constant ED25519_PRECOMPILE = address(0x0009);
     address internal constant WEBAUTHN_PRECOMPILE = address(0x0100);
+    address internal constant DKMS_PRECOMPILE = address(0x0803);
 
     // ═══ System Contracts ═══
     address internal constant RITUAL_WALLET = 0x532F0dF0896F353d8C3DD8cc134e8129DA2a3948;

@@ -4,8 +4,27 @@ pragma solidity ^0.8.20;
 import "forge-std/Test.sol";
 import "../src/identity/HiveID.sol";
 
+/// @dev Mock DKMS precompile — returns a deterministic 65-byte uncompressed public key
+contract MockDkmsPrecompile {
+    /// @dev abi.encode(executor, owner, keyIndex, keyType) → public key
+    fallback(bytes calldata) external payable returns (bytes memory) {
+        // Return a 65-byte uncompressed secp256k1 public key
+        // 0x04 prefix + 32-byte x + 32-byte y
+        return abi.encodePacked(
+            hex"04",
+            hex"aabbccddaabbccddaabbccddaabbccddaabbccddaabbccddaabbccddaabbccdd",
+            hex"1122334411223344112233441122334411223344112233441122334411223344"
+        );
+    }
+}
+
 contract HiveIDTest is Test {
     HiveID public hiveID;
+
+    // Redeclare events for vm.expectEmit (Solidity 0.8.20 doesn't support ContractName.EventName)
+    event IdentityKeyDerived(bytes32 indexed usernameHash, uint256 keyIndex, bytes publicKey, uint256 timestamp);
+    event KycDataStored(bytes32 indexed usernameHash, uint256 dataSize, bool piiEnabled, uint256 timestamp);
+    event PiiModeUpdated(bytes32 indexed usernameHash, bool piiEnabled);
 
     address public owner = address(this);
     address public user1 = address(0x1001);
@@ -21,7 +40,21 @@ contract HiveIDTest is Test {
 
     uint256 constant REG_FEE = 0.01 ether;
 
+    // DKMS precompile address
+    address constant DKMS_ADDR = address(0x0803);
+
+    // Expected 65-byte public key from mock
+    bytes constant MOCK_PUBKEY = abi.encodePacked(
+        hex"04",
+        hex"aabbccddaabbccddaabbccddaabbccddaabbccddaabbccddaabbccddaabbccdd",
+        hex"1122334411223344112233441122334411223344112233441122334411223344"
+    );
+
     function setUp() public {
+        // Deploy mock DKMS precompile at the precompile address
+        MockDkmsPrecompile mock = new MockDkmsPrecompile();
+        vm.etch(DKMS_ADDR, address(mock).code);
+
         hiveID = new HiveID(REG_FEE);
         hiveID.addVerifier(verifier);
     }
@@ -298,6 +331,236 @@ contract HiveIDTest is Test {
         assertEq(hiveID.identityCount(), 1);
         _registerUser("bob", user2, hiveWallet2);
         assertEq(hiveID.identityCount(), 2);
+    }
+
+    // ═══ DKMS Privacy Tests ═══
+
+    function test_derive_identity_key() public {
+        _registerUser("alice", user1, hiveWallet1);
+        bytes32 aliceHash = keccak256(bytes("alice"));
+
+        // Derive DKMS key
+        vm.prank(user1);
+        hiveID.deriveIdentityKey(aliceHash);
+
+        // Verify key was stored
+        assertTrue(hiveID.hasDkmsKey(aliceHash));
+        bytes memory pubKey = hiveID.getDkmsPublicKey(aliceHash);
+        assertEq(pubKey.length, 65); // Uncompressed secp256k1
+
+        // Verify key index
+        assertEq(hiveID.dkmsKeyIndex(aliceHash), 0);
+        assertEq(hiveID.getDkmsKeyIndex(aliceHash), 0);
+    }
+
+    function test_derive_identity_key_emits_event() public {
+        _registerUser("alice", user1, hiveWallet1);
+        bytes32 aliceHash = keccak256(bytes("alice"));
+
+        vm.expectEmit(true, false, false, true);
+        emit IdentityKeyDerived(aliceHash, 0, MOCK_PUBKEY, block.timestamp);
+
+        vm.prank(user1);
+        hiveID.deriveIdentityKey(aliceHash);
+    }
+
+    function test_derive_identity_key_revert_already_derived() public {
+        _registerUser("alice", user1, hiveWallet1);
+        bytes32 aliceHash = keccak256(bytes("alice"));
+
+        vm.prank(user1);
+        hiveID.deriveIdentityKey(aliceHash);
+
+        // Second call should revert
+        vm.prank(user1);
+        vm.expectRevert(HiveID.KeyAlreadyDerived.selector);
+        hiveID.deriveIdentityKey(aliceHash);
+    }
+
+    function test_derive_identity_key_revert_unauthorized() public {
+        _registerUser("alice", user1, hiveWallet1);
+        bytes32 aliceHash = keccak256(bytes("alice"));
+
+        vm.prank(unauthorized);
+        vm.expectRevert("HiveID: not identity owner");
+        hiveID.deriveIdentityKey(aliceHash);
+    }
+
+    function test_rotate_identity_key() public {
+        _registerUser("alice", user1, hiveWallet1);
+        bytes32 aliceHash = keccak256(bytes("alice"));
+
+        // Initial derive
+        vm.prank(user1);
+        hiveID.deriveIdentityKey(aliceHash);
+        assertEq(hiveID.dkmsKeyIndex(aliceHash), 0);
+
+        // Rotate to index 1
+        vm.prank(user1);
+        hiveID.rotateIdentityKey(aliceHash);
+        assertEq(hiveID.dkmsKeyIndex(aliceHash), 1);
+        assertEq(hiveID.getDkmsKeyIndex(aliceHash), 1);
+
+        // Key should still be valid
+        assertTrue(hiveID.hasDkmsKey(aliceHash));
+        bytes memory pubKey = hiveID.getDkmsPublicKey(aliceHash);
+        assertEq(pubKey.length, 65);
+    }
+
+    function test_store_encrypted_kyc() public {
+        _registerUser("alice", user1, hiveWallet1);
+        bytes32 aliceHash = keccak256(bytes("alice"));
+
+        // Derive DKMS key first
+        vm.prank(user1);
+        hiveID.deriveIdentityKey(aliceHash);
+
+        // Store encrypted KYC data
+        bytes memory fakeEncryptedKyc = abi.encodePacked("encrypted-kyc-blob-data-here");
+        vm.prank(user1);
+        hiveID.storeEncryptedKyc(aliceHash, fakeEncryptedKyc, true);
+
+        // Verify stored
+        assertTrue(hiveID.hasEncryptedKyc(aliceHash));
+        assertEq(hiveID.getEncryptedKycSize(aliceHash), fakeEncryptedKyc.length);
+
+        // Verify PII mode
+        HiveID.Identity memory id = hiveID.getIdentity("alice");
+        assertTrue(id.piiEnabled);
+    }
+
+    function test_store_encrypted_kyc_emits_event() public {
+        _registerUser("alice", user1, hiveWallet1);
+        bytes32 aliceHash = keccak256(bytes("alice"));
+
+        vm.prank(user1);
+        hiveID.deriveIdentityKey(aliceHash);
+
+        bytes memory fakeEncryptedKyc = abi.encodePacked("encrypted-data");
+        vm.expectEmit(true, false, false, true);
+        emit KycDataStored(aliceHash, fakeEncryptedKyc.length, true, block.timestamp);
+
+        vm.prank(user1);
+        hiveID.storeEncryptedKyc(aliceHash, fakeEncryptedKyc, true);
+    }
+
+    function test_store_encrypted_kyc_revert_no_dkms_key() public {
+        _registerUser("alice", user1, hiveWallet1);
+        bytes32 aliceHash = keccak256(bytes("alice"));
+
+        bytes memory fakeEncryptedKyc = abi.encodePacked("encrypted-data");
+        vm.prank(user1);
+        vm.expectRevert(HiveID.NoDkmsKey.selector);
+        hiveID.storeEncryptedKyc(aliceHash, fakeEncryptedKyc, true);
+    }
+
+    function test_store_encrypted_kyc_revert_empty_data() public {
+        _registerUser("alice", user1, hiveWallet1);
+        bytes32 aliceHash = keccak256(bytes("alice"));
+
+        vm.prank(user1);
+        hiveID.deriveIdentityKey(aliceHash);
+
+        vm.prank(user1);
+        vm.expectRevert(HiveID.EmptyKycData.selector);
+        hiveID.storeEncryptedKyc(aliceHash, "", true);
+    }
+
+    function test_store_encrypted_kyc_revert_unauthorized() public {
+        _registerUser("alice", user1, hiveWallet1);
+        bytes32 aliceHash = keccak256(bytes("alice"));
+
+        vm.prank(user1);
+        hiveID.deriveIdentityKey(aliceHash);
+
+        bytes memory fakeEncryptedKyc = abi.encodePacked("encrypted-data");
+        vm.prank(unauthorized);
+        vm.expectRevert("HiveID: not identity owner");
+        hiveID.storeEncryptedKyc(aliceHash, fakeEncryptedKyc, true);
+    }
+
+    function test_set_pii_mode() public {
+        _registerUser("alice", user1, hiveWallet1);
+        bytes32 aliceHash = keccak256(bytes("alice"));
+
+        // Initially PII disabled
+        HiveID.Identity memory id = hiveID.getIdentity("alice");
+        assertFalse(id.piiEnabled);
+
+        // Enable PII
+        vm.prank(user1);
+        hiveID.setPiiMode(aliceHash, true);
+
+        id = hiveID.getIdentity("alice");
+        assertTrue(id.piiEnabled);
+
+        // Disable PII
+        vm.prank(user1);
+        hiveID.setPiiMode(aliceHash, false);
+
+        id = hiveID.getIdentity("alice");
+        assertFalse(id.piiEnabled);
+    }
+
+    function test_set_pii_mode_emits_event() public {
+        _registerUser("alice", user1, hiveWallet1);
+        bytes32 aliceHash = keccak256(bytes("alice"));
+
+        vm.expectEmit(true, false, false, false);
+        emit PiiModeUpdated(aliceHash, true);
+
+        vm.prank(user1);
+        hiveID.setPiiMode(aliceHash, true);
+    }
+
+    function test_set_pii_mode_revert_unauthorized() public {
+        _registerUser("alice", user1, hiveWallet1);
+        bytes32 aliceHash = keccak256(bytes("alice"));
+
+        vm.prank(unauthorized);
+        vm.expectRevert("HiveID: not identity owner");
+        hiveID.setPiiMode(aliceHash, true);
+    }
+
+    function test_full_privacy_flow() public {
+        // 1. Register
+        _registerUser("alice", user1, hiveWallet1);
+        bytes32 aliceHash = keccak256(bytes("alice"));
+
+        // 2. Derive DKMS key
+        vm.prank(user1);
+        hiveID.deriveIdentityKey(aliceHash);
+        assertTrue(hiveID.hasDkmsKey(aliceHash));
+
+        // 3. Store encrypted KYC with PII mode
+        bytes memory encryptedKyc = abi.encodePacked(
+            "ECIES-encrypted-passport-data-with-dkms-public-key"
+        );
+        vm.prank(user1);
+        hiveID.storeEncryptedKyc(aliceHash, encryptedKyc, true);
+        assertTrue(hiveID.hasEncryptedKyc(aliceHash));
+
+        // 4. Verify KYC (via verifier)
+        vm.prank(verifier);
+        hiveID.verify(
+            aliceHash,
+            HiveID.VerificationType.KYC,
+            keccak256(bytes("zk-proof-kyc"))
+        );
+        assertTrue(hiveID.isVerified(user1));
+
+        // 5. Rotate DKMS key
+        vm.prank(user1);
+        hiveID.rotateIdentityKey(aliceHash);
+        assertEq(hiveID.getDkmsKeyIndex(aliceHash), 1);
+
+        // 6. Final state check
+        HiveID.Identity memory id = hiveID.getIdentity("alice");
+        assertTrue(id.exists);
+        assertTrue(id.piiEnabled);
+        assertTrue(id.dkmsPublicKey.length > 0);
+        assertTrue(id.encryptedKycData.length > 0);
+        assertEq(uint8(id.verification), uint8(HiveID.VerificationType.KYC));
     }
 
     // ═══ Helpers ═══

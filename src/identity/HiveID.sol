@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-/// @title HiveID — On-chain Identity Registry
-/// @notice Permanent username + dual-wallet binding (primary + Hive wallet)
-/// @dev All Hive activity routes through HiveID. Withdrawals restricted to primary or other HiveIDs.
+import "../libraries/RitualPrecompileConsumer.sol";
 
-contract HiveID {
+/// @title HiveID — On-chain Identity Registry with DKMS Privacy
+/// @notice Permanent username + dual-wallet binding + TEE-bound encrypted KYC
+/// @dev Integrates Ritual DKMS precompile (0x0803) for deterministic key derivation.
+///      Private keys never leave the TEE. KYC data encrypted via ECIES — only TEE can decrypt.
+
+contract HiveID is RitualPrecompileConsumer {
     // ═══ Types ═══
 
     enum VerificationType {
@@ -32,6 +35,10 @@ contract HiveID {
         uint256 createdAt;
         uint256 nonce;                  // For replay protection
         bool exists;
+        // ── Privacy Extensions (DKMS) ──
+        bytes dkmsPublicKey;            // TEE-derived secp256k1 public key (65 bytes uncompressed)
+        bytes encryptedKycData;         // ECIES-encrypted KYC blob (only TEE can decrypt)
+        bool piiEnabled;                // PII redaction flag for on-chain settlement
     }
 
     // ═══ State ═══
@@ -40,6 +47,9 @@ contract HiveID {
     mapping(address => bytes32) public primaryToIdentity;   // primaryWallet => usernameHash
     mapping(address => bytes32) public hiveToIdentity;      // hiveWallet => usernameHash
     mapping(address => bool) public verifiers;              // KYC/KYB verifier contracts
+
+    // DKMS key index counter per identity (supports key rotation)
+    mapping(bytes32 => uint256) public dkmsKeyIndex;
 
     address public owner;
     uint256 public identityCount;
@@ -64,6 +74,21 @@ contract HiveID {
     event FundsWithdrawn(bytes32 indexed from, address primaryWallet, address token, uint256 amount);
     event UsernameReserved(bytes32 indexed usernameHash, address indexed primaryWallet);
 
+    // ── Privacy Events ──
+    event IdentityKeyDerived(
+        bytes32 indexed usernameHash,
+        uint256 keyIndex,
+        bytes publicKey,
+        uint256 timestamp
+    );
+    event KycDataStored(
+        bytes32 indexed usernameHash,
+        uint256 dataSize,
+        bool piiEnabled,
+        uint256 timestamp
+    );
+    event PiiModeUpdated(bytes32 indexed usernameHash, bool piiEnabled);
+
     // ═══ Errors ═══
 
     error UsernameTaken();
@@ -75,6 +100,10 @@ contract HiveID {
     error InsufficientFee();
     error InvalidAddress();
     error TransferFailed();
+    error KeyAlreadyDerived();
+    error NoDkmsKey();
+    error EmptyKycData();
+    error KycAlreadyStored();
 
     // ═══ Modifiers ═══
 
@@ -158,7 +187,10 @@ contract HiveID {
             socialEncrypted: socialEncrypted,
             createdAt: block.timestamp,
             nonce: 0,
-            exists: true
+            exists: true,
+            dkmsPublicKey: "",
+            encryptedKycData: "",
+            piiEnabled: false
         });
 
         primaryToIdentity[msg.sender] = usernameHash;
@@ -173,6 +205,111 @@ contract HiveID {
             (bool sent, ) = msg.sender.call{value: msg.value - registrationFee}("");
             if (!sent) revert TransferFailed();
         }
+    }
+
+    // ═══ DKMS Privacy Layer ═══
+
+    /// @notice Derive a deterministic secp256k1 key pair via Ritual DKMS precompile
+    /// @dev The private key NEVER leaves the TEE. Only the public key is stored on-chain.
+    ///      Key is derived from (executor, identity owner, keyIndex, secp256k1).
+    ///      Supports key rotation via incrementing dkmsKeyIndex.
+    /// @param usernameHash Identity to derive key for
+    function deriveIdentityKey(bytes32 usernameHash)
+        external
+        onlyIdentityOwner(usernameHash)
+    {
+        Identity storage id = _identities[usernameHash];
+
+        // Only allow if no key derived yet (use rotateIdentityKey for rotation)
+        if (id.dkmsPublicKey.length > 0) {
+            revert KeyAlreadyDerived();
+        }
+
+        uint256 keyIdx = dkmsKeyIndex[usernameHash];
+
+        // Encode DKMS precompile call:
+        // (executor, owner, keyIndex, keyType)
+        // keyType 1 = secp256k1
+        bytes memory input = abi.encode(
+            address(0),             // executor (auto-select TEE)
+            id.hiveWallet,          // owner (key bound to hive wallet)
+            keyIdx,                 // key index
+            uint8(1)                // secp256k1
+        );
+
+        bytes memory pubKey = _executePrecompile(DKMS_PRECOMPILE, input);
+
+        id.dkmsPublicKey = pubKey;
+
+        emit IdentityKeyDerived(usernameHash, keyIdx, pubKey, block.timestamp);
+    }
+
+    /// @notice Rotate DKMS key (derive a new key at next index)
+    /// @dev Old key is preserved on-chain but TEE will use the latest index
+    /// @param usernameHash Identity to rotate key for
+    function rotateIdentityKey(bytes32 usernameHash)
+        external
+        onlyIdentityOwner(usernameHash)
+        identityExists(usernameHash)
+    {
+        Identity storage id = _identities[usernameHash];
+        uint256 newIdx = dkmsKeyIndex[usernameHash] + 1;
+        dkmsKeyIndex[usernameHash] = newIdx;
+
+        bytes memory input = abi.encode(
+            address(0),             // executor
+            id.hiveWallet,          // owner
+            newIdx,                 // new key index
+            uint8(1)                // secp256k1
+        );
+
+        bytes memory pubKey = _executePrecompile(DKMS_PRECOMPILE, input);
+
+        id.dkmsPublicKey = pubKey;
+
+        emit IdentityKeyDerived(usernameHash, newIdx, pubKey, block.timestamp);
+    }
+
+    /// @notice Store ECIES-encrypted KYC data on-chain
+    /// @dev Data is encrypted client-side using the identity's DKMS public key.
+    ///      Only the TEE can decrypt it (for verification, compliance, inference).
+    ///      Set piiEnabled=true to redact this data from on-chain settlement results.
+    /// @param usernameHash Identity to store KYC for
+    /// @param encryptedData ECIES-encrypted KYC blob
+    /// @param _piiEnabled Whether to enable PII redaction for this identity
+    function storeEncryptedKyc(
+        bytes32 usernameHash,
+        bytes calldata encryptedData,
+        bool _piiEnabled
+    )
+        external
+        onlyIdentityOwner(usernameHash)
+        identityExists(usernameHash)
+    {
+        if (encryptedData.length == 0) revert EmptyKycData();
+
+        Identity storage id = _identities[usernameHash];
+
+        // Require DKMS key first (needed for TEE to decrypt)
+        if (id.dkmsPublicKey.length == 0) revert NoDkmsKey();
+
+        id.encryptedKycData = encryptedData;
+        id.piiEnabled = _piiEnabled;
+
+        emit KycDataStored(usernameHash, encryptedData.length, _piiEnabled, block.timestamp);
+    }
+
+    /// @notice Update PII redaction flag
+    /// @dev When true, Ritual precompiles will redact this identity's data from settlement
+    /// @param usernameHash Identity to update
+    /// @param _piiEnabled New PII mode
+    function setPiiMode(bytes32 usernameHash, bool _piiEnabled)
+        external
+        onlyIdentityOwner(usernameHash)
+        identityExists(usernameHash)
+    {
+        _identities[usernameHash].piiEnabled = _piiEnabled;
+        emit PiiModeUpdated(usernameHash, _piiEnabled);
     }
 
     // ═══ Verification (KYC/KYB) ═══
@@ -382,6 +519,33 @@ contract HiveID {
     /// @notice Check if address is a registered primary wallet
     function isRegistered(address primaryWallet) external view returns (bool) {
         return primaryToIdentity[primaryWallet] != bytes32(0);
+    }
+
+    /// @notice Check if identity has a DKMS-derived key
+    function hasDkmsKey(bytes32 usernameHash) external view returns (bool) {
+        return _identities[usernameHash].dkmsPublicKey.length > 0;
+    }
+
+    /// @notice Check if identity has encrypted KYC data stored
+    function hasEncryptedKyc(bytes32 usernameHash) external view returns (bool) {
+        return _identities[usernameHash].encryptedKycData.length > 0;
+    }
+
+    /// @notice Get the DKMS public key for an identity
+    /// @return pubKey 65-byte uncompressed secp256k1 public key
+    function getDkmsPublicKey(bytes32 usernameHash) external view returns (bytes memory pubKey) {
+        pubKey = _identities[usernameHash].dkmsPublicKey;
+        require(pubKey.length > 0, "HiveID: no DKMS key");
+    }
+
+    /// @notice Get the current DKMS key index for an identity
+    function getDkmsKeyIndex(bytes32 usernameHash) external view returns (uint256) {
+        return dkmsKeyIndex[usernameHash];
+    }
+
+    /// @notice Get encrypted KYC data size (not the data itself — that's only for TEE)
+    function getEncryptedKycSize(bytes32 usernameHash) external view returns (uint256) {
+        return _identities[usernameHash].encryptedKycData.length;
     }
 
     // ═══ Ownership ═══
