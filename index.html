@@ -18,43 +18,34 @@
         }
 
         :root {
-            --bg-primary: #000000;
-            --bg-secondary: #050505;
-            --bg-tertiary: #0a0a0a;
-            --bg-card: #0f0f0f;
-            --bg-card-hover: #141414;
-            --text-primary: #ffffff;
-            --text-secondary: #888888;
+            --bg: #000000;
+            --bg-card: #0a0a0a;
+            --bg-card-hover: #111111;
+            --text: #ffffff;
+            --text-dim: #888888;
             --text-muted: #555555;
             --accent: #8b5cf6;
             --accent-light: #a78bfa;
             --accent-dark: #7c3aed;
             --accent-glow: rgba(139, 92, 246, 0.15);
-            --accent-glow-strong: rgba(139, 92, 246, 0.3);
             --green: #22c55e;
-            --green-glow: rgba(34, 197, 94, 0.2);
             --border: rgba(255, 255, 255, 0.06);
-            --border-hover: rgba(255, 255, 255, 0.12);
-            --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font: 'Inter', -apple-system, sans-serif;
             --font-display: 'Space Grotesk', 'Inter', sans-serif;
-            --radius: 16px;
-            --radius-sm: 8px;
-            --radius-lg: 24px;
         }
 
         html {
-            scroll-behavior: smooth;
-            font-size: 16px;
+            overflow: hidden;
+            height: 100%;
         }
 
         body {
-            font-family: var(--font-primary);
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            line-height: 1.6;
-            overflow-x: hidden;
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            overflow: hidden;
+            height: 100%;
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
         }
 
         ::selection {
@@ -65,28 +56,6 @@
         a {
             color: inherit;
             text-decoration: none;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        img {
-            max-width: 100%;
-            height: auto;
-        }
-
-        /* ═══════════════════════════════════════════
-           UTILITY CLASSES
-           ═══════════════════════════════════════════ */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
-        }
-
-        .glass {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
         }
 
         /* ═══════════════════════════════════════════
@@ -103,175 +72,277 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
             border-bottom: 1px solid var(--border);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .navbar.scrolled {
-            height: 64px;
-            background: rgba(0, 0, 0, 0.95);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
         }
 
         .logo {
             font-family: var(--font-display);
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: 700;
-            letter-spacing: -0.03em;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
 
         .logo-icon {
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1rem;
+            font-size: 0.9rem;
         }
 
         .nav-links {
             display: flex;
-            gap: 2rem;
+            gap: 1.75rem;
             list-style: none;
             align-items: center;
         }
 
         .nav-links a {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.08em;
-            color: var(--text-secondary);
-            transition: all 0.3s ease;
-            position: relative;
-            padding: 0.5rem 0;
+            color: var(--text-dim);
+            transition: color 0.3s;
+            cursor: pointer;
         }
 
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
-            height: 1.5px;
-            background: var(--accent);
-            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .nav-links a:hover {
-            color: var(--text-primary);
-        }
-
-        .nav-links a:hover::after,
-        .nav-links a.active::after {
-            width: 100%;
-        }
-
+        .nav-links a:hover,
         .nav-links a.active {
-            color: var(--text-primary);
+            color: var(--text);
         }
 
         .nav-cta {
-            padding: 0.6rem 1.4rem !important;
+            padding: 0.5rem 1.2rem !important;
             background: var(--accent) !important;
             color: white !important;
-            border-radius: var(--radius-sm);
+            border-radius: 6px;
             font-weight: 600 !important;
         }
 
         .nav-cta:hover {
             background: var(--accent-dark) !important;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 20px var(--accent-glow-strong);
-        }
-
-        .nav-cta::after {
-            display: none !important;
         }
 
         /* ═══════════════════════════════════════════
-           HERO SECTION
+           PAGE SYSTEM
            ═══════════════════════════════════════════ */
-        .hero {
-            min-height: 100vh;
+        .pages-wrapper {
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .page {
+            height: 100vh;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), 
+                        transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
             display: flex;
             align-items: center;
-            padding: 0 3rem;
+            padding: 72px 3rem 3rem;
+            overflow-y: auto;
+        }
+
+        .page.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+            z-index: 10;
+        }
+
+        .page.exit-up {
+            opacity: 0;
+            transform: translateY(-40px);
+        }
+
+        .page-inner {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* ═══════════════════════════════════════════
+           PAGE INDICATOR
+           ═══════════════════════════════════════════ */
+        .page-indicator {
+            position: fixed;
+            right: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .page-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--border);
+            cursor: pointer;
+            transition: all 0.3s;
             position: relative;
-            overflow: hidden;
         }
 
-        .hero-bg {
+        .page-dot:hover {
+            background: var(--text-dim);
+        }
+
+        .page-dot.active {
+            background: var(--accent);
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+
+        .page-dot-label {
             position: absolute;
-            inset: 0;
-            z-index: 0;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--text-dim);
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
         }
 
-        .hero-bg::before {
-            content: '';
-            position: absolute;
-            top: -20%;
-            right: -10%;
-            width: 800px;
-            height: 800px;
-            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
-            animation: float 20s ease-in-out infinite;
+        .page-dot:hover .page-dot-label {
+            opacity: 1;
         }
 
-        .hero-bg::after {
-            content: '';
-            position: absolute;
-            bottom: -30%;
-            left: -10%;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(34, 197, 94, 0.08) 0%, transparent 70%);
-            animation: float 25s ease-in-out infinite reverse;
+        /* ═══════════════════════════════════════════
+           AUTO-SCROLL TIMER
+           ═══════════════════════════════════════════ */
+        .auto-scroll-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-light));
+            z-index: 100;
+            transition: width linear;
+            box-shadow: 0 0 10px var(--accent-glow);
         }
 
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(30px, -30px) scale(1.05); }
-            66% { transform: translate(-20px, 20px) scale(0.95); }
+        .auto-scroll-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.75rem;
+            color: var(--text-dim);
         }
 
-        .hero-grid {
+        .auto-scroll-toggle:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--accent);
+            color: var(--text);
+        }
+
+        .auto-scroll-toggle .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+            transition: background 0.3s;
+        }
+
+        .auto-scroll-toggle.paused .dot {
+            background: var(--text-muted);
+        }
+
+        /* ═══════════════════════════════════════════
+           BACKGROUNDS
+           ═══════════════════════════════════════════ */
+        .bg-grid {
             position: absolute;
             inset: 0;
             background-image: 
-                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+                linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
             background-size: 60px 60px;
-            mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
-            -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+            mask-image: radial-gradient(ellipse at center, black 20%, transparent 70%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 20%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .bg-glow {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .bg-glow-purple {
+            background: var(--accent);
+        }
+
+        .bg-glow-green {
+            background: var(--green);
+        }
+
+        /* ═══════════════════════════════════════════
+           PAGE 1: HERO
+           ═══════════════════════════════════════════ */
+        .hero {
+            position: relative;
+        }
+
+        .hero .bg-glow {
+            top: -200px;
+            right: -100px;
+            opacity: 0.2;
         }
 
         .hero-content {
-            max-width: 700px;
-            position: relative;
-            z-index: 2;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
         }
 
         .hero-badge {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.5rem 1rem;
+            padding: 0.4rem 1rem;
             background: rgba(139, 92, 246, 0.1);
             border: 1px solid rgba(139, 92, 246, 0.2);
             border-radius: 100px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 600;
             color: var(--accent-light);
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             letter-spacing: 0.05em;
         }
 
@@ -284,219 +355,179 @@
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 var(--green-glow); }
-            50% { opacity: 0.8; box-shadow: 0 0 0 8px transparent; }
+            0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+            50% { box-shadow: 0 0 0 6px transparent; }
         }
 
         .hero h1 {
             font-family: var(--font-display);
-            font-size: 4.5rem;
+            font-size: 4rem;
             font-weight: 800;
             line-height: 1.05;
             letter-spacing: -0.04em;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.25rem;
         }
 
         .hero h1 .gradient {
-            background: linear-gradient(135deg, var(--accent-light) 0%, var(--accent) 50%, #c084fc 100%);
+            background: linear-gradient(135deg, var(--accent-light), var(--accent), #c084fc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
         .hero-desc {
-            font-size: 1.15rem;
-            color: var(--text-secondary);
-            margin-bottom: 2.5rem;
-            max-width: 560px;
+            font-size: 1.05rem;
+            color: var(--text-dim);
+            margin-bottom: 2rem;
             line-height: 1.7;
-            font-weight: 400;
+            max-width: 500px;
         }
 
         .hero-actions {
             display: flex;
             gap: 1rem;
-            margin-bottom: 4rem;
+            margin-bottom: 3rem;
         }
 
         .hero-stats {
             display: flex;
-            gap: 3rem;
-            padding-top: 2.5rem;
+            gap: 2.5rem;
+            padding-top: 2rem;
             border-top: 1px solid var(--border);
-        }
-
-        .stat {
-            position: relative;
-        }
-
-        .stat:not(:last-child)::after {
-            content: '';
-            position: absolute;
-            right: -1.5rem;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 1px;
-            height: 40px;
-            background: var(--border);
         }
 
         .stat-value {
             font-family: var(--font-display);
-            font-size: 2.5rem;
+            font-size: 2rem;
             font-weight: 800;
             line-height: 1;
-            letter-spacing: -0.03em;
         }
 
-        .stat-value .green {
-            color: var(--green);
-        }
+        .stat-value .green { color: var(--green); }
 
         .stat-label {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.08em;
-            margin-top: 0.5rem;
-            font-weight: 500;
-        }
-
-        .hero-visual {
-            position: absolute;
-            right: 3rem;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 480px;
-            height: 480px;
-            z-index: 1;
+            margin-top: 0.4rem;
         }
 
         .hero-card {
             width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
-            border: 1px solid rgba(139, 92, 246, 0.15);
-            border-radius: var(--radius-lg);
+            aspect-ratio: 1;
+            max-width: 420px;
+            justify-self: end;
             position: relative;
-            overflow: hidden;
+        }
+
+        .hero-card-outer {
+            width: 100%;
+            height: 100%;
+            border-radius: 24px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(139, 92, 246, 0.05));
+            animation: card-rotate 20s linear infinite;
+            position: relative;
+        }
+
+        @keyframes card-rotate {
+            0% { background: linear-gradient(0deg, rgba(139, 92, 246, 0.3), rgba(139, 92, 246, 0.05)); }
+            25% { background: linear-gradient(90deg, rgba(139, 92, 246, 0.3), rgba(139, 92, 246, 0.05)); }
+            50% { background: linear-gradient(180deg, rgba(139, 92, 246, 0.3), rgba(139, 92, 246, 0.05)); }
+            75% { background: linear-gradient(270deg, rgba(139, 92, 246, 0.3), rgba(139, 92, 246, 0.05)); }
+            100% { background: linear-gradient(360deg, rgba(139, 92, 246, 0.3), rgba(139, 92, 246, 0.05)); }
+        }
+
+        .hero-card-inner {
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            border-radius: 23px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
-            padding: 3rem;
-        }
-
-        .hero-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: conic-gradient(from 0deg, transparent 0%, var(--accent-glow) 25%, transparent 50%, var(--accent-glow) 75%, transparent 100%);
-            animation: rotate 30s linear infinite;
-        }
-
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .hero-card-inner {
-            position: relative;
-            z-index: 2;
-            background: var(--bg-primary);
-            border-radius: var(--radius);
-            padding: 3rem;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            padding: 2.5rem;
         }
 
         .hero-card-icon {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
-            border-radius: 20px;
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 20px 40px var(--accent-glow-strong);
+            font-size: 2rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 16px 40px rgba(139, 92, 246, 0.3);
         }
 
         .hero-card-title {
             font-family: var(--font-display);
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             font-weight: 700;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.25rem;
         }
 
-        .hero-card-subtitle {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            margin-bottom: 2rem;
+        .hero-card-sub {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-bottom: 1.5rem;
         }
 
-        .hero-card-stats {
+        .hero-card-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1rem;
+            gap: 0.75rem;
             width: 100%;
         }
 
         .hero-card-stat {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 1rem;
+            border-radius: 8px;
+            padding: 0.75rem;
             text-align: center;
         }
 
-        .hero-card-stat-value {
+        .hero-card-stat-val {
             font-family: var(--font-display);
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             font-weight: 700;
             color: var(--accent-light);
         }
 
-        .hero-card-stat-label {
-            font-size: 0.7rem;
+        .hero-card-stat-lbl {
+            font-size: 0.6rem;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            margin-top: 0.25rem;
+            margin-top: 0.15rem;
         }
 
         /* ═══════════════════════════════════════════
-           SECTION STYLES
+           PAGE 2: CAPABILITIES
            ═══════════════════════════════════════════ */
-        .section {
-            padding: 8rem 3rem;
-            position: relative;
+        .capabilities .bg-glow {
+            bottom: -200px;
+            left: -200px;
+            opacity: 0.15;
         }
 
         .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 4rem;
-            gap: 2rem;
+            margin-bottom: 3rem;
         }
 
         .section-label {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.12em;
             color: var(--accent);
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
             display: flex;
             align-items: center;
             gap: 0.75rem;
@@ -504,58 +535,35 @@
 
         .section-label::before {
             content: '';
-            width: 24px;
+            width: 20px;
             height: 1.5px;
             background: var(--accent);
         }
 
         .section-title {
             font-family: var(--font-display);
-            font-size: 3rem;
+            font-size: 2.5rem;
             font-weight: 800;
             letter-spacing: -0.03em;
-            line-height: 1.1;
         }
 
-        .section-subtitle {
-            font-size: 1rem;
-            color: var(--text-secondary);
-            max-width: 400px;
-            text-align: right;
-            line-height: 1.6;
-        }
-
-        .section-divider {
-            width: 100%;
-            height: 1px;
-            background: var(--border);
-            margin: 0;
-        }
-
-        /* ═══════════════════════════════════════════
-           CAPABILITIES SECTION
-           ═══════════════════════════════════════════ */
-        .capabilities {
-            background: var(--bg-secondary);
-        }
-
-        .capabilities-grid {
+        .caps-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
+            gap: 1.25rem;
         }
 
-        .capability-card {
+        .cap-card {
             background: var(--bg-card);
-            padding: 2rem;
-            border-radius: var(--radius);
+            padding: 1.75rem;
+            border-radius: 16px;
             border: 1px solid var(--border);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
         }
 
-        .capability-card::before {
+        .cap-card::before {
             content: '';
             position: absolute;
             top: 0;
@@ -564,376 +572,341 @@
             height: 2px;
             background: linear-gradient(90deg, transparent, var(--accent), transparent);
             opacity: 0;
-            transition: opacity 0.4s ease;
+            transition: opacity 0.4s;
         }
 
-        .capability-card:hover {
+        .cap-card:hover {
             background: var(--bg-card-hover);
-            border-color: var(--border-hover);
-            transform: translateY(-4px);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
         }
 
-        .capability-card:hover::before {
+        .cap-card:hover::before {
             opacity: 1;
         }
 
-        .capability-icon {
-            width: 48px;
-            height: 48px;
+        .cap-icon {
+            width: 40px;
+            height: 40px;
             background: var(--accent-glow);
             border: 1px solid rgba(139, 92, 246, 0.2);
-            border-radius: 12px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 1.25rem;
-            font-size: 1.25rem;
-            transition: all 0.3s ease;
-        }
-
-        .capability-card:hover .capability-icon {
-            background: var(--accent-glow-strong);
-            border-color: var(--accent);
-            transform: scale(1.05);
-        }
-
-        .capability-title {
-            font-family: var(--font-display);
             font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 0.75rem;
-            letter-spacing: -0.01em;
+            margin-bottom: 1rem;
         }
 
-        .capability-desc {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
+        .cap-title {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .cap-desc {
+            font-size: 0.8rem;
+            color: var(--text-dim);
             line-height: 1.6;
         }
 
         /* ═══════════════════════════════════════════
-           SERVICES SECTION
+           PAGE 3: SERVICES
            ═══════════════════════════════════════════ */
         .services-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 0;
         }
 
-        .service-item {
+        .svc-item {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            padding: 1.25rem 1.5rem;
+            gap: 0.75rem;
+            padding: 1rem 1.25rem;
             border: 1px solid var(--border);
             margin: -0.5px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: default;
+            transition: all 0.3s;
             position: relative;
             overflow: hidden;
         }
 
-        .service-item::before {
+        .svc-item::before {
             content: '';
             position: absolute;
             inset: 0;
             background: var(--accent-glow);
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.3s;
         }
 
-        .service-item:hover {
+        .svc-item:hover {
             border-color: var(--accent);
             z-index: 2;
         }
 
-        .service-item:hover::before {
+        .svc-item:hover::before {
             opacity: 1;
         }
 
-        .service-arrow {
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .svc-arrow {
             color: var(--accent);
-            transition: transform 0.3s ease;
-            position: relative;
-            z-index: 2;
-        }
-
-        .service-item:hover .service-arrow {
-            transform: translateX(4px);
-        }
-
-        .service-name {
             font-size: 0.9rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            transition: color 0.3s ease;
+            transition: transform 0.3s;
             position: relative;
             z-index: 2;
         }
 
-        .service-item:hover .service-name {
-            color: var(--text-primary);
+        .svc-item:hover .svc-arrow {
+            transform: translateX(3px);
+        }
+
+        .svc-name {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-dim);
+            transition: color 0.3s;
+            position: relative;
+            z-index: 2;
+        }
+
+        .svc-item:hover .svc-name {
+            color: var(--text);
         }
 
         /* ═══════════════════════════════════════════
-           PORTFOLIO SECTION
+           PAGE 4: PROJECTS
            ═══════════════════════════════════════════ */
-        .portfolio {
-            background: var(--bg-secondary);
-        }
-
-        .portfolio-grid {
+        .projects-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
+            gap: 1.25rem;
         }
 
-        .portfolio-item {
+        .proj-card {
             position: relative;
-            height: 280px;
+            height: 220px;
             background: var(--bg-card);
-            border-radius: var(--radius);
+            border-radius: 16px;
             overflow: hidden;
             border: 1px solid var(--border);
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s;
         }
 
-        .portfolio-item:hover {
-            border-color: var(--border-hover);
-            transform: translateY(-4px);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        .proj-card:hover {
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
         }
 
-        .portfolio-item.large {
+        .proj-card.large {
             grid-column: span 2;
-            height: 350px;
+            height: 260px;
         }
 
-        .portfolio-bg {
+        .proj-bg {
             position: absolute;
             inset: 0;
-            background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+            background: linear-gradient(135deg, #0a0a0a, #050505);
         }
 
-        .portfolio-bg::before {
+        .proj-bg::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: radial-gradient(circle at 30% 50%, var(--accent-glow) 0%, transparent 50%);
+            background: radial-gradient(circle at 30% 50%, var(--accent-glow), transparent 50%);
         }
 
-        .portfolio-pattern {
-            position: absolute;
-            inset: 0;
-            background-image: 
-                radial-gradient(circle at 20% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 40%),
-                radial-gradient(circle at 80% 20%, rgba(34, 197, 94, 0.08) 0%, transparent 40%);
-        }
-
-        .portfolio-content {
+        .proj-content {
             position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
-            padding: 2rem;
-            background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.6) 60%, transparent 100%);
+            padding: 1.5rem;
+            background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.5) 60%, transparent);
         }
 
-        .portfolio-tag {
-            font-size: 0.7rem;
+        .proj-tag {
+            font-size: 0.65rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.1em;
             color: var(--accent-light);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
         }
 
-        .portfolio-title {
+        .proj-title {
             font-family: var(--font-display);
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             font-weight: 700;
-            letter-spacing: -0.01em;
         }
 
-        .portfolio-meta {
-            font-size: 0.8rem;
+        .proj-meta {
+            font-size: 0.75rem;
             color: var(--text-muted);
-            margin-top: 0.5rem;
+            margin-top: 0.3rem;
+        }
+
+        .projects-cta {
+            text-align: center;
+            margin-top: 2rem;
         }
 
         /* ═══════════════════════════════════════════
-           ABOUT SECTION
+           PAGE 5: ABOUT
            ═══════════════════════════════════════════ */
-        .about-grid {
+        .about-content {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 4rem;
+            gap: 3rem;
             align-items: start;
         }
 
         .about-text h3 {
             font-family: var(--font-display);
-            font-size: 1.75rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            margin-bottom: 1.5rem;
-            letter-spacing: -0.02em;
+            margin-bottom: 1.25rem;
         }
 
         .about-text p {
-            font-size: 0.95rem;
-            color: var(--text-secondary);
-            line-height: 1.8;
-            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            line-height: 1.7;
+            margin-bottom: 0.75rem;
         }
 
         .about-features {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-top: 2rem;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
         }
 
-        .about-feature {
+        .about-feat {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
+            gap: 0.5rem;
+            padding: 0.6rem 0.8rem;
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            font-size: 0.85rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
             font-weight: 500;
         }
 
-        .about-feature-icon {
+        .about-feat-check {
             color: var(--accent);
         }
 
-        .team-grid {
+        .team-cards {
             display: grid;
-            gap: 1.5rem;
+            gap: 1.25rem;
         }
 
         .team-card {
             background: var(--bg-card);
-            border-radius: var(--radius);
-            padding: 2rem;
+            border-radius: 16px;
+            padding: 1.5rem;
             border: 1px solid var(--border);
-            transition: all 0.3s ease;
             display: grid;
             grid-template-columns: auto 1fr;
-            gap: 1.5rem;
+            gap: 1.25rem;
             align-items: center;
+            transition: all 0.3s;
         }
 
         .team-card:hover {
-            border-color: var(--border-hover);
+            border-color: rgba(255, 255, 255, 0.1);
             background: var(--bg-card-hover);
         }
 
         .team-avatar {
-            width: 64px;
-            height: 64px;
-            border-radius: 16px;
-            background: linear-gradient(135deg, var(--accent-glow) 0%, var(--accent-glow-strong) 100%);
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: var(--accent-glow);
             border: 1px solid rgba(139, 92, 246, 0.2);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
-        }
-
-        .team-info {
-            min-width: 0;
+            font-size: 1.25rem;
         }
 
         .team-role {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.1em;
             color: var(--accent);
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.15rem;
         }
 
         .team-name {
             font-family: var(--font-display);
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             font-weight: 700;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.3rem;
         }
 
         .team-bio {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
+            font-size: 0.8rem;
+            color: var(--text-dim);
             line-height: 1.5;
         }
 
-        .team-links {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.75rem;
-        }
-
         .team-link {
-            font-size: 0.75rem;
+            display: inline-block;
+            margin-top: 0.5rem;
+            font-size: 0.7rem;
             font-weight: 600;
-            padding: 0.4rem 0.8rem;
+            padding: 0.3rem 0.7rem;
             background: var(--accent-glow);
             border: 1px solid rgba(139, 92, 246, 0.2);
             border-radius: 6px;
             color: var(--accent-light);
-            transition: all 0.3s ease;
+            transition: all 0.3s;
         }
 
         .team-link:hover {
-            background: var(--accent-glow-strong);
+            background: rgba(139, 92, 246, 0.25);
             border-color: var(--accent);
         }
 
         /* ═══════════════════════════════════════════
-           CONTACT SECTION
+           PAGE 6: CONTACT
            ═══════════════════════════════════════════ */
-        .contact {
+        .contact-page {
             text-align: center;
-            padding: 10rem 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             position: relative;
         }
 
-        .contact::before {
-            content: '';
-            position: absolute;
+        .contact-page .bg-glow {
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
-            opacity: 0.5;
-            pointer-events: none;
+            opacity: 0.2;
         }
 
         .contact-title {
             font-family: var(--font-display);
-            font-size: 3.5rem;
+            font-size: 3rem;
             font-weight: 800;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
             letter-spacing: -0.03em;
             position: relative;
         }
 
-        .contact-subtitle {
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-            max-width: 500px;
-            margin: 0 auto 3rem;
+        .contact-sub {
+            font-size: 1rem;
+            color: var(--text-dim);
+            max-width: 480px;
+            margin: 0 auto 2.5rem;
             line-height: 1.7;
             position: relative;
         }
@@ -941,8 +914,32 @@
         .contact-actions {
             display: flex;
             gap: 1rem;
-            justify-content: center;
             position: relative;
+            margin-bottom: 3rem;
+        }
+
+        .contact-info {
+            display: flex;
+            gap: 3rem;
+            position: relative;
+        }
+
+        .contact-info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .contact-info-item svg {
+            width: 16px;
+            height: 16px;
+            color: var(--accent);
+        }
+
+        .contact-info-item a {
+            color: var(--accent-light);
         }
 
         /* ═══════════════════════════════════════════
@@ -951,13 +948,12 @@
         .btn {
             display: inline-flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.875rem 1.75rem;
-            font-family: var(--font-primary);
-            font-size: 0.85rem;
+            gap: 0.6rem;
+            padding: 0.75rem 1.5rem;
+            font-family: var(--font);
+            font-size: 0.8rem;
             font-weight: 600;
-            letter-spacing: 0.02em;
-            border-radius: var(--radius-sm);
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border: none;
@@ -967,18 +963,18 @@
         .btn-primary {
             background: var(--accent);
             color: white;
-            box-shadow: 0 4px 20px var(--accent-glow-strong);
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
         }
 
         .btn-primary:hover {
             background: var(--accent-dark);
             transform: translateY(-2px);
-            box-shadow: 0 8px 30px var(--accent-glow-strong);
+            box-shadow: 0 8px 30px rgba(139, 92, 246, 0.3);
         }
 
         .btn-outline {
             background: transparent;
-            color: var(--text-primary);
+            color: var(--text);
             border: 1px solid var(--border);
         }
 
@@ -989,125 +985,46 @@
         }
 
         .btn-icon {
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
         }
 
         /* ═══════════════════════════════════════════
-           FOOTER
+           FOOTER (mini)
            ═══════════════════════════════════════════ */
-        .footer {
-            background: var(--bg-secondary);
-            border-top: 1px solid var(--border);
-            padding: 4rem 3rem 2rem;
-        }
-
-        .footer-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1.5fr;
-            gap: 3rem;
-            margin-bottom: 3rem;
-        }
-
-        .footer-brand .logo {
-            margin-bottom: 1rem;
-            display: inline-flex;
-        }
-
-        .footer-desc {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            line-height: 1.6;
-            margin-bottom: 1.5rem;
-            max-width: 300px;
-        }
-
-        .footer-social {
-            display: flex;
-            gap: 0.75rem;
-        }
-
-        .social-link {
-            width: 36px;
-            height: 36px;
-            border-radius: var(--radius-sm);
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-secondary);
-            transition: all 0.3s ease;
-        }
-
-        .social-link:hover {
-            border-color: var(--accent);
-            color: var(--accent-light);
-            background: var(--accent-glow);
-        }
-
-        .footer-title {
-            font-family: var(--font-display);
-            font-size: 0.85rem;
-            font-weight: 700;
-            margin-bottom: 1.25rem;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--text-primary);
-        }
-
-        .footer-links {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 0.625rem;
-        }
-
-        .footer-links a {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            transition: all 0.3s ease;
-        }
-
-        .footer-links a:hover {
-            color: var(--accent-light);
-        }
-
-        .footer-contact-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 0.875rem;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-        }
-
-        .footer-contact-item svg {
-            width: 14px;
-            height: 14px;
-            color: var(--accent);
-            flex-shrink: 0;
-        }
-
-        .footer-contact-item a {
-            color: var(--accent-light);
-        }
-
-        .footer-contact-item a:hover {
-            color: var(--accent);
-        }
-
-        .footer-bottom {
+        .mini-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 0.75rem 3rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-top: 2rem;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(16px);
             border-top: 1px solid var(--border);
+            font-size: 0.7rem;
+            color: var(--text-muted);
         }
 
-        .footer-bottom p {
-            font-size: 0.8rem;
+        .mini-footer a {
+            color: var(--accent-light);
+        }
+
+        .mini-footer-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .mini-footer-links a {
             color: var(--text-muted);
+            transition: color 0.3s;
+        }
+
+        .mini-footer-links a:hover {
+            color: var(--text);
         }
 
         /* ═══════════════════════════════════════════
@@ -1115,7 +1032,7 @@
            ═══════════════════════════════════════════ */
         .fade-in {
             opacity: 0;
-            transform: translateY(20px);
+            transform: translateY(16px);
             transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -1124,125 +1041,41 @@
             transform: translateY(0);
         }
 
-        .fade-in-delay-1 { transition-delay: 0.1s; }
-        .fade-in-delay-2 { transition-delay: 0.2s; }
-        .fade-in-delay-3 { transition-delay: 0.3s; }
-        .fade-in-delay-4 { transition-delay: 0.4s; }
-        .fade-in-delay-5 { transition-delay: 0.5s; }
+        .d1 { transition-delay: 0.1s; }
+        .d2 { transition-delay: 0.2s; }
+        .d3 { transition-delay: 0.3s; }
+        .d4 { transition-delay: 0.4s; }
+        .d5 { transition-delay: 0.5s; }
+        .d6 { transition-delay: 0.6s; }
+        .d7 { transition-delay: 0.7s; }
+        .d8 { transition-delay: 0.8s; }
 
         /* ═══════════════════════════════════════════
            RESPONSIVE
            ═══════════════════════════════════════════ */
         @media (max-width: 1024px) {
-            .hero h1 {
-                font-size: 3.5rem;
-            }
-
-            .hero-visual {
-                display: none;
-            }
-
-            .hero-content {
-                max-width: 100%;
-            }
-
-            .capabilities-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .services-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .about-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .footer-grid {
-                grid-template-columns: 1fr 1fr;
-            }
+            .hero-content { grid-template-columns: 1fr; }
+            .hero-card { display: none; }
+            .caps-grid { grid-template-columns: repeat(2, 1fr); }
+            .services-grid { grid-template-columns: repeat(2, 1fr); }
+            .about-content { grid-template-columns: 1fr; }
+            .projects-grid { grid-template-columns: 1fr; }
+            .proj-card.large { grid-column: span 1; }
         }
 
         @media (max-width: 768px) {
-            .navbar {
-                padding: 0 1.5rem;
-            }
-
-            .nav-links {
-                display: none;
-            }
-
-            .section {
-                padding: 5rem 1.5rem;
-            }
-
-            .hero {
-                padding: 0 1.5rem;
-            }
-
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-
-            .section-title {
-                font-size: 2rem;
-            }
-
-            .hero-stats {
-                flex-wrap: wrap;
-                gap: 2rem;
-            }
-
-            .stat:not(:last-child)::after {
-                display: none;
-            }
-
-            .capabilities-grid,
-            .services-grid,
-            .portfolio-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .portfolio-item.large {
-                grid-column: span 1;
-            }
-
-            .team-card {
-                grid-template-columns: 1fr;
-                text-align: center;
-            }
-
-            .team-avatar {
-                margin: 0 auto;
-            }
-
-            .team-links {
-                justify-content: center;
-            }
-
-            .about-features {
-                grid-template-columns: 1fr;
-            }
-
-            .footer-grid {
-                grid-template-columns: 1fr;
-                gap: 2rem;
-            }
-
-            .footer-bottom {
-                flex-direction: column;
-                gap: 1rem;
-                text-align: center;
-            }
-
-            .hero-actions {
-                flex-direction: column;
-            }
-
-            .contact-actions {
-                flex-direction: column;
-                align-items: center;
-            }
+            .navbar { padding: 0 1.5rem; }
+            .nav-links { display: none; }
+            .page { padding: 72px 1.5rem 3rem; }
+            .hero h1 { font-size: 2.5rem; }
+            .section-title { font-size: 1.75rem; }
+            .caps-grid, .services-grid { grid-template-columns: 1fr; }
+            .about-features { grid-template-columns: 1fr; }
+            .contact-info { flex-direction: column; gap: 1rem; }
+            .contact-actions { flex-direction: column; }
+            .page-indicator { display: none; }
+            .mini-footer { padding: 0.5rem 1.5rem; }
+            .mini-footer-links { display: none; }
         }
     </style>
 </head>
@@ -1250,390 +1083,301 @@
     <!-- ═══════════════════════════════════════════
          NAVIGATION
          ═══════════════════════════════════════════ -->
-    <nav class="navbar" id="navbar">
+    <nav class="navbar">
         <div class="logo">
             <div class="logo-icon">🐝</div>
             Hive
         </div>
         <ul class="nav-links">
-            <li><a href="#home" class="active">Home</a></li>
-            <li><a href="#capabilities">Capabilities</a></li>
-            <li><a href="#services">Services</a></li>
-            <li><a href="#projects">Projects</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#contact">Contact</a></li>
+            <li><a data-page="0" class="active">Home</a></li>
+            <li><a data-page="1">Capabilities</a></li>
+            <li><a data-page="2">Services</a></li>
+            <li><a data-page="3">Projects</a></li>
+            <li><a data-page="4">About</a></li>
+            <li><a data-page="5">Contact</a></li>
             <li><a href="https://github.com/frianowzki/hive" target="_blank" class="nav-cta">GitHub</a></li>
         </ul>
     </nav>
 
     <!-- ═══════════════════════════════════════════
-         HERO SECTION
+         PAGE INDICATOR
          ═══════════════════════════════════════════ -->
-    <section class="hero" id="home">
-        <div class="hero-bg">
-            <div class="hero-grid"></div>
+    <div class="page-indicator">
+        <div class="page-dot active" data-page="0">
+            <span class="page-dot-label">Home</span>
         </div>
-        <div class="container" style="display: flex; align-items: center; width: 100%; max-width: 100%;">
-            <div class="hero-content">
-                <div class="hero-badge fade-in">
-                    <span class="hero-badge-dot"></span>
-                    Ritual Chain • Chain ID 1979 • Testnet Live
-                </div>
-                <h1 class="fade-in fade-in-delay-1">
-                    The <span class="gradient">compliant AI launchpad</span> for forward-thinking DeFi.
-                </h1>
-                <p class="hero-desc fade-in fade-in-delay-2">
-                    Fully on-chain, zk-proofed AI launchpad built on Ritual Chain. 
-                    AI market makers, federated learning, EigenLayer AVS, and DAO governance — 
-                    all with KYC/KYB compliance.
-                </p>
-                <div class="hero-actions fade-in fade-in-delay-3">
-                    <a href="#contact" class="btn btn-primary">
-                        Launch App
-                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7"/>
-                        </svg>
-                    </a>
-                    <a href="#capabilities" class="btn btn-outline">Explore Platform</a>
-                </div>
-                <div class="hero-stats fade-in fade-in-delay-4">
-                    <div class="stat">
-                        <div class="stat-value">29</div>
-                        <div class="stat-label">Contracts Deployed</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-value">300</div>
-                        <div class="stat-label">Tests Passing</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-value"><span class="green">Live</span></div>
-                        <div class="stat-label">On Testnet</div>
-                    </div>
-                </div>
-            </div>
-            <div class="hero-visual fade-in fade-in-delay-3">
-                <div class="hero-card">
-                    <div class="hero-card-inner">
-                        <div class="hero-card-icon">🐝</div>
-                        <div class="hero-card-title">Hive Ecosystem</div>
-                        <div class="hero-card-subtitle">Fully interconnected smart contracts</div>
-                        <div class="hero-card-stats">
-                            <div class="hero-card-stat">
-                                <div class="hero-card-stat-value">7</div>
-                                <div class="hero-card-stat-label">Layers</div>
+        <div class="page-dot" data-page="1">
+            <span class="page-dot-label">Capabilities</span>
+        </div>
+        <div class="page-dot" data-page="2">
+            <span class="page-dot-label">Services</span>
+        </div>
+        <div class="page-dot" data-page="3">
+            <span class="page-dot-label">Projects</span>
+        </div>
+        <div class="page-dot" data-page="4">
+            <span class="page-dot-label">About</span>
+        </div>
+        <div class="page-dot" data-page="5">
+            <span class="page-dot-label">Contact</span>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         AUTO-SCROLL BAR
+         ═══════════════════════════════════════════ -->
+    <div class="auto-scroll-bar" id="autoScrollBar"></div>
+    <div class="auto-scroll-toggle" id="autoScrollToggle">
+        <span class="dot"></span>
+        <span id="toggleLabel">Auto-scroll on</span>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         PAGES
+         ═══════════════════════════════════════════ -->
+    <div class="pages-wrapper" id="pagesWrapper">
+
+        <!-- PAGE 1: HERO -->
+        <div class="page hero active" data-index="0">
+            <div class="bg-grid"></div>
+            <div class="bg-glow bg-glow-purple"></div>
+            <div class="page-inner">
+                <div class="hero-content">
+                    <div>
+                        <div class="hero-badge fade-in">
+                            <span class="hero-badge-dot"></span>
+                            Ritual Chain • Chain ID 1979 • Testnet Live
+                        </div>
+                        <h1 class="fade-in d1">
+                            The <span class="gradient">compliant AI launchpad</span> for forward-thinking DeFi.
+                        </h1>
+                        <p class="hero-desc fade-in d2">
+                            Fully on-chain, zk-proofed AI launchpad built on Ritual Chain. 
+                            AI market makers, federated learning, EigenLayer AVS, and DAO governance — 
+                            all with KYC/KYB compliance.
+                        </p>
+                        <div class="hero-actions fade-in d3">
+                            <a href="#" class="btn btn-primary" onclick="goToPage(5); return false;">
+                                Launch App
+                                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                            </a>
+                            <a href="#" class="btn btn-outline" onclick="goToPage(1); return false;">Explore Platform</a>
+                        </div>
+                        <div class="hero-stats fade-in d4">
+                            <div class="stat">
+                                <div class="stat-value">29</div>
+                                <div class="stat-label">Contracts Deployed</div>
                             </div>
-                            <div class="hero-card-stat">
-                                <div class="hero-card-stat-value">4</div>
-                                <div class="hero-card-stat-label">Integrations</div>
+                            <div class="stat">
+                                <div class="stat-value">300</div>
+                                <div class="stat-label">Tests Passing</div>
                             </div>
-                            <div class="hero-card-stat">
-                                <div class="hero-card-stat-value">206</div>
-                                <div class="hero-card-stat-label">Events</div>
+                            <div class="stat">
+                                <div class="stat-value"><span class="green">Live</span></div>
+                                <div class="stat-label">On Testnet</div>
                             </div>
-                            <div class="hero-card-stat">
-                                <div class="hero-card-stat-value">0</div>
-                                <div class="hero-card-stat-label">Critical Bugs</div>
+                        </div>
+                    </div>
+                    <div class="hero-card fade-in d3">
+                        <div class="hero-card-outer">
+                            <div class="hero-card-inner">
+                                <div class="hero-card-icon">🐝</div>
+                                <div class="hero-card-title">Hive Ecosystem</div>
+                                <div class="hero-card-sub">Fully interconnected smart contracts</div>
+                                <div class="hero-card-grid">
+                                    <div class="hero-card-stat">
+                                        <div class="hero-card-stat-val">7</div>
+                                        <div class="hero-card-stat-lbl">Layers</div>
+                                    </div>
+                                    <div class="hero-card-stat">
+                                        <div class="hero-card-stat-val">4</div>
+                                        <div class="hero-card-stat-lbl">Integrations</div>
+                                    </div>
+                                    <div class="hero-card-stat">
+                                        <div class="hero-card-stat-val">206</div>
+                                        <div class="hero-card-stat-lbl">Events</div>
+                                    </div>
+                                    <div class="hero-card-stat">
+                                        <div class="hero-card-stat-val">0</div>
+                                        <div class="hero-card-stat-lbl">Critical</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
 
-    <!-- ═══════════════════════════════════════════
-         CAPABILITIES SECTION
-         ═══════════════════════════════════════════ -->
-    <section class="section capabilities" id="capabilities">
-        <div class="container">
-            <div class="section-header">
-                <div>
+        <!-- PAGE 2: CAPABILITIES -->
+        <div class="page capabilities" data-index="1">
+            <div class="bg-grid"></div>
+            <div class="bg-glow bg-glow-purple"></div>
+            <div class="page-inner">
+                <div class="section-header fade-in">
                     <div class="section-label">What we do</div>
                     <h2 class="section-title">Capabilities</h2>
                 </div>
-                <p class="section-subtitle">
-                    Hive combines AI, DeFi, and compliance into a single, 
-                    fully on-chain ecosystem on Ritual Chain.
-                </p>
-            </div>
-            <div class="capabilities-grid">
-                <div class="capability-card fade-in">
-                    <div class="capability-icon">🔐</div>
-                    <h3 class="capability-title">ZK Identity & Compliance</h3>
-                    <p class="capability-desc">
-                        Groth16-based KYC/KYB verification with on-chain identity. 
-                        Semi-custodial wallets with dual-auth. Full regulatory compliance without sacrificing privacy.
-                    </p>
-                </div>
-                <div class="capability-card fade-in fade-in-delay-1">
-                    <div class="capability-icon">🧠</div>
-                    <h3 class="capability-title">AI Decision Engine</h3>
-                    <p class="capability-desc">
-                        HiveBrain orchestrates all AI operations — price feeds via Allora, 
-                        federated learning via FLock, autonomous strategy execution. Powered by Ritual LLM.
-                    </p>
-                </div>
-                <div class="capability-card fade-in fade-in-delay-2">
-                    <div class="capability-icon">⚡</div>
-                    <h3 class="capability-title">AI Market Maker</h3>
-                    <p class="capability-desc">
-                        Constant-product AMM with AI-driven pricing. 
-                        Liquidity pools, LP rewards, and automated market making with real-time oracle integration.
-                    </p>
-                </div>
-                <div class="capability-card fade-in fade-in-delay-1">
-                    <div class="capability-icon">🏛️</div>
-                    <h3 class="capability-title">DAO Governance</h3>
-                    <p class="capability-desc">
-                        Multi-sig council, proposal system, voting, and treasury management. 
-                        HiveClearing batch auctions (HCA) for fair token launches.
-                    </p>
-                </div>
-                <div class="capability-card fade-in fade-in-delay-2">
-                    <div class="capability-icon">🔗</div>
-                    <h3 class="capability-title">EigenLayer AVS</h3>
-                    <p class="capability-desc">
-                        Operator registration, delegation, slashing, and fee distribution. 
-                        Four operator roles. Shared security via EigenLayer restaking.
-                    </p>
-                </div>
-                <div class="capability-card fade-in fade-in-delay-3">
-                    <div class="capability-icon">🤖</div>
-                    <h3 class="capability-title">Autonomous Agents</h3>
-                    <p class="capability-desc">
-                        Queen orchestrator routes tasks to Brain, Strategy, and Drone agents. 
-                        Automated strategies, point systems, referral rewards.
-                    </p>
+                <div class="caps-grid">
+                    <div class="cap-card fade-in d1">
+                        <div class="cap-icon">🔐</div>
+                        <h3 class="cap-title">ZK Identity & Compliance</h3>
+                        <p class="cap-desc">Groth16-based KYC/KYB verification with on-chain identity. Semi-custodial wallets with dual-auth. Full regulatory compliance without sacrificing privacy.</p>
+                    </div>
+                    <div class="cap-card fade-in d2">
+                        <div class="cap-icon">🧠</div>
+                        <h3 class="cap-title">AI Decision Engine</h3>
+                        <p class="cap-desc">HiveBrain orchestrates all AI operations — price feeds via Allora, federated learning via FLock, autonomous strategy execution. Powered by Ritual LLM.</p>
+                    </div>
+                    <div class="cap-card fade-in d3">
+                        <div class="cap-icon">⚡</div>
+                        <h3 class="cap-title">AI Market Maker</h3>
+                        <p class="cap-desc">Constant-product AMM with AI-driven pricing. Liquidity pools, LP rewards, and automated market making with real-time oracle integration.</p>
+                    </div>
+                    <div class="cap-card fade-in d4">
+                        <div class="cap-icon">🏛️</div>
+                        <h3 class="cap-title">DAO Governance</h3>
+                        <p class="cap-desc">Multi-sig council, proposal system, voting, and treasury management. HiveClearing batch auctions (HCA) for fair token launches.</p>
+                    </div>
+                    <div class="cap-card fade-in d5">
+                        <div class="cap-icon">🔗</div>
+                        <h3 class="cap-title">EigenLayer AVS</h3>
+                        <p class="cap-desc">Operator registration, delegation, slashing, and fee distribution. Four operator roles. Shared security via EigenLayer restaking.</p>
+                    </div>
+                    <div class="cap-card fade-in d6">
+                        <div class="cap-icon">🤖</div>
+                        <h3 class="cap-title">Autonomous Agents</h3>
+                        <p class="cap-desc">Queen orchestrator routes tasks to Brain, Strategy, and Drone agents. Automated strategies, point systems, referral rewards.</p>
+                    </div>
                 </div>
             </div>
         </div>
-    </section>
 
-    <!-- ═══════════════════════════════════════════
-         SERVICES SECTION
-         ═══════════════════════════════════════════ -->
-    <section class="section" id="services">
-        <div class="container">
-            <div class="section-header">
-                <div>
+        <!-- PAGE 3: SERVICES -->
+        <div class="page" data-index="2">
+            <div class="bg-grid"></div>
+            <div class="page-inner">
+                <div class="section-header fade-in">
                     <div class="section-label">Our stack</div>
                     <h2 class="section-title">What we build</h2>
                 </div>
-            </div>
-            <div class="services-grid">
-                <div class="service-item fade-in">
-                    <span class="service-arrow">→</span>
-                    <span class="service-name">ZK Proof Verification (Groth16)</span>
-                </div>
-                <div class="service-item fade-in fade-in-delay-1">
-                    <span class="service-arrow">→</span>
-                    <span class="service-name">AI Market Maker (AMM)</span>
-                </div>
-                <div class="service-item fade-in fade-in-delay-2">
-                    <span class="service-arrow">→</span>
-                    <span class="service-name">Federated Learning (FLock)</span>
-                </div>
-                <div class="service-item fade-in">
-                    <span class="service-arrow">→</span>
-                    <span class="service-name">Price Oracles (Allora)</span>
-                </div>
-                <div class="service-item fade-in fade-in-delay-1">
-                    <span class="service-arrow">→</span>
-                    <span class="service-name">Batch Auctions (HCA)</span>
-                </div>
-                <div class="service-item fade-in fade-in-delay-2">
-                    <span class="service-arrow">→</span>
-                    <span class="service-name">Token Launches + Vesting</span>
-                </div>
-                <div class="service-item fade-in">
-                    <span class="service-arrow">→</span>
-                    <span class="service-name">ETH Staking + Rewards</span>
-                </div>
-                <div class="service-item fade-in fade-in-delay-1">
-                    <span class="service-arrow">→</span>
-                    <span class="service-name">Multi-Sig Wallets</span>
-                </div>
-                <div class="service-item fade-in fade-in-delay-2">
-                    <span class="service-arrow">→</span>
-                    <span class="service-name">DAO Governance + Voting</span>
-                </div>
-                <div class="service-item fade-in">
-                    <span class="service-arrow">→</span>
-                    <span class="service-name">EigenLayer AVS Integration</span>
-                </div>
-                <div class="service-item fade-in fade-in-delay-1">
-                    <span class="service-arrow">→</span>
-                    <span class="service-name">Encrypted P2P Chat (ECIES)</span>
-                </div>
-                <div class="service-item fade-in fade-in-delay-2">
-                    <span class="service-arrow">→</span>
-                    <span class="service-name">Autonomous Agent Orchestration</span>
-                </div>
-                <div class="service-item fade-in">
-                    <span class="service-arrow">→</span>
-                    <span class="service-name">Portfolio Management</span>
-                </div>
-                <div class="service-item fade-in fade-in-delay-1">
-                    <span class="service-arrow">→</span>
-                    <span class="service-name">Referral & Points System</span>
-                </div>
-                <div class="service-item fade-in fade-in-delay-2">
-                    <span class="service-arrow">→</span>
-                    <span class="service-name">Meta-Transaction Relay</span>
+                <div class="services-grid">
+                    <div class="svc-item fade-in d1"><span class="svc-arrow">→</span><span class="svc-name">ZK Proof Verification (Groth16)</span></div>
+                    <div class="svc-item fade-in d1"><span class="svc-arrow">→</span><span class="svc-name">AI Market Maker (AMM)</span></div>
+                    <div class="svc-item fade-in d1"><span class="svc-arrow">→</span><span class="svc-name">Federated Learning (FLock)</span></div>
+                    <div class="svc-item fade-in d2"><span class="svc-arrow">→</span><span class="svc-name">Price Oracles (Allora)</span></div>
+                    <div class="svc-item fade-in d2"><span class="svc-arrow">→</span><span class="svc-name">Batch Auctions (HCA)</span></div>
+                    <div class="svc-item fade-in d2"><span class="svc-arrow">→</span><span class="svc-name">Token Launches + Vesting</span></div>
+                    <div class="svc-item fade-in d3"><span class="svc-arrow">→</span><span class="svc-name">ETH Staking + Rewards</span></div>
+                    <div class="svc-item fade-in d3"><span class="svc-arrow">→</span><span class="svc-name">Multi-Sig Wallets</span></div>
+                    <div class="svc-item fade-in d3"><span class="svc-arrow">→</span><span class="svc-name">DAO Governance + Voting</span></div>
+                    <div class="svc-item fade-in d4"><span class="svc-arrow">→</span><span class="svc-name">EigenLayer AVS Integration</span></div>
+                    <div class="svc-item fade-in d4"><span class="svc-arrow">→</span><span class="svc-name">Encrypted P2P Chat (ECIES)</span></div>
+                    <div class="svc-item fade-in d4"><span class="svc-arrow">→</span><span class="svc-name">Autonomous Agent Orchestration</span></div>
+                    <div class="svc-item fade-in d5"><span class="svc-arrow">→</span><span class="svc-name">Portfolio Management</span></div>
+                    <div class="svc-item fade-in d5"><span class="svc-arrow">→</span><span class="svc-name">Referral & Points System</span></div>
+                    <div class="svc-item fade-in d5"><span class="svc-arrow">→</span><span class="svc-name">Meta-Transaction Relay</span></div>
                 </div>
             </div>
         </div>
-    </section>
 
-    <!-- ═══════════════════════════════════════════
-         PORTFOLIO SECTION
-         ═══════════════════════════════════════════ -->
-    <section class="section portfolio" id="projects">
-        <div class="container">
-            <div class="section-header">
-                <div>
+        <!-- PAGE 4: PROJECTS -->
+        <div class="page" data-index="3">
+            <div class="bg-grid"></div>
+            <div class="bg-glow bg-glow-purple" style="right: -200px; top: -100px; opacity: 0.15;"></div>
+            <div class="page-inner">
+                <div class="section-header fade-in">
                     <div class="section-label">Our work</div>
                     <h2 class="section-title">Latest projects</h2>
                 </div>
-            </div>
-            <div class="portfolio-grid">
-                <div class="portfolio-item large fade-in">
-                    <div class="portfolio-bg">
-                        <div class="portfolio-pattern"></div>
+                <div class="projects-grid">
+                    <div class="proj-card large fade-in d1">
+                        <div class="proj-bg"></div>
+                        <div class="proj-content">
+                            <div class="proj-tag">Core Infrastructure</div>
+                            <h3 class="proj-title">HiveFactory — Master Wiring System</h3>
+                            <p class="proj-meta">25 module references • Single-tx wiring • AI + Security + Queen layers</p>
+                        </div>
                     </div>
-                    <div class="portfolio-content">
-                        <div class="portfolio-tag">Core Infrastructure</div>
-                        <h3 class="portfolio-title">HiveFactory — Master Wiring System</h3>
-                        <p class="portfolio-meta">25 module references • Single-tx wiring • AI + Security + Queen layers</p>
+                    <div class="proj-card fade-in d2">
+                        <div class="proj-bg"></div>
+                        <div class="proj-content">
+                            <div class="proj-tag">AI Layer</div>
+                            <h3 class="proj-title">HiveBrain + HiveOracle</h3>
+                            <p class="proj-meta">Allora price feeds • Ritual LLM • FLock training</p>
+                        </div>
                     </div>
-                </div>
-                <div class="portfolio-item fade-in fade-in-delay-1">
-                    <div class="portfolio-bg">
-                        <div class="portfolio-pattern"></div>
+                    <div class="proj-card fade-in d3">
+                        <div class="proj-bg"></div>
+                        <div class="proj-content">
+                            <div class="proj-tag">Security</div>
+                            <h3 class="proj-title">EigenLayer AVS</h3>
+                            <p class="proj-meta">4 operator roles • Slashing • Fee distribution</p>
+                        </div>
                     </div>
-                    <div class="portfolio-content">
-                        <div class="portfolio-tag">AI Layer</div>
-                        <h3 class="portfolio-title">HiveBrain + HiveOracle</h3>
-                        <p class="portfolio-meta">Allora price feeds • Ritual LLM • FLock training</p>
+                    <div class="proj-card fade-in d4">
+                        <div class="proj-bg"></div>
+                        <div class="proj-content">
+                            <div class="proj-tag">DeFi</div>
+                            <h3 class="proj-title">HiveClearing Batch Auctions</h3>
+                            <p class="proj-meta">HCA mechanics • Fair price discovery • Anti-snipe</p>
+                        </div>
                     </div>
-                </div>
-                <div class="portfolio-item fade-in fade-in-delay-2">
-                    <div class="portfolio-bg">
-                        <div class="portfolio-pattern"></div>
-                    </div>
-                    <div class="portfolio-content">
-                        <div class="portfolio-tag">Security</div>
-                        <h3 class="portfolio-title">EigenLayer AVS</h3>
-                        <p class="portfolio-meta">4 operator roles • Slashing • Fee distribution</p>
-                    </div>
-                </div>
-                <div class="portfolio-item fade-in fade-in-delay-1">
-                    <div class="portfolio-bg">
-                        <div class="portfolio-pattern"></div>
-                    </div>
-                    <div class="portfolio-content">
-                        <div class="portfolio-tag">DeFi</div>
-                        <h3 class="portfolio-title">HiveClearing Batch Auctions</h3>
-                        <p class="portfolio-meta">HCA mechanics • Fair price discovery • Anti-snipe</p>
-                    </div>
-                </div>
-                <div class="portfolio-item fade-in fade-in-delay-2">
-                    <div class="portfolio-bg">
-                        <div class="portfolio-pattern"></div>
-                    </div>
-                    <div class="portfolio-content">
-                        <div class="portfolio-tag">Governance</div>
-                        <h3 class="portfolio-title">Queen Orchestrator</h3>
-                        <p class="portfolio-meta">Division routing • Brain integration • Auto-execution</p>
+                    <div class="proj-card fade-in d5">
+                        <div class="proj-bg"></div>
+                        <div class="proj-content">
+                            <div class="proj-tag">Governance</div>
+                            <h3 class="proj-title">Queen Orchestrator</h3>
+                            <p class="proj-meta">Division routing • Brain integration • Auto-execution</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div style="text-align: center; margin-top: 3rem;">
-                <a href="https://github.com/frianowzki/hive" target="_blank" class="btn btn-outline fade-in">
-                    View All on GitHub
-                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/>
-                    </svg>
-                </a>
+                <div class="projects-cta fade-in d6">
+                    <a href="https://github.com/frianowzki/hive" target="_blank" class="btn btn-outline">
+                        View All on GitHub
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
+                    </a>
+                </div>
             </div>
         </div>
-    </section>
 
-    <!-- ═══════════════════════════════════════════
-         ABOUT SECTION
-         ═══════════════════════════════════════════ -->
-    <section class="section" id="about">
-        <div class="container">
-            <div class="section-header">
-                <div>
+        <!-- PAGE 5: ABOUT -->
+        <div class="page" data-index="4">
+            <div class="bg-grid"></div>
+            <div class="page-inner">
+                <div class="section-header fade-in">
                     <div class="section-label">Who we are</div>
                     <h2 class="section-title">About us</h2>
                 </div>
-            </div>
-            <div class="about-grid">
-                <div class="about-text fade-in">
-                    <h3>Building the future of compliant DeFi</h3>
-                    <p>
-                        Hive is a fully on-chain AI launchpad built on Ritual Chain (Chain ID 1979). 
-                        We combine zero-knowledge proofs, artificial intelligence, and decentralized 
-                        governance to create a compliant, privacy-preserving DeFi ecosystem.
-                    </p>
-                    <p>
-                        Our architecture features 29 smart contracts, all fully interconnected and 
-                        tested with 300 passing tests. From ZK-based KYC/KYB to AI-driven market 
-                        making, every component is designed for security, scalability, and compliance.
-                    </p>
-                    <p>
-                        We leverage Ritual Chain's native precompiles — LLM inference, HTTP requests, 
-                        DKMS key management, ECIES encryption, and Passkey authentication — to deliver 
-                        capabilities that traditional EVM chains cannot match.
-                    </p>
-                    <div class="about-features">
-                        <div class="about-feature">
-                            <span class="about-feature-icon">✓</span>
-                            29 Contracts Deployed
-                        </div>
-                        <div class="about-feature">
-                            <span class="about-feature-icon">✓</span>
-                            300 Tests Passing
-                        </div>
-                        <div class="about-feature">
-                            <span class="about-feature-icon">✓</span>
-                            Zero Critical Bugs
-                        </div>
-                        <div class="about-feature">
-                            <span class="about-feature-icon">✓</span>
-                            Fully Interconnected
+                <div class="about-content">
+                    <div class="about-text fade-in d1">
+                        <h3>Building the future of compliant DeFi</h3>
+                        <p>Hive is a fully on-chain AI launchpad built on Ritual Chain (Chain ID 1979). We combine zero-knowledge proofs, artificial intelligence, and decentralized governance to create a compliant, privacy-preserving DeFi ecosystem.</p>
+                        <p>Our architecture features 29 smart contracts, all fully interconnected and tested with 300 passing tests. From ZK-based KYC/KYB to AI-driven market making, every component is designed for security, scalability, and compliance.</p>
+                        <p>We leverage Ritual Chain's native precompiles — LLM inference, HTTP requests, DKMS key management, ECIES encryption, and Passkey authentication — to deliver capabilities that traditional EVM chains cannot match.</p>
+                        <div class="about-features">
+                            <div class="about-feat"><span class="about-feat-check">✓</span> 29 Contracts Deployed</div>
+                            <div class="about-feat"><span class="about-feat-check">✓</span> 300 Tests Passing</div>
+                            <div class="about-feat"><span class="about-feat-check">✓</span> Zero Critical Bugs</div>
+                            <div class="about-feat"><span class="about-feat-check">✓</span> Fully Interconnected</div>
                         </div>
                     </div>
-                </div>
-                <div class="team-grid">
-                    <div class="team-card fade-in fade-in-delay-1">
-                        <div class="team-avatar">👨‍💻</div>
-                        <div class="team-info">
-                            <div class="team-role">Founder / Lead Dev</div>
-                            <h4 class="team-name">Frian</h4>
-                            <p class="team-bio">
-                                Full-stack Web3 builder. DeFi architect. 
-                                Leading Hive's smart contract development, 
-                                AI integration, and Ritual Chain optimization.
-                            </p>
-                            <div class="team-links">
+                    <div class="team-cards">
+                        <div class="team-card fade-in d2">
+                            <div class="team-avatar">👨‍💻</div>
+                            <div>
+                                <div class="team-role">Founder / Lead Dev</div>
+                                <h4 class="team-name">Frian</h4>
+                                <p class="team-bio">Full-stack Web3 builder. DeFi architect. Leading Hive's smart contract development, AI integration, and Ritual Chain optimization.</p>
                                 <a href="https://github.com/frianowzki" target="_blank" class="team-link">GitHub</a>
                             </div>
                         </div>
-                    </div>
-                    <div class="team-card fade-in fade-in-delay-2">
-                        <div class="team-avatar">🤖</div>
-                        <div class="team-info">
-                            <div class="team-role">AI Agent</div>
-                            <h4 class="team-name">C</h4>
-                            <p class="team-bio">
-                                Autonomous AI agent powering Hive's development. 
-                                Smart contract auditing, test generation, 
-                                and continuous integration.
-                            </p>
-                            <div class="team-links">
+                        <div class="team-card fade-in d3">
+                            <div class="team-avatar">🤖</div>
+                            <div>
+                                <div class="team-role">AI Agent</div>
+                                <h4 class="team-name">C</h4>
+                                <p class="team-bio">Autonomous AI agent powering Hive's development. Smart contract auditing, test generation, and continuous integration.</p>
                                 <span class="team-link" style="cursor: default;">v5.0 Unified</span>
                             </div>
                         </div>
@@ -1641,188 +1385,242 @@
                 </div>
             </div>
         </div>
-    </section>
 
-    <!-- ═══════════════════════════════════════════
-         CONTACT SECTION
-         ═══════════════════════════════════════════ -->
-    <section class="contact" id="contact">
-        <div class="container">
-            <div class="section-label" style="justify-content: center;">Get in touch</div>
-            <h2 class="contact-title fade-in">Don't be shy, say hello.</h2>
-            <p class="contact-subtitle fade-in fade-in-delay-1">
-                Interested in building on Hive? Want to integrate with our AI launchpad? 
-                Or just want to chat about Ritual Chain? Reach out.
-            </p>
-            <div class="contact-actions fade-in fade-in-delay-2">
-                <a href="https://github.com/frianowzki/hive" target="_blank" class="btn btn-primary">
-                    View on GitHub
-                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/>
-                    </svg>
-                </a>
-                <a href="mailto:friokurniawan@gmail.com" class="btn btn-outline">
-                    Email Us
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- ═══════════════════════════════════════════
-         FOOTER
-         ═══════════════════════════════════════════ -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-brand">
-                    <div class="logo">
-                        <div class="logo-icon">🐝</div>
-                        Hive
-                    </div>
-                    <p class="footer-desc">
-                        The compliant AI launchpad on Ritual Chain. 
-                        29 contracts deployed, 300 tests passing, fully on-chain.
-                    </p>
-                    <div class="footer-social">
-                        <a href="https://github.com/frianowzki/hive" target="_blank" class="social-link">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                            </svg>
-                        </a>
-                        <a href="https://explorer.ritualfoundation.org" target="_blank" class="social-link">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"/>
-                                <line x1="2" y1="12" x2="22" y2="12"/>
-                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                            </svg>
-                        </a>
-                    </div>
+        <!-- PAGE 6: CONTACT -->
+        <div class="page contact-page" data-index="5">
+            <div class="bg-grid"></div>
+            <div class="bg-glow bg-glow-purple"></div>
+            <div class="page-inner">
+                <div class="section-label fade-in" style="justify-content: center;">Get in touch</div>
+                <h2 class="contact-title fade-in d1">Don't be shy, say hello.</h2>
+                <p class="contact-sub fade-in d2">
+                    Interested in building on Hive? Want to integrate with our AI launchpad? 
+                    Or just want to chat about Ritual Chain? Reach out.
+                </p>
+                <div class="contact-actions fade-in d3">
+                    <a href="https://github.com/frianowzki/hive" target="_blank" class="btn btn-primary">
+                        View on GitHub
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
+                    </a>
+                    <a href="mailto:friokurniawan@gmail.com" class="btn btn-outline">Email Us</a>
                 </div>
-                <div>
-                    <h4 class="footer-title">Protocol</h4>
-                    <ul class="footer-links">
-                        <li><a href="https://ritual.net" target="_blank">Ritual Chain</a></li>
-                        <li><a href="https://allora.network" target="_blank">Allora Network</a></li>
-                        <li><a href="https://flock.io" target="_blank">FLock.io</a></li>
-                        <li><a href="https://eigenlayer.xyz" target="_blank">EigenLayer</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="footer-title">Resources</h4>
-                    <ul class="footer-links">
-                        <li><a href="https://github.com/frianowzki/hive" target="_blank">GitHub</a></li>
-                        <li><a href="https://github.com/frianowzki/hive/blob/master/FINAL_AUDIT_REPORT.md" target="_blank">Audit Report</a></li>
-                        <li><a href="https://github.com/frianowzki/hive/blob/master/RESEARCH_REPORT.md" target="_blank">Research</a></li>
-                        <li><a href="https://github.com/frianowzki/hive/blob/master/README.md" target="_blank">Documentation</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="footer-title">Contact</h4>
-                    <div class="footer-contact-item">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                            <circle cx="12" cy="10" r="3"/>
-                        </svg>
+                <div class="contact-info fade-in d4">
+                    <div class="contact-info-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                         <span>Ritual Testnet (Chain ID 1979)</span>
                     </div>
-                    <div class="footer-contact-item">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                            <polyline points="22,6 12,13 2,6"/>
-                        </svg>
+                    <div class="contact-info-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                         <a href="mailto:friokurniawan@gmail.com">friokurniawan@gmail.com</a>
                     </div>
-                    <div class="footer-contact-item">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
-                        </svg>
+                    <div class="contact-info-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
                         <a href="https://github.com/frianowzki" target="_blank">@frianowzki</a>
                     </div>
                 </div>
             </div>
-            <div class="footer-bottom">
-                <p>© 2026 Hive. Built on Ritual Chain.</p>
-                <p>29 contracts • 300 tests • Ritual LLM + HTTP + DKMS + ECIES + Passkey</p>
-            </div>
         </div>
-    </footer>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         MINI FOOTER
+         ═══════════════════════════════════════════ -->
+    <div class="mini-footer">
+        <p>© 2026 Hive. Built on <a href="https://ritual.net" target="_blank">Ritual Chain</a>.</p>
+        <div class="mini-footer-links">
+            <a href="https://github.com/frianowzki/hive" target="_blank">GitHub</a>
+            <a href="https://github.com/frianowzki/hive/blob/master/FINAL_AUDIT_REPORT.md" target="_blank">Audit</a>
+            <a href="https://github.com/frianowzki/hive/blob/master/README.md" target="_blank">Docs</a>
+        </div>
+    </div>
 
     <!-- ═══════════════════════════════════════════
          JAVASCRIPT
          ═══════════════════════════════════════════ -->
     <script>
-        // Navbar scroll effect
-        const navbar = document.getElementById('navbar');
-        let lastScroll = 0;
-        window.addEventListener('scroll', () => {
-            const currentScroll = window.scrollY;
-            if (currentScroll > 50) {
-                navbar.classList.add('scrolled');
+        // ═══════════════════════════════════════
+        // STATE
+        // ═══════════════════════════════════════
+        let currentPage = 0;
+        const totalPages = 6;
+        let autoScroll = true;
+        let autoScrollTimer = null;
+        let autoScrollDuration = 8000; // 8 seconds per page
+        let isTransitioning = false;
+
+        // ═══════════════════════════════════════
+        // PAGE NAVIGATION
+        // ═══════════════════════════════════════
+        function goToPage(index) {
+            if (isTransitioning || index === currentPage || index < 0 || index >= totalPages) return;
+            isTransitioning = true;
+
+            const pages = document.querySelectorAll('.page');
+            const dots = document.querySelectorAll('.page-dot');
+            const navLinks = document.querySelectorAll('.nav-links a[data-page]');
+
+            // Exit current
+            pages[currentPage].classList.remove('active');
+            pages[currentPage].classList.add('exit-up');
+
+            // Enter new
+            setTimeout(() => {
+                pages[currentPage].classList.remove('exit-up');
+                currentPage = index;
+                pages[currentPage].classList.add('active');
+
+                // Update indicators
+                dots.forEach(d => d.classList.remove('active'));
+                dots[currentPage].classList.add('active');
+
+                navLinks.forEach(l => l.classList.remove('active'));
+                navLinks[currentPage].classList.add('active');
+
+                // Animate elements
+                animatePage(currentPage);
+
+                isTransitioning = false;
+
+                // Reset auto-scroll
+                if (autoScroll) resetAutoScroll();
+            }, 400);
+        }
+
+        function nextPage() {
+            goToPage((currentPage + 1) % totalPages);
+        }
+
+        function prevPage() {
+            goToPage((currentPage - 1 + totalPages) % totalPages);
+        }
+
+        // ═══════════════════════════════════════
+        // ANIMATIONS
+        // ═══════════════════════════════════════
+        function animatePage(index) {
+            const page = document.querySelectorAll('.page')[index];
+            const fadeIns = page.querySelectorAll('.fade-in');
+            fadeIns.forEach(el => el.classList.remove('visible'));
+            setTimeout(() => {
+                fadeIns.forEach(el => el.classList.add('visible'));
+            }, 100);
+        }
+
+        // ═══════════════════════════════════════
+        // AUTO-SCROLL
+        // ═══════════════════════════════════════
+        function startAutoScroll() {
+            const bar = document.getElementById('autoScrollBar');
+            bar.style.transition = 'none';
+            bar.style.width = '0%';
+            
+            requestAnimationFrame(() => {
+                bar.style.transition = `width ${autoScrollDuration}ms linear`;
+                bar.style.width = '100%';
+            });
+
+            autoScrollTimer = setTimeout(() => {
+                nextPage();
+            }, autoScrollDuration);
+        }
+
+        function resetAutoScroll() {
+            clearTimeout(autoScrollTimer);
+            startAutoScroll();
+        }
+
+        function toggleAutoScroll() {
+            autoScroll = !autoScroll;
+            const toggle = document.getElementById('autoScrollToggle');
+            const label = document.getElementById('toggleLabel');
+            const bar = document.getElementById('autoScrollBar');
+
+            if (autoScroll) {
+                toggle.classList.remove('paused');
+                label.textContent = 'Auto-scroll on';
+                bar.style.display = 'block';
+                startAutoScroll();
             } else {
-                navbar.classList.remove('scrolled');
+                toggle.classList.add('paused');
+                label.textContent = 'Auto-scroll off';
+                bar.style.display = 'none';
+                clearTimeout(autoScrollTimer);
             }
-            lastScroll = currentScroll;
+        }
+
+        // ═══════════════════════════════════════
+        // EVENT LISTENERS
+        // ═══════════════════════════════════════
+
+        // Mouse wheel
+        let wheelTimeout;
+        document.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            clearTimeout(wheelTimeout);
+            wheelTimeout = setTimeout(() => {
+                if (e.deltaY > 0) nextPage();
+                else prevPage();
+            }, 50);
+        }, { passive: false });
+
+        // Touch
+        let touchStartY = 0;
+        document.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
         });
 
-        // Active nav link
-        const sections = document.querySelectorAll('section[id]');
-        const navLinks = document.querySelectorAll('.nav-links a:not(.nav-cta)');
-
-        window.addEventListener('scroll', () => {
-            let current = '';
-            sections.forEach(section => {
-                const sectionTop = section.offsetTop;
-                if (window.scrollY >= sectionTop - 200) {
-                    current = section.getAttribute('id');
-                }
-            });
-
-            navLinks.forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('href') === `#${current}`) {
-                    link.classList.add('active');
-                }
-            });
+        document.addEventListener('touchend', (e) => {
+            const diff = touchStartY - e.changedTouches[0].clientY;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0) nextPage();
+                else prevPage();
+            }
         });
 
-        // Smooth scroll
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
+        // Keyboard
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
                 e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
+                nextPage();
+            } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevPage();
+            }
+        });
+
+        // Nav links
+        document.querySelectorAll('.nav-links a[data-page]').forEach(link => {
+            link.addEventListener('click', () => {
+                goToPage(parseInt(link.dataset.page));
             });
         });
 
-        // Animate on scroll
-        const fadeElements = document.querySelectorAll('.fade-in');
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                    observer.unobserve(entry.target);
-                }
+        // Page dots
+        document.querySelectorAll('.page-dot').forEach(dot => {
+            dot.addEventListener('click', () => {
+                goToPage(parseInt(dot.dataset.page));
             });
-        }, {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
         });
 
-        fadeElements.forEach(el => observer.observe(el));
+        // Auto-scroll toggle
+        document.getElementById('autoScrollToggle').addEventListener('click', toggleAutoScroll);
 
-        // Fallback
-        setTimeout(() => {
-            document.querySelectorAll('.fade-in:not(.visible)').forEach(el => {
-                el.classList.add('visible');
-            });
-        }, 1500);
+        // Pause auto-scroll on hover
+        document.querySelector('.pages-wrapper').addEventListener('mouseenter', () => {
+            if (autoScroll) clearTimeout(autoScrollTimer);
+        });
 
-        // Console Easter Egg
+        document.querySelector('.pages-wrapper').addEventListener('mouseleave', () => {
+            if (autoScroll) resetAutoScroll();
+        });
+
+        // ═══════════════════════════════════════
+        // INIT
+        // ═══════════════════════════════════════
+        animatePage(0);
+        if (autoScroll) startAutoScroll();
+
+        // Console
         console.log('%c🐝 Hive', 'font-size: 2rem; font-weight: bold; color: #8b5cf6;');
         console.log('%cCompliant AI Launchpad on Ritual Chain', 'font-size: 1rem; color: #a0a0a0;');
         console.log('%c29 contracts • 300 tests • Chain ID 1979', 'font-size: 0.9rem; color: #666;');
