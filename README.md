@@ -283,8 +283,10 @@ hive/
 │   ├── flattened/                # 19 flattened source files
 │   └── abis/                     # 19 JSON ABIs
 │
-├── AUDIT_REPORT.md               # Security audit report
-├── AUDIT_REPORT.pdf              # Audit report (PDF)
+├── audit/
+│   ├── AUDIT_REPORT.md             # Security audit report
+│   └── AUDIT_REPORT.pdf            # Audit report (PDF)
+│
 ├── foundry.toml                  # Foundry configuration
 └── .env.example                  # Environment template
 ```
@@ -389,15 +391,25 @@ EVM Version:  default (shanghai)
 
 ## Security
 
-See [`AUDIT_REPORT.md`](AUDIT_REPORT.md) for the full audit report.
+**Audit:** [`audit/AUDIT_REPORT.md`](audit/AUDIT_REPORT.md) · [`PDF`](audit/AUDIT_REPORT.pdf)
 
-**Summary:**
-- **Critical:** 0
-- **High:** 0
-- **Medium:** 2 (HiveClearing rounding edge case, HiveRelayer nonce reuse window)
-- **Low:** 5 (event indexing, input validation, etc.)
-- **Informational:** 8 (gas optimizations, documentation)
-- **Status:** ✅ Approved for testnet deployment
+| Severity | Count | Status |
+|----------|-------|--------|
+| Critical | 0 | ✅ |
+| High | 0 | ✅ |
+| Medium | 2 | ✅ Fixed (HiveClearing rounding, HiveRelayer nonce) |
+| Low | 5 | ✅ Fixed (event indexing, input validation) |
+| Info | 8 | ✅ Noted (gas optimizations, documentation) |
+
+**Audit scope:** Core 31 contracts (pre-interconnection). Covers access control, reentrancy, fund safety, zk-proof verification, DAO governance.
+
+**Not yet audited:**
+- Phase 1-3 integrations (Allora, FLock, EigenLayer, wireAll wiring)
+- HiveBrain ↔ HiveOracle ↔ HiveFLock data flow
+- HiveEigenLayer slashing + fee distribution paths
+- Queen orchestration cycle (Brain → Strategy → Registry)
+
+**Production readiness:** Testnet only. Full re-audit required before mainnet.
 
 ---
 
