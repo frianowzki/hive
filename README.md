@@ -153,9 +153,9 @@ User (MetaMask) ──→ HiveID ──→ Register (free) ──→ Get Hive Wa
 | **HiveBrain** | `0x0ad0...42B4` | Sovereign agent brain with async LLM, PII mode, Oracle price feeds, and FLock model integration. 14 action types (incl. RunFlockInference, DeployFlockModel, GetOraclePrice). Cross-contract calls to HiveOracle and HiveFLock |
 | **Queen** | `0xDC96...Ae8E` | Central orchestrator with AI integration. runCycle() calls Brain.think(). getOraclePrice(). setDivision() wires 9 modules (honeypot, strategy, registry, launchPad, marketMaker, council, brain, oracle, flock) |
 | **HiveAutoStrategy** | `0x1b3A...BEF9` | Automated trading with Oracle integration. DCA, TP, SL, Trailing Stop. fetchPrice() calls HiveOracle.getBestPrice() |
-| **HiveMarketMaker** | `0x9CC5...289b` | AI-driven market making via Ritual LLM |
-| **HiveFLock** | — | Federated learning with Brain integration. setBrain() wiring. deployModel() notifies Brain. Training tasks, model validation, ONNX deployment, FLock API inference |
-| **HiveEigenLayer** | — | EigenLayer AVS with cross-contract wiring. 4 operator roles. setHiveStaking/Brain/FLock/Treasury. Fee distribution notifies HiveTreasury |
+| **HiveMarketMaker** | `0x62C8...637D` | AI-driven market making via Ritual LLM |
+| **HiveFLock** | `0xb0f4...F5d2` | Federated learning with Brain integration. setBrain() wiring. deployModel() notifies Brain. Training tasks, model validation, ONNX deployment, FLock API inference |
+| **HiveEigenLayer** | `0xD023...eC0F` | EigenLayer AVS with cross-contract wiring. 4 operator roles. setHiveStaking/Brain/FLock/Treasury. Fee distribution notifies HiveTreasury |
 
 ### 🏛️ Governance
 
@@ -170,12 +170,12 @@ User (MetaMask) ──→ HiveID ──→ Register (free) ──→ Get Hive Wa
 |----------|---------|-------------|
 | **HiveFactory** | `0x0241...63c6` | Master wiring contract. 25 module references. wireAll() connects AI layer (Brain↔Oracle↔FLock), security layer (EigenLayer↔Staking↔Treasury), Queen orchestration, and AutoStrategy pricing |
 | **HiveChat** | `0x615F...85B6` | Encrypted P2P messaging via Ritual ECIES precompile |
-| **HiveLaunchPad** | `0x1187...d572` | Token launch platform with HCA mechanics |
+| **HiveLaunchPad** | `0x8eb7...3d95b` | Token launch platform with HCA mechanics |
 | **HiveCouncil** | `0xD79F...3D94` | Council governance (multi-representative) |
 | **HivePoints** | `0xA2fE...01a7` | On-chain points/rewards system |
-| **HiveRegistry** | `0xae3c...98183` | Contract registry for module discovery |
-| **Drone** | `0x0542...3f2` | Autonomous execution agents |
-| **Strategy** | `0x638d...A15C` | Base strategy contract (parent of HiveAutoStrategy) |
+| **HiveRegistry** | `0x89Cf...82eE` | Contract registry for module discovery |
+| **Drone** | `0x8607...704` | Autonomous execution agents |
+| **Strategy** | `0xc2d2...b202` | Base strategy contract (parent of HiveAutoStrategy) |
 
 ### 📚 Libraries & Interfaces
 
@@ -192,7 +192,7 @@ User (MetaMask) ──→ HiveID ──→ Register (free) ──→ Get Hive Wa
 
 ```
 hive/
-├── src/                          # Smart contracts (35 files, ~10,600 LOC)
+├── src/                          # Smart contracts (35 files, ~10,700 LOC)
 │   ├── agent/
 │   │   ├── HiveAgent.sol         # AI Agent Gateway (LLM precompile)
 │   │   └── HiveBrain.sol         # Sovereign agent brain

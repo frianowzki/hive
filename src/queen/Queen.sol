@@ -12,7 +12,7 @@ interface IHoneyPot {
     function balanceOf(address account) external view returns (uint256);
 }
 
-interface IStrategy {
+interface IQueenStrategy {
     function generateStrategy(string calldata state) external returns (uint256);
     function executeCycle(uint256 cycleId) external;
 }
@@ -61,7 +61,7 @@ contract Queen is RitualPrecompileConsumer {
 
     // Division addresses (wired externally)
     IHoneyPot public honeypot;
-    IStrategy public strategy;
+    IQueenStrategy public strategy;
     IHiveRegistry public registry;
     IHiveLaunchPad public launchPad;
     IHiveMarketMaker public marketMaker;
@@ -116,7 +116,7 @@ contract Queen is RitualPrecompileConsumer {
 
         // Wire divisions
         if (_honeypot != address(0)) honeypot = IHoneyPot(_honeypot);
-        if (_strategy != address(0)) strategy = IStrategy(_strategy);
+        if (_strategy != address(0)) strategy = IQueenStrategy(_strategy);
         if (_registry != address(0)) registry = IHiveRegistry(_registry);
         if (_launchPad != address(0)) launchPad = IHiveLaunchPad(_launchPad);
         if (_marketMaker != address(0)) marketMaker = IHiveMarketMaker(_marketMaker);
@@ -140,7 +140,7 @@ contract Queen is RitualPrecompileConsumer {
 
     function setDivision(string calldata divName, address addr) external onlyOwner {
         if (keccak256(bytes(divName)) == keccak256("honeypot")) honeypot = IHoneyPot(addr);
-        else if (keccak256(bytes(divName)) == keccak256("strategy")) strategy = IStrategy(addr);
+        else if (keccak256(bytes(divName)) == keccak256("strategy")) strategy = IQueenStrategy(addr);
         else if (keccak256(bytes(divName)) == keccak256("registry")) registry = IHiveRegistry(addr);
         else if (keccak256(bytes(divName)) == keccak256("launchPad")) launchPad = IHiveLaunchPad(addr);
         else if (keccak256(bytes(divName)) == keccak256("marketMaker")) marketMaker = IHiveMarketMaker(addr);

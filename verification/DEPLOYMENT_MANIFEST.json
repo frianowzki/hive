@@ -20,13 +20,19 @@
       "address": "0x013c6D5a4fa5D50a92261C4189a8F56900408A01",
       "source": "src/identity/HiveID.sol",
       "constructorArgs": "0x0000000000000000000000000000000000000000000000000000000000000000",
-      "constructorArgsDecoded": ["uint256(0) — registrationFee"]
+      "constructorArgsDecoded": [
+        "uint256(0) \u2014 registrationFee"
+      ]
     },
     {
       "name": "HiveMultiSig",
       "address": "0xd450caB1dCe65ac7bB089Cf8dA9F20f37544B1B6",
       "source": "src/multisig/HiveMultiSig.sol",
-      "constructorArgsDecoded": ["address[]([deployer])", "uint256(1) — threshold", "bytes32(0) — hiveIdHash"]
+      "constructorArgsDecoded": [
+        "address[]([deployer])",
+        "uint256(1) \u2014 threshold",
+        "bytes32(0) \u2014 hiveIdHash"
+      ]
     },
     {
       "name": "HiveVerifier",
@@ -56,7 +62,9 @@
       "name": "HiveTreasury",
       "address": "0x90fbd495c888ae010e40FD299E143FabFcf08C18",
       "source": "src/treasury/HiveTreasury.sol",
-      "constructorArgsDecoded": ["address(0xd450caB1dCe65ac7bB089Cf8dA9F20f37544B1B6) — multiSig"]
+      "constructorArgsDecoded": [
+        "address(0xd450caB1dCe65ac7bB089Cf8dA9F20f37544B1B6) \u2014 multiSig"
+      ]
     },
     {
       "name": "HiveReputation",
@@ -92,7 +100,14 @@
       "name": "HiveToken",
       "address": "0xDA8185F0742b46A8B6D413Dc10eFC25E9FBd5ec3",
       "source": "src/token/HiveToken.sol",
-      "constructorArgsDecoded": ["string('Hive Token')", "string('HIVE')", "uint8(18)", "address(deployer)", "bytes32(0)", "string('')"]
+      "constructorArgsDecoded": [
+        "string('Hive Token')",
+        "string('HIVE')",
+        "uint8(18)",
+        "address(deployer)",
+        "bytes32(0)",
+        "string('')"
+      ]
     },
     {
       "name": "HiveAgent",
@@ -104,7 +119,9 @@
       "name": "HiveBrain",
       "address": "0x0ad0234d3EA8bd41ee571b1B317fA98d46E642B4",
       "source": "src/agent/HiveBrain.sol",
-      "constructorArgsDecoded": ["address(0) — queen"]
+      "constructorArgsDecoded": [
+        "address(0) \u2014 queen"
+      ]
     },
     {
       "name": "HiveChat",
@@ -116,19 +133,111 @@
       "name": "HiveGovernance",
       "address": "0xeadd2aB5D8f1Ead852927Dd56c34b365603c2702",
       "source": "src/governance/HiveGovernance.sol",
-      "constructorArgsDecoded": ["address(0x93dd20...) — staking", "address(0xd450ca...) — multiSig"]
+      "constructorArgsDecoded": [
+        "address(0x93dd20...) \u2014 staking",
+        "address(0xd450ca...) \u2014 multiSig"
+      ]
     },
     {
       "name": "HiveNotification",
       "address": "0x9a04677f219384Fe35E29E968d43e8BDC6392C42",
       "source": "src/notification/HiveNotification.sol",
-      "constructorArgsDecoded": ["address(0x013c6D...) — hiveID"]
+      "constructorArgsDecoded": [
+        "address(0x013c6D...) \u2014 hiveID"
+      ]
     },
     {
       "name": "HiveFactory",
       "address": "0x0241cfB0a6620f57988C75Cd06dA2914b21463c6",
       "source": "src/factory/HiveFactory.sol",
       "constructorArgs": "none"
+    },
+    {
+      "name": "HivePoints",
+      "address": "0xC031064390952259a42885219dB16F66677fbfaa",
+      "source": "src/points/HivePoints.sol",
+      "constructorArgs": "none"
+    },
+    {
+      "name": "HiveLaunchPad",
+      "address": "0x8eb73b9e2dD62EcFC9C61861638C45afe003d95b",
+      "source": "src/launch/HiveLaunchPad.sol",
+      "constructorArgsDecoded": [
+        "address(HivePoints)"
+      ]
+    },
+    {
+      "name": "HiveMarketMaker",
+      "address": "0x62C8AB145AA677792b7E7d1f0Bf64000D3DC637D",
+      "source": "src/maker/HiveMarketMaker.sol",
+      "constructorArgsDecoded": [
+        "address(HivePoints)"
+      ]
+    },
+    {
+      "name": "HiveRegistry",
+      "address": "0x89Cff106458261b48597ee0307017504080182eE",
+      "source": "src/registry/HiveRegistry.sol",
+      "constructorArgs": "none"
+    },
+    {
+      "name": "HiveCouncil",
+      "address": "0x245590BE2E044A8a0aeB99C1bbBAAa4e68B715B3",
+      "source": "src/council/HiveCouncil.sol",
+      "constructorArgsDecoded": [
+        "address(HivePoints)"
+      ]
+    },
+    {
+      "name": "Queen",
+      "address": "0xC2ec8C64A3183e3a611284d70ccb4C0dAb8eDDfd",
+      "source": "src/queen/Queen.sol",
+      "constructorArgsDecoded": [
+        "string(HiveQueen)",
+        "uint256(100)",
+        "address(HiveTreasury)",
+        "address(0)",
+        "address(HiveRegistry)",
+        "address(HiveLaunchPad)",
+        "address(HiveMarketMaker)",
+        "address(HiveCouncil)"
+      ]
+    },
+    {
+      "name": "Strategy",
+      "address": "0xc2d24F72D2B5A82F9cBb0C6Aa4bd5157bc66b202",
+      "source": "src/strategy/Strategy.sol",
+      "constructorArgsDecoded": [
+        "address(Queen)"
+      ]
+    },
+    {
+      "name": "HiveFLock",
+      "address": "0xb0f436d799935Fbe6c7D8885E4345B588B16F5d2",
+      "source": "src/flock/HiveFLock.sol",
+      "constructorArgsDecoded": [
+        "address(HiveBrain)"
+      ]
+    },
+    {
+      "name": "HiveEigenLayer",
+      "address": "0xD0239931Eb19f3B0E0Ac1946685fab6fFB4FeC0F",
+      "source": "src/eigenlayer/HiveEigenLayer.sol",
+      "constructorArgsDecoded": [
+        "address(HiveStaking)"
+      ]
+    },
+    {
+      "name": "Drone",
+      "address": "0x8607e68C53970A5bF300c106d3eA2db5ff8BC704",
+      "source": "src/drone/Drone.sol",
+      "constructorArgsDecoded": [
+        "address(Queen)",
+        "string(Guardian)",
+        "DroneType(3)",
+        "uint256(0)"
+      ]
     }
-  ]
+  ],
+  "totalContracts": 29
 }
