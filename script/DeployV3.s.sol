@@ -11,7 +11,8 @@ import "../src/drone/Drone.sol";
 import "../src/queen/Queen.sol";
 import "../src/council/HiveCouncil.sol";
 import "../src/flock/HiveFLock.sol";
-import "../src/eigenlayer/HiveEigenLayer.sol";
+// EigenLayer removed — not implementable on Ritual Testnet
+// import "../src/eigenlayer/HiveEigenLayer.sol";
 
 /// @title DeployV3 — Deploy remaining 10 contracts
 contract DeployV3 is Script {
@@ -71,9 +72,9 @@ contract DeployV3 is Script {
         HiveFLock flock = new HiveFLock(brain);
         console.log("HiveFLock deployed at:", address(flock));
 
-        // 9. HiveEigenLayer (needs staking)
-        HiveEigenLayer eigenLayer = new HiveEigenLayer(staking);
-        console.log("HiveEigenLayer deployed at:", address(eigenLayer));
+        // EigenLayer removed — not implementable on Ritual Testnet
+        // HiveEigenLayer eigenLayer = new HiveEigenLayer(staking);
+        // console.log("HiveEigenLayer deployed at:", address(eigenLayer));
 
         // 10. Drone (needs queen, purpose, type, capital)
         // Deploying a Guardian drone as example

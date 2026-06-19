@@ -34,9 +34,10 @@ contract HiveFactory {
     address public strategy;
     address public autoStrategy;
 
-    // Layer 4: Federated Learning & EigenLayer
+    // Layer 4: Federated Learning
     address public flock;
-    address public eigenLayer;
+    // DEPRECATED: EigenLayer removed — not implementable on Ritual Testnet
+    // address public eigenLayer;
 
     // Layer 5: Governance & Social
     address public governance;
@@ -108,7 +109,7 @@ contract HiveFactory {
         address _strategy,
         address _autoStrategy,
         address _flock,
-        address _eigenLayer,
+        // eigenLayer removed
         address _governance,
         address _council,
         address _multiSig,
@@ -130,7 +131,7 @@ contract HiveFactory {
         strategy = _strategy;
         autoStrategy = _autoStrategy;
         flock = _flock;
-        eigenLayer = _eigenLayer;
+        // eigenLayer removed
         governance = _governance;
         council = _council;
         multiSig = _multiSig;
@@ -163,22 +164,7 @@ contract HiveFactory {
 
     function wireSecurityLayer() external {
         require(msg.sender == owner, "Factory: not owner");
-        if (eigenLayer != address(0) && staking != address(0)) {
-            (bool _ok, ) = eigenLayer.call(abi.encodeWithSignature("setHiveStaking(address)", staking));
-            _ok;
-        }
-        if (eigenLayer != address(0) && brain != address(0)) {
-            (bool _ok, ) = eigenLayer.call(abi.encodeWithSignature("setHiveBrain(address)", brain));
-            _ok;
-        }
-        if (eigenLayer != address(0) && flock != address(0)) {
-            (bool _ok, ) = eigenLayer.call(abi.encodeWithSignature("setHiveFLock(address)", flock));
-            _ok;
-        }
-        if (eigenLayer != address(0) && treasury != address(0)) {
-            (bool _ok, ) = eigenLayer.call(abi.encodeWithSignature("setHiveTreasury(address)", treasury));
-            _ok;
-        }
+        // EigenLayer removed — not implementable on Ritual Testnet
         if (staking != address(0) && treasury != address(0)) {
             (bool _ok, ) = staking.call(abi.encodeWithSignature("setTreasury(address)", treasury));
             _ok;
@@ -297,7 +283,7 @@ contract HiveFactory {
         else if (keccak256(bytes(moduleName)) == keccak256("relayer")) relayer = HiveRelayer(payable(newAddr));
         else if (keccak256(bytes(moduleName)) == keccak256("brain")) brain = newAddr;
         else if (keccak256(bytes(moduleName)) == keccak256("flock")) flock = newAddr;
-        else if (keccak256(bytes(moduleName)) == keccak256("eigenLayer")) eigenLayer = newAddr;
+        // eigenLayer removed
         else if (keccak256(bytes(moduleName)) == keccak256("staking")) staking = newAddr;
         else if (keccak256(bytes(moduleName)) == keccak256("treasury")) treasury = newAddr;
         else if (keccak256(bytes(moduleName)) == keccak256("queen")) queen = newAddr;
@@ -329,7 +315,7 @@ contract HiveFactory {
         modules[14] = strategy;
         modules[15] = autoStrategy;
         modules[16] = flock;
-        modules[17] = eigenLayer;
+        modules[17] = address(0); // eigenLayer removed
         modules[18] = governance;
         modules[19] = council;
         modules[20] = multiSig;
