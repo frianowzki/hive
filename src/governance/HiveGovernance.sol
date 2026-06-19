@@ -1,26 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
+import "../interfaces/IHive.sol";
+
 /**
  * @title HiveGovernance
  * @notice DAO governance for the Hive platform
  * @dev Voting power based on staked RITUAL, executes via multi-sig
  * @author Hive Team
  */
-
-/// @notice Interface for staking contract
-interface IStaking {
-    function totalStaked() external view returns (uint256);
-    function stakedAmount(address user) external view returns (uint256);
-    function lockMultiplier(address user) external view returns (uint256);
-}
-
-/// @notice Interface for multi-sig execution
-interface IMultiSig {
-    function submitTransaction(address target, bytes calldata data) external returns (uint256);
-    function confirmTransaction(uint256 txId) external;
-    function executeTransaction(uint256 txId) external;
-}
 
 contract HiveGovernance {
     // ═══════════════════════════════════════════════════════════════
