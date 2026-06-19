@@ -186,7 +186,7 @@ contract HiveOracleTest is Test {
         address tokenC = address(0xC);
         oracle.addToken(tokenC, "BTC", "bitcoin", 8);
 
-        (, string memory symbol, , bool active) = oracle.tokenConfigs(tokenC);
+        (, string memory symbol, , , bool active) = oracle.tokenConfigs(tokenC);
         assertEq(symbol, "BTC");
         
         assertTrue(active);
@@ -253,7 +253,7 @@ contract HiveOracleTest is Test {
     function test_remove_token() public {
         oracle.removeToken(tokenA);
 
-        (, , , bool active2) = oracle.tokenConfigs(tokenA);
+        (, , , , bool active2) = oracle.tokenConfigs(tokenA);
         assertFalse(active2);
     }
 

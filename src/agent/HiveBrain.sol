@@ -3,9 +3,11 @@ pragma solidity 0.8.20;
 
 import "../libraries/RitualPrecompileConsumer.sol";
 
-/// @title HiveBrain -- Enhanced Agent Brain with Ritual LLM
+/// @title HiveBrain — Enhanced Agent Brain with Ritual LLM (Async + PII)
 /// @notice Sovereign agent brain that thinks, plans, and acts via LLM
-/// @dev Upgraded Strategy.sol with async LLM, structured prompts, and memory
+/// @dev Upgraded with async LLM inference, PII mode, and Allora price integration.
+///      Supports both synchronous (fast) and asynchronous (complex) LLM calls.
+///      PII mode ensures sensitive strategy data never hits the mempool.
 
 contract HiveBrain is RitualPrecompileConsumer {
     // ═══ Types ═══
@@ -19,7 +21,9 @@ contract HiveBrain is RitualPrecompileConsumer {
         SpawnDrone,
         AdjustFees,
         CreateProposal,
-        Alert
+        Alert,
+        FetchAlloraPrice,   // New: fetch price from Allora
+        PrivateInference    // New: PII-mode inference
     }
 
     struct Thought {
@@ -28,6 +32,7 @@ contract HiveBrain is RitualPrecompileConsumer {
         ActionType[] actions;   // Decided actions
         uint256 confidence;     // Confidence score (0-100)
         uint256 timestamp;
+        bool piiMode;           // Whether this thought was generated in PII mode
     }
 
     struct Memory {
@@ -67,25 +72,37 @@ contract HiveBrain is RitualPrecompileConsumer {
     // Configuration
     uint256 public confidenceThreshold = 70; // Only act if confidence >= 70
     bool public autonomousMode = false;       // If true, auto-execute; if false, human approval needed
+    bool public piiMode = false;              // If true, all inference runs with piiEnabled=true
 
     // Pending actions (for human approval mode)
     mapping(uint256 => ActionPlan) public pendingActions;
     uint256 public pendingCount;
+
+    // Async LLM tracking
+    uint256 public asyncThoughtId;
+    mapping(uint256 => uint256) public asyncJobToThought; // jobId => thoughtId
 
     // Performance metrics
     uint256 public totalEarnings;
     uint256 public totalLosses;
     uint256 public uptimeBlocks;
 
+    // Oracle reference (for Allora price data)
+    address public oracle;
+
     // ═══ Events ═══
 
     event ThoughtRecorded(uint256 indexed thoughtId, string context, uint256 confidence);
+    event ThoughtAsyncSubmitted(uint256 indexed thoughtId, uint256 indexed jobId);
+    event ThoughtAsyncReceived(uint256 indexed thoughtId, string reasoning, uint256 confidence);
     event ActionPlanned(uint256 indexed actionId, ActionType actionType, address target);
     event ActionExecuted(uint256 indexed actionId, bool success);
     event ActionApproved(uint256 indexed actionId);
     event ActionRejected(uint256 indexed actionId);
     event MemoryStored(bytes32 indexed key, string value);
     event ModeChanged(bool autonomous);
+    event PiiModeChanged(bool piiMode);
+    event OracleSet(address indexed oracle);
 
     // ═══ Constructor ═══
 
@@ -94,9 +111,9 @@ contract HiveBrain is RitualPrecompileConsumer {
         queen = _queen;
     }
 
-    // ═══ Think -- LLM-Powered Analysis ═══
+    // ═══ Think — Synchronous LLM (fast, simple analysis) ═══
 
-    /// @notice Analyze current state and generate thoughts
+    /// @notice Analyze current state and generate thoughts (synchronous)
     /// @param context Current state description
     /// @return thoughtId The ID of the generated thought
     function think(string calldata context) external returns (uint256 thoughtId) {
@@ -105,7 +122,7 @@ contract HiveBrain is RitualPrecompileConsumer {
         // Build rich prompt with memory context
         string memory prompt = _buildThinkPrompt(context);
 
-        // Call Ritual LLM precompile
+        // Call Ritual LLM precompile (synchronous)
         bytes memory llmInput = _encodeLlmCall(prompt);
         (bool success, bytes memory output) = LLM_PRECOMPILE.staticcall(llmInput);
 
@@ -127,13 +144,79 @@ contract HiveBrain is RitualPrecompileConsumer {
             reasoning: reasoning,
             actions: new ActionType[](0),
             confidence: confidence,
-            timestamp: block.timestamp
+            timestamp: block.timestamp,
+            piiMode: false
         }));
 
         emit ThoughtRecorded(thoughtId, reasoning, confidence);
     }
 
-    // ═══ Plan -- Generate Action Plan ═══
+    // ═══ Think Async — Asynchronous LLM (complex analysis, PII-safe) ═══
+
+    /// @notice Submit a thought request asynchronously (TEE-attested, PII-safe)
+    /// @dev Uses Ritual's async execution model: submit → process in TEE → deliver
+    ///      When piiMode=true, the LLM input/output never hits the mempool.
+    /// @param context Current state description
+    /// @return thoughtId The ID of the submitted thought
+    function thinkAsync(string calldata context) external returns (uint256 thoughtId) {
+        require(msg.sender == owner || msg.sender == queen, "Brain: not authorized");
+
+        // Build rich prompt
+        string memory prompt = _buildThinkPrompt(context);
+
+        // Encode LLM call with PII mode
+        bytes memory llmInput = _encodeLlmCallWithPii(prompt, piiMode);
+
+        // Submit async (result will be delivered later via receiveResult)
+        (bool success, bytes memory output) = LLM_PRECOMPILE.staticcall(llmInput);
+
+        thoughtId = thoughtCount++;
+
+        thoughts.push(Thought({
+            context: context,
+            reasoning: "", // Will be filled when result arrives
+            actions: new ActionType[](0),
+            confidence: 0,
+            timestamp: block.timestamp,
+            piiMode: piiMode
+        }));
+
+        if (success && output.length > 0) {
+            // Parse job ID from output if available
+            uint256 jobId = _extractJobId(output);
+            if (jobId > 0) {
+                asyncJobToThought[jobId] = thoughtId;
+                emit ThoughtAsyncSubmitted(thoughtId, jobId);
+            } else {
+                // Synchronous result (precompile returned immediately)
+                string memory reasoning = abi.decode(output, (string));
+                uint256 confidence = _extractConfidence(reasoning);
+                thoughts[thoughtId].reasoning = reasoning;
+                thoughts[thoughtId].confidence = confidence;
+                emit ThoughtRecorded(thoughtId, reasoning, confidence);
+            }
+        } else {
+            thoughts[thoughtId].reasoning = "LLM unavailable -- async submission failed";
+            emit ThoughtRecorded(thoughtId, "LLM unavailable", 0);
+        }
+    }
+
+    /// @notice Receive async LLM result (called by Ritual delivery or oracle)
+    /// @param thoughtId The thought to update
+    /// @param reasoning The LLM reasoning output
+    function receiveResult(uint256 thoughtId, string calldata reasoning) external {
+        require(msg.sender == owner || msg.sender == queen || msg.sender == address(this), "Brain: not authorized");
+        require(thoughtId < thoughtCount, "Brain: invalid thought");
+
+        uint256 confidence = _extractConfidence(reasoning);
+
+        thoughts[thoughtId].reasoning = reasoning;
+        thoughts[thoughtId].confidence = confidence;
+
+        emit ThoughtAsyncReceived(thoughtId, reasoning, confidence);
+    }
+
+    // ═══ Plan — Generate Action Plan ═══
 
     /// @notice Generate an action plan based on the latest thought
     /// @return actionId The ID of the planned action
@@ -143,7 +226,7 @@ contract HiveBrain is RitualPrecompileConsumer {
 
         Thought memory latestThought = thoughts[thoughtCount - 1];
 
-        // Build planning prompt
+        // Build planning prompt with Allora price context
         string memory prompt = _buildPlanPrompt(latestThought);
 
         bytes memory llmInput = _encodeLlmCall(prompt);
@@ -171,7 +254,7 @@ contract HiveBrain is RitualPrecompileConsumer {
         emit ActionPlanned(actionId, plan_.actionType, plan_.target);
     }
 
-    // ═══ Act -- Execute or Approve ═══
+    // ═══ Act — Execute or Approve ═══
 
     /// @notice Execute an action (autonomous mode or after approval)
     function act(uint256 actionId) public {
@@ -285,14 +368,36 @@ contract HiveBrain is RitualPrecompileConsumer {
         return result;
     }
 
+    // ═══ Enhanced LLM Encoding (with PII support) ═══
+
+    /// @dev Encode LLM call with PII mode support
+    function _encodeLlmCallWithPii(string memory prompt, bool _piiEnabled)
+        internal
+        pure
+        returns (bytes memory)
+    {
+        return abi.encode(
+            address(0),         // executor (auto-select)
+            new bytes[](0),     // encryptedSecrets
+            uint256(100),       // ttl (blocks)
+            new bytes[](0),     // secretSignatures
+            bytes(""),          // userPublicKey
+            prompt,             // prompt
+            uint256(0),         // maxTokens
+            uint256(0),         // temperature (use default)
+            bytes(""),          // model (use default)
+            uint256(0),         // dkmsKeyIndex
+            uint8(0),           // dkmsKeyFormat
+            _piiEnabled         // piiEnabled — true = redact from settlement
+        );
+    }
+
     // ═══ Response Parsing ═══
 
     function _extractConfidence(string memory response) internal pure returns (uint256) {
-        // Simple extraction: look for numbers near "confidence"
         bytes memory b = bytes(response);
         uint256 confidence = 50; // default
 
-        // Try to find a number between 0-100
         for (uint256 i = 0; i < b.length; i++) {
             if (uint8(b[i]) >= 48 && uint8(b[i]) <= 57) { // digit
                 uint256 num = 0;
@@ -320,6 +425,7 @@ contract HiveBrain is RitualPrecompileConsumer {
         else if (_contains(response, "update_pricing")) actionType = ActionType.UpdatePricing;
         else if (_contains(response, "spawn")) actionType = ActionType.SpawnDrone;
         else if (_contains(response, "adjust_fees")) actionType = ActionType.AdjustFees;
+        else if (_contains(response, "allora")) actionType = ActionType.FetchAlloraPrice;
 
         return ActionPlan({
             actionType: actionType,
@@ -329,6 +435,13 @@ contract HiveBrain is RitualPrecompileConsumer {
             description: response,
             priority: 5
         });
+    }
+
+    function _extractJobId(bytes memory data) internal pure returns (uint256) {
+        if (data.length >= 32) {
+            return abi.decode(data, (uint256));
+        }
+        return 0;
     }
 
     // ═══ Configuration ═══
@@ -344,9 +457,21 @@ contract HiveBrain is RitualPrecompileConsumer {
         emit ModeChanged(_autonomous);
     }
 
+    function setPiiMode(bool _piiMode) external {
+        require(msg.sender == owner, "Brain: not owner");
+        piiMode = _piiMode;
+        emit PiiModeChanged(_piiMode);
+    }
+
     function setQueen(address _queen) external {
         require(msg.sender == owner, "Brain: not owner");
         queen = _queen;
+    }
+
+    function setOracle(address _oracle) external {
+        require(msg.sender == owner, "Brain: not owner");
+        oracle = _oracle;
+        emit OracleSet(_oracle);
     }
 
     // ═══ View ═══

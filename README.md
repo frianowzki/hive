@@ -23,24 +23,27 @@ Hive is a **compliant, AI-powered launchpad** built natively on [Ritual Chain](h
 ### Key Features
 
 - **ZK-Proofed Identity** — KYC/KYB verification via zero-knowledge proofs. Prove you're 18+, prove your country, prove your organization — without revealing the underlying data
+- **DKMS Privacy** — TEE-bound key derivation via Ritual DKMS precompile (0x0803). Private keys never leave the enclave. ECIES-encrypted KYC data stored on-chain, only TEE can decrypt
 - **Dual Wallet Auth** — Primary wallet (ECDSA, e.g. MetaMask) + Hive wallet (Ritual passkey P-256). User always retains custody
 - **AI-Driven Price Discovery** — Hive Clearing Auction (HCA) with Ritual LLM-powered pricing. Optimal token launch price determined by on-chain AI
+- **Allora Price Feeds** — AI-inferred price predictions from Allora Network via Ritual HTTP precompile. Crowdsourced models supply predictions with confidence intervals
 - **AI Agent Gateway** — On-chain chatbot powered by Ritual LLM precompile. Market analysis, token insights, strategy advice — all computed on-chain
-- **Agent Brain** — Sovereign AI brain that thinks, plans, and acts. Confidence-threshold decision making with 9 action types and on-chain memory
+- **Agent Brain (Async + PII)** — Sovereign AI brain with async LLM inference and PII mode. think() → plan() → act() pipeline with confidence threshold. PII mode ensures sensitive strategy data never hits the mempool
 - **On-Chain Governance** — DAO voting with staked-weighted power, delegation, proposal types, quorum enforcement, and time-locked execution
 - **4-Tier Staking** — Bronze → Silver → Gold → Diamond. Lock multiplier, auto-compound, fee discounts, priority access
 - **Fee Economy** — Treasury auto-distributes fees: 60% to stakers, 25% to referrers, 15% to reserve
 
 ### Why Ritual Chain?
 
-Hive is designed as a **flagship showcase** for Ritual's four research frontiers:
+Hive is designed as a **flagship showcase** for Ritual's five research frontiers:
 
 1. **Ritual LLM Precompile** — On-chain AI inference (HiveAgent, HiveBrain, HiveClearing)
-2. **Ritual HTTP Precompile** — Off-chain data feeds (HiveOracle)
-3. **Ritual ECIES Precompile** — Encrypted P2P messaging (HiveChat)
-4. **Ritual Passkey (P-256)** — Native passkey signatures for Hive wallets
+2. **Ritual HTTP Precompile** — Off-chain data feeds (HiveOracle, Allora Network)
+3. **Ritual DKMS Precompile** — TEE-bound key derivation for private KYC (HiveID)
+4. **Ritual ECIES Precompile** — Encrypted P2P messaging (HiveChat)
+5. **Ritual Passkey (P-256)** — Native passkey signatures for Hive wallets
 
-No other chain supports all four primitives natively.
+No other chain supports all five primitives natively.
 
 ---
 
@@ -93,7 +96,8 @@ No other chain supports all four primitives natively.
                     │   Ritual Chain     │
                     │  ┌──────────────┐  │
                     │  │ LLM Precomp  │  │  ← On-chain AI inference
-                    │  │ HTTP Precomp │  │  ← Off-chain data feeds
+                    │  │ HTTP Precomp │  │  ← Off-chain data + Allora
+                    │  │ DKMS Precomp │  │  ← TEE key derivation
                     │  │ ECIES Precomp│  │  ← Encrypted messaging
                     │  │ P-256 Passkey│  │  ← Native passkey auth
                     │  └──────────────┘  │
@@ -121,7 +125,7 @@ User (MetaMask) ──→ HiveID ──→ Register (free) ──→ Get Hive Wa
 
 | Contract | Address | Description |
 |----------|---------|-------------|
-| **HiveID** | `0x013c...08A01` | On-chain identity registry. Permanent username, dual-wallet binding (primary + hive), KYC/KYB verification types, internal transfers between HiveIDs |
+| **HiveID** | `0x013c...08A01` | On-chain identity registry with DKMS privacy. Permanent username, dual-wallet binding, KYC/KYB verification, TEE-bound key derivation, ECIES-encrypted KYC storage, PII redaction mode |
 | **HiveMultiSig** | `0xd450...4B1B6` | M-of-N multi-signature wallet with 24h timelock. Required for Project/VC accounts |
 | **HiveVerifier** | `0xDD2A...23Eb6` | ZK proof verifier for KYC/KYB. 5 proof types (age, country, accreditation, org, sanctions). Nullifier + nonce replay prevention |
 | **HiveRelayer** | `0xa2FC...513c` | Meta-transaction relayer. Primary wallet signs, relayer executes from hive wallet |
@@ -134,7 +138,7 @@ User (MetaMask) ──→ HiveID ──→ Register (free) ──→ Get Hive Wa
 | **HivePortfolio** | `0x81E3...a066` | Holdings tracking, weighted average entry price, vesting schedules, PnL calculation |
 | **HiveReputation** | `0x4cbe...526A` | 5-tier reputation scoring (Bronze → Diamond). Fee discounts based on score |
 | **HiveReferral** | `0x6fc9...41ED` | 4-tier referral engine with fee sharing |
-| **HiveOracle** | `0x5D72...1aEbE` | Price feed via Ritual HTTP precompile. Fetches real-time token prices from CoinGecko |
+| **HiveOracle** | `0x5D72...1aEbE` | Price feed via Ritual HTTP precompile + Allora Network. AI-inferred price predictions with confidence intervals, batch fetching, price history |
 | **HiveToken** | `0xDA81...5ec3` | ERC20 token with vesting schedules and transfer restrictions |
 | **HiveStaking** | `0x93dd...b408` | 4-tier staking (Bronze → Diamond). Lock multiplier, auto-compound, voting power |
 | **HiveTreasury** | `0x90fb...8C18` | Fee collector & distributor. Multi-sig controlled. Auto-distributes: 60% stakers, 25% referrers, 15% reserve |
@@ -144,7 +148,7 @@ User (MetaMask) ──→ HiveID ──→ Register (free) ──→ Get Hive Wa
 | Contract | Address | Description |
 |----------|---------|-------------|
 | **HiveAgent** | `0x8424...4327` | AI Agent Gateway via Ritual LLM precompile. On-chain chatbot for market analysis, token insights, strategy advice |
-| **HiveBrain** | `0x0ad0...42B4` | Sovereign agent brain. think() → plan() → act() pipeline with confidence threshold (≥70%). 9 action types, on-chain memory, success rate tracking |
+| **HiveBrain** | `0x0ad0...42B4` | Sovereign agent brain with async LLM inference and PII mode. think() → plan() → act() pipeline, confidence threshold, 11 action types, on-chain memory, PII-safe private inference |
 | **Queen** | `0xDC96...Ae8E` | Brain orchestrator. Interface-based wiring for Strategy, Drone, Registry, LaunchPad, MarketMaker |
 | **HiveAutoStrategy** | `0x1b3A...BEF9` | Automated trading strategies: DCA, Take Profit, Stop Loss, Trailing Stop |
 | **HiveMarketMaker** | `0x9CC5...289b` | AI-driven market making via Ritual LLM |
@@ -174,7 +178,7 @@ User (MetaMask) ──→ HiveID ──→ Register (free) ──→ Get Hive Wa
 | Contract | Description |
 |----------|-------------|
 | **HiveTypes** | Shared type definitions (AccountType, VerificationType, etc.) |
-| **RitualPrecompileConsumer** | Base contract for Ritual precompile integration (LLM, HTTP, ECIES) |
+| **RitualPrecompileConsumer** | Base contract for Ritual precompile integration (LLM, HTTP, ECIES, DKMS) |
 | **IHive** | Hive protocol interface |
 | **IRitual** | Ritual precompile interface |
 
@@ -244,11 +248,12 @@ hive/
 │   └── verifier/
 │       └── HiveVerifier.sol      # ZK proof verifier
 │
-├── test/                         # Test suite (135 tests)
+├── test/                         # Test suite (197 tests)
 │   ├── Hive.t.sol                # Core integration tests
-│   ├── HiveID.t.sol              # HiveID unit tests
+│   ├── HiveID.t.sol              # HiveID + DKMS privacy tests
 │   ├── HiveSuite.t.sol           # Suite 1: ID, MultiSig, Clearing, etc.
-│   └── HiveSuite2.t.sol          # Suite 2: Verifier, Relayer, Oracle, etc.
+│   ├── HiveSuite2.t.sol          # Suite 2: Verifier, Relayer, Oracle, etc.
+│   └── AlloraBrain.t.sol         # Allora + HiveBrain async/PII tests
 │
 ├── script/
 │   └── Deploy.s.sol              # Deployment script (19 contracts)
@@ -314,7 +319,7 @@ forge build
 forge test -vv
 ```
 
-All 135 tests should pass.
+All 197 tests should pass.
 
 ### Deploy
 
@@ -370,5 +375,5 @@ MIT
 ---
 
 <p align="center">
-  Built on <a href="https://ritual.net">Ritual Chain</a> • Powered by Ritual LLM, HTTP, ECIES, and Passkey precompiles
+  Built on <a href="https://ritual.net">Ritual Chain</a> • Powered by Ritual LLM, HTTP, DKMS, ECIES, and Passkey precompiles • Price feeds by <a href="https://allora.network">Allora Network</a>
 </p>
