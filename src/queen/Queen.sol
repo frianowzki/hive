@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
 import {RitualPrecompileConsumer} from "../libraries/RitualPrecompileConsumer.sol";
 
@@ -76,6 +76,10 @@ contract Queen is RitualPrecompileConsumer {
     bool public hibernating;
     uint256 public totalCycles;
 
+    // Timelock for critical operations
+    uint256 public constant TIMELOCK_DELAY = 24 hours;
+    mapping(bytes32 => uint256) public pendingActions; // action hash => execute after
+
     // ═══ Events ═══
 
     event Born(string name, uint256 blockNumber);
@@ -84,6 +88,7 @@ contract Queen is RitualPrecompileConsumer {
     event Upgraded(address indexed newStrategy);
     event Hibernated(bool status);
     event Died(string reason);
+    event ActionScheduled(bytes32 indexed actionHash, uint256 executeAfter);
     event DivisionSet(string name, address addr);
 
     // ═══ Constructor ═══
@@ -230,8 +235,34 @@ contract Queen is RitualPrecompileConsumer {
         emit Hibernated(false);
     }
 
-    function die(string memory reason) external onlyOwner {
+    /// @notice Schedule Queen shutdown (timelocked)
+    function scheduleShutdown(string calldata reason) external onlyOwner {
+        bytes32 actionHash = keccak256(abi.encodePacked("shutdown", reason));
+        pendingActions[actionHash] = block.timestamp + TIMELOCK_DELAY;
+        emit ActionScheduled(actionHash, block.timestamp + TIMELOCK_DELAY);
+    }
+
+    /// @notice Execute scheduled shutdown
+    function executeShutdown(string calldata reason) external onlyOwner {
+        bytes32 actionHash = keccak256(abi.encodePacked("shutdown", reason));
+        require(pendingActions[actionHash] > 0, "Queen: not scheduled");
+        require(block.timestamp >= pendingActions[actionHash], "Queen: timelock active");
+        require(block.timestamp <= pendingActions[actionHash] + 24 hours, "Queen: expired");
+
+        delete pendingActions[actionHash];
         alive = false;
+        hibernating = false;
+        uint256 balance = address(this).balance;
+        if (balance > 0) {
+            (bool success, ) = owner.call{value: balance}("");
+            require(success, "Queen: transfer failed");
+        }
+        emit Died(reason);
+    }
+
+    /// @notice Emergency die (only if not alive — already shut down)
+    function die(string memory reason) external onlyOwner {
+        require(!alive, "Queen: use scheduleShutdown for live queens");
         hibernating = false;
         uint256 balance = address(this).balance;
         if (balance > 0) {

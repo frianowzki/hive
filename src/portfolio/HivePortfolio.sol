@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
 /// @title HivePortfolio — On-chain Portfolio Tracker
 /// @notice Tracks all token holdings, vesting, and PnL per HiveID

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
 /// @title IRitual — Ritual Chain precompile interfaces
 /// @notice Addresses are from Ritual Chain mainnet/testnet

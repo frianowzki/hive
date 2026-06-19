@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
 /// @title HiveToken — Token standard for Hive launchpad
 /// @notice ERC20 with built-in vesting, transfer restrictions, and metadata

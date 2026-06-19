@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
 /// @title HiveReferral — On-chain Referral Engine
 /// @notice Track referrals and distribute rewards per HiveID

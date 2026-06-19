@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
 import {RitualPrecompileConsumer} from "../libraries/RitualPrecompileConsumer.sol";
 import {HivePoints} from "../points/HivePoints.sol";

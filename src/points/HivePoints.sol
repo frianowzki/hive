@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
 /// @title Points — Hive Points System (Tokenless)
 /// @notice Tracks user engagement across all Hive modules

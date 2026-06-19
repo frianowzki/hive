@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
 import "../libraries/RitualPrecompileConsumer.sol";
 
@@ -113,7 +113,7 @@ contract HiveClearing is RitualPrecompileConsumer {
             soldAmount: 0,
             minPrice: minPrice,
             maxPrice: maxPrice,
-            currentPrice: (minPrice + maxPrice) / 2, // Start at midpoint
+            currentPrice: ((minPrice + maxPrice + 1) / 2), // Start at midpoint
             startTime: block.timestamp,
             endTime: block.timestamp + duration,
             clearingInterval: clearingInterval,
@@ -123,7 +123,7 @@ contract HiveClearing is RitualPrecompileConsumer {
         });
 
         userAuctions[msg.sender].push(auctionId);
-        priceHistory[auctionId].push((minPrice + maxPrice) / 2);
+        priceHistory[auctionId].push(((minPrice + maxPrice + 1) / 2));
 
         emit AuctionCreated(auctionId, msg.sender, token);
         return auctionId;

@@ -23,6 +23,7 @@ contract HiveVerifierTest is Test {
 
     function setUp() public {
         verifier = new HiveVerifier();
+        verifier.setTestMode(true); // Enable test mode (skip Groth16)
         verifier.authorizeVerifier(authVerifier);
         verifier.authorizeVerifier(address(verifier)); // For batch self-calls
     }

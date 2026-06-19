@@ -79,6 +79,15 @@ contract HiveTreasury {
     //                         MODIFIERS
     // ═══════════════════════════════════════════════════════════════
 
+    /// @notice Track reentrancy
+    uint256 private _reentrancyStatus;
+
+    /// @notice Max stakers per distribution batch
+    uint256 public constant MAX_BATCH_SIZE = 50;
+
+    /// @notice Distribution cursor for paginated distribution
+    mapping(uint256 => uint256) public distributionCursor; // round => cursor position
+
     modifier onlyOwner() {
         require(msg.sender == owner, "HiveTreasury: not owner");
         _;
@@ -97,6 +106,13 @@ contract HiveTreasury {
     modifier whenNotPaused() {
         require(!paused, "HiveTreasury: paused");
         _;
+    }
+
+    modifier nonReentrant() {
+        require(_reentrancyStatus != 1, "HiveTreasury: reentrant call");
+        _reentrancyStatus = 1;
+        _;
+        _reentrancyStatus = 0;
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -135,8 +151,8 @@ contract HiveTreasury {
     // ═══════════════════════════════════════════════════════════════
 
     /// @notice Distribute collected fees to stakers and referrers
-    /// @dev Can be called by anyone, but multi-sig preferred for timing
-    function distribute() external whenNotPaused {
+    /// @dev Paginated — call multiple times to process all stakers
+    function distribute() external whenNotPaused nonReentrant {
         uint256 balance = address(this).balance;
         require(balance > 0, "HiveTreasury: no fees to distribute");
 
@@ -149,18 +165,18 @@ contract HiveTreasury {
         uint256 stakerCount;
         uint256 referrerCount;
 
-        // Distribute to stakers
+        // Distribute to stakers (paginated)
         if (address(staking) != address(0)) {
             stakerCount = _distributeToStakers(stakerAmount);
         } else {
-            reserveAmt += stakerAmount; // No staking contract, go to reserve
+            reserveAmt += stakerAmount;
         }
 
-        // Distribute to referrers
+        // Distribute to referrers (paginated)
         if (address(referral) != address(0)) {
             referrerCount = _distributeToReferrers(referrerAmount);
         } else {
-            reserveAmt += referrerAmount; // No referral contract, go to reserve
+            reserveAmt += referrerAmount;
         }
 
         // Add to reserve
@@ -183,7 +199,7 @@ contract HiveTreasury {
         emit DistributionExecuted(currentRound, balance, stakerAmount, referrerAmount, reserveAmt);
     }
 
-    /// @notice Distribute to stakers proportional to their stake
+    /// @notice Distribute to stakers proportional to their stake (paginated)
     function _distributeToStakers(uint256 totalAmount) internal returns (uint256 count) {
         address[] memory stakers = staking.getStakers();
         uint256 totalStaked = staking.totalStaked();
@@ -193,8 +209,12 @@ contract HiveTreasury {
             return 0;
         }
 
+        uint256 cursor = distributionCursor[currentRound];
+        uint256 end = cursor + MAX_BATCH_SIZE;
+        if (end > stakers.length) end = stakers.length;
+
         uint256 distributed;
-        for (uint256 i = 0; i < stakers.length; i++) {
+        for (uint256 i = cursor; i < end; i++) {
             address staker = stakers[i];
             uint256 staked = staking.stakedAmount(staker);
             if (staked == 0) continue;
@@ -202,25 +222,31 @@ contract HiveTreasury {
             uint256 share = (totalAmount * staked) / totalStaked;
             if (share == 0) continue;
 
-            // Check not already distributed this round
             if (lastDistributionRound[staker] >= currentRound) continue;
 
+            // Update state before external call (checks-effects-interactions)
+            lastDistributionRound[staker] = currentRound;
+            distributed += share;
+            count++;
+
             (bool success, ) = staker.call{value: share}("");
-            if (success) {
-                lastDistributionRound[staker] = currentRound;
-                distributed += share;
-                count++;
+            if (!success) {
+                // Revert state on failure
+                distributed -= share;
+                count--;
+            } else {
                 emit StakerPaid(staker, share, currentRound);
             }
         }
 
-        // Return undistributed to reserve
+        distributionCursor[currentRound] = end;
+
         if (distributed < totalAmount) {
             reserveBalance += (totalAmount - distributed);
         }
     }
 
-    /// @notice Distribute to referrers proportional to their tier
+    /// @notice Distribute to referrers proportional to their tier (paginated)
     function _distributeToReferrers(uint256 totalAmount) internal returns (uint256 count) {
         address[] memory stakers = staking.getStakers();
         if (stakers.length == 0) {
@@ -230,11 +256,10 @@ contract HiveTreasury {
 
         uint256 totalWeight;
 
-        // Calculate total weight and distribute in one pass
+        // Calculate total weight
         for (uint256 i = 0; i < stakers.length; i++) {
             address referrer = referral.getReferrer(stakers[i]);
             if (referrer == address(0)) continue;
-
             uint8 tier = referral.referralTier(referrer);
             totalWeight += uint256(tier + 1);
         }
@@ -244,9 +269,13 @@ contract HiveTreasury {
             return 0;
         }
 
-        // Distribute
+        // Paginated distribution
+        uint256 cursor = distributionCursor[currentRound + 1000]; // separate cursor for referrers
+        uint256 end = cursor + MAX_BATCH_SIZE;
+        if (end > stakers.length) end = stakers.length;
+
         uint256 distributed;
-        for (uint256 i = 0; i < stakers.length; i++) {
+        for (uint256 i = cursor; i < end; i++) {
             address referrer = referral.getReferrer(stakers[i]);
             if (referrer == address(0)) continue;
 
@@ -255,15 +284,20 @@ contract HiveTreasury {
 
             if (share == 0) continue;
 
+            distributed += share;
+            count++;
+
             (bool success, ) = referrer.call{value: share}("");
-            if (success) {
-                distributed += share;
-                count++;
+            if (!success) {
+                distributed -= share;
+                count--;
+            } else {
                 emit ReferrerPaid(referrer, share, currentRound);
             }
         }
 
-        // Return undistributed to reserve
+        distributionCursor[currentRound + 1000] = end;
+
         if (distributed < totalAmount) {
             reserveBalance += (totalAmount - distributed);
         }

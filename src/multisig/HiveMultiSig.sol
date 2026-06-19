@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
 /// @title HiveMultiSig — Multi-signature wallet for Project/VC accounts
 /// @notice Required for AccountType.Project and AccountType.Investor

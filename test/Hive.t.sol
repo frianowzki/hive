@@ -409,7 +409,18 @@ contract HiveTest is Test {
     function testQueenDie() public {
         queen = new Queen("Hive-1", 100, address(0), address(0), address(0), address(0), address(0), address(0));
 
-        queen.die("unprofitable");
+        // Schedule shutdown (timelocked)
+        queen.scheduleShutdown("unprofitable");
+
+        // Cannot execute before timelock
+        vm.expectRevert("Queen: timelock active");
+        queen.executeShutdown("unprofitable");
+
+        // Fast forward past timelock
+        vm.warp(block.timestamp + 25 hours);
+
+        // Execute shutdown
+        queen.executeShutdown("unprofitable");
         assertFalse(queen.alive());
     }
 

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
 /// @title PrecompileConsumer — Base contract for Ritual precompile calls
 /// @notice Provides helpers for calling Ritual precompiles
@@ -40,8 +40,32 @@ abstract contract RitualPrecompileConsumer {
         returns (bytes memory output)
     {
         (bool success, bytes memory result) = precompile.staticcall(input);
-        require(success, "PrecompileConsumer: call failed");
+        if (!success) {
+            // Propagate revert reason if available
+            if (result.length > 0) {
+                assembly {
+                    revert(add(result, 32), mload(result))
+                }
+            }
+            revert("PrecompileConsumer: call failed");
+        }
         return result;
+    }
+
+    /// @notice Execute a precompile call and return success status
+    /// @param precompile Address of the precompile
+    /// @param input Encoded input data
+    /// @return success Whether the call succeeded
+    /// @return output Raw output bytes
+    function _tryExecutePrecompile(address precompile, bytes memory input)
+        internal
+        returns (bool success, bytes memory output)
+    {
+        (success, output) = precompile.staticcall(input);
+        if (!success && output.length > 0) {
+            // Include revert reason in output for debugging
+            return (false, output);
+        }
     }
 
     /// @notice Encode an HTTP GET request
