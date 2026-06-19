@@ -24,7 +24,7 @@ Hive is a **compliant, AI-powered launchpad** built natively on [Ritual Chain](h
 
 - **ZK-Proofed Identity** — KYC/KYB verification via zero-knowledge proofs. Prove you're 18+, prove your country, prove your organization — without revealing the underlying data
 - **Dual Wallet Auth** — Primary wallet (ECDSA, e.g. MetaMask) + Hive wallet (Ritual passkey P-256). User always retains custody
-- **AI-Driven Price Discovery** — Continuous Clearing Auction (CCA) with Ritual LLM-powered pricing. Optimal token launch price determined by on-chain AI
+- **AI-Driven Price Discovery** — Hive Clearing Auction (HCA) with Ritual LLM-powered pricing. Optimal token launch price determined by on-chain AI
 - **AI Agent Gateway** — On-chain chatbot powered by Ritual LLM precompile. Market analysis, token insights, strategy advice — all computed on-chain
 - **Agent Brain** — Sovereign AI brain that thinks, plans, and acts. Confidence-threshold decision making with 9 action types and on-chain memory
 - **On-Chain Governance** — DAO voting with staked-weighted power, delegation, proposal types, quorum enforcement, and time-locked execution
@@ -64,7 +64,7 @@ No other chain supports all four primitives natively.
 │  ┌────┴─────┐  ┌─────┴────┐  ┌─────┴────┐  ┌─────┴────┐           │
 │  │HiveClear-│  │HivePort- │  │HiveRepu- │  │HiveRefer-│           │
 │  │  ing     │  │  folio   │  │ tation   │  │   ral    │           │
-│  │ (CCA +   │  │(Holdings │  │(5-Tier   │  │(4-Tier   │           │
+│  │ (HCA +   │  │(Holdings │  │(5-Tier   │  │(4-Tier   │           │
 │  │  AI)     │  │ + PnL)   │  │ Score)   │  │ Engine)  │           │
 │  └──────────┘  └──────────┘  └──────────┘  └──────────┘           │
 │                                                                     │
@@ -130,7 +130,7 @@ User (MetaMask) ──→ HiveID ──→ Register (free) ──→ Get Hive Wa
 
 | Contract | Address | Description |
 |----------|---------|-------------|
-| **HiveClearing** | `0x6319...c20CC` | Continuous Clearing Auction with AI-driven pricing. Token sale mechanism where price is continuously determined by demand via Ritual LLM |
+| **HiveClearing** | `0x6319...c20CC` | Hive Clearing Auction with AI-driven pricing. Token sale mechanism where price is continuously determined by demand via Ritual LLM |
 | **HivePortfolio** | `0x81E3...a066` | Holdings tracking, weighted average entry price, vesting schedules, PnL calculation |
 | **HiveReputation** | `0x4cbe...526A` | 5-tier reputation scoring (Bronze → Diamond). Fee discounts based on score |
 | **HiveReferral** | `0x6fc9...41ED` | 4-tier referral engine with fee sharing |
@@ -138,7 +138,7 @@ User (MetaMask) ──→ HiveID ──→ Register (free) ──→ Get Hive Wa
 | **HiveToken** | `0xDA81...5ec3` | ERC20 token with vesting schedules and transfer restrictions |
 | **HiveStaking** | `0x93dd...b408` | 4-tier staking (Bronze → Diamond). Lock multiplier, auto-compound, voting power |
 | **HiveTreasury** | `0x90fb...8C18` | Fee collector & distributor. Multi-sig controlled. Auto-distributes: 60% stakers, 25% referrers, 15% reserve |
-| **HoneyPot** | `—` | Legacy fee collector (superseded by HiveTreasury) |
+| **HoneyPot** | `—` | Legacy fee collector (superseded by HiveTreasury, not deployed) |
 
 ### 🤖 AI & Agent Layer
 
@@ -146,9 +146,9 @@ User (MetaMask) ──→ HiveID ──→ Register (free) ──→ Get Hive Wa
 |----------|---------|-------------|
 | **HiveAgent** | `0x8424...4327` | AI Agent Gateway via Ritual LLM precompile. On-chain chatbot for market analysis, token insights, strategy advice |
 | **HiveBrain** | `0x0ad0...42B4` | Sovereign agent brain. think() → plan() → act() pipeline with confidence threshold (≥70%). 9 action types, on-chain memory, success rate tracking |
-| **Queen** | `—` | Brain orchestrator. Connects HoneyPot, Strategy, Drone, Registry, LaunchPad, MarketMaker |
+| **Queen** | `0xDC96...Ae8E` | Brain orchestrator. Interface-based wiring for HoneyPot, Strategy, Drone, Registry, LaunchPad, MarketMaker |
 | **HiveAutoStrategy** | `0x1b3A...BEF9` | Automated trading strategies: DCA, Take Profit, Stop Loss, Trailing Stop |
-| **HiveMarketMaker** | `—` | AI-driven market making via Ritual LLM |
+| **HiveMarketMaker** | `0x9CC5...289b` | AI-driven market making via Ritual LLM |
 
 ### 🏛️ Governance
 
@@ -163,12 +163,12 @@ User (MetaMask) ──→ HiveID ──→ Register (free) ──→ Get Hive Wa
 |----------|---------|-------------|
 | **HiveFactory** | `0x0241...63c6` | Master wiring contract. Single entry point connecting all modules. initialize() wires HiveID, Clearing, Reputation, Referral, Portfolio, Verifier, Treasury |
 | **HiveChat** | `0x615F...85B6` | Encrypted P2P messaging via Ritual ECIES precompile |
-| **HiveLaunchPad** | `—` | Token launch platform with CCA mechanics |
-| **HiveCouncil** | `—` | Council governance (multi-representative) |
-| **HivePoints** | `—` | On-chain points/rewards system |
-| **HiveRegistry** | `—` | Contract registry for module discovery |
-| **Drone** | `—` | Autonomous execution agents |
-| **Strategy** | `—` | Base strategy contract (parent of HiveAutoStrategy) |
+| **HiveLaunchPad** | `0x1187...d572` | Token launch platform with HCA mechanics |
+| **HiveCouncil** | `0xD79F...3D94` | Council governance (multi-representative) |
+| **HivePoints** | `0xA2fE...01a7` | On-chain points/rewards system |
+| **HiveRegistry** | `0xae3c...98183` | Contract registry for module discovery |
+| **Drone** | `0x0542...3f2` | Autonomous execution agents |
+| **Strategy** | `0x638d...A15C` | Base strategy contract (parent of HiveAutoStrategy) |
 
 ### 📚 Libraries & Interfaces
 
@@ -190,7 +190,7 @@ hive/
 │   │   ├── HiveAgent.sol         # AI Agent Gateway (LLM precompile)
 │   │   └── HiveBrain.sol         # Sovereign agent brain
 │   ├── auction/
-│   │   └── HiveClearing.sol      # Continuous Clearing Auction + AI pricing
+│   │   └── HiveClearing.sol      # Hive Clearing Auction + AI pricing
 │   ├── chat/
 │   │   └── HiveChat.sol          # Encrypted P2P messaging (ECIES)
 │   ├── council/

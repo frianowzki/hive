@@ -2,16 +2,53 @@
 pragma solidity ^0.8.20;
 
 import {RitualPrecompileConsumer} from "../libraries/RitualPrecompileConsumer.sol";
-import {HoneyPot} from "../treasury/HoneyPot.sol";
-import {Strategy} from "../strategy/Strategy.sol";
-import {Drone} from "../drone/Drone.sol";
-import {HiveRegistry} from "../registry/HiveRegistry.sol";
-import {HiveLaunchPad} from "../launch/HiveLaunchPad.sol";
-import {HiveMarketMaker} from "../maker/HiveMarketMaker.sol";
-import {HiveCouncil} from "../council/HiveCouncil.sol";
 
 /// @title Queen — Hive Sovereign Agent Brain
 /// @notice The central orchestrator: holds treasury, spawns drones, runs strategy cycles
+/// @dev Refactored to use interfaces — dependencies deployed separately and wired via constructor
+
+interface IHoneyPot {
+    function allocate(address to, uint256 amount) external;
+    function balanceOf(address account) external view returns (uint256);
+}
+
+interface IStrategy {
+    function generateStrategy(string calldata state) external returns (uint256);
+    function executeCycle(uint256 cycleId) external;
+}
+
+interface IDrone {
+    function returnProfits() external;
+    function terminate() external;
+    function purpose() external view returns (string memory);
+    function droneType() external view returns (uint8);
+    function alive() external view returns (bool);
+}
+
+interface IHiveRegistry {
+    function register(string calldata name, uint256 interval) external;
+    function heartbeat() external;
+}
+
+interface IHiveLaunchPad {
+    function createSale(
+        address project, address token, uint256 price,
+        uint256 hardCap, uint256 softCap, uint256 minBuy, uint256 maxBuy,
+        uint256 startTime, uint256 endTime,
+        uint256 vestingCliff, uint256 vestingDuration, bool whitelistOnly
+    ) external returns (uint256);
+}
+
+interface IHiveMarketMaker {
+    function createPool(address token, uint256 spreadBps, uint256 feeBps) external;
+}
+
+interface IHiveCouncil {
+    function propose(
+        string calldata title, string calldata description,
+        uint8 proposalType, address target, bytes calldata executionData
+    ) external returns (uint256);
+}
 
 contract Queen is RitualPrecompileConsumer {
     // ═══ State ═══
@@ -20,18 +57,18 @@ contract Queen is RitualPrecompileConsumer {
     string public name;
     uint256 public birthBlock;
     uint256 public lastCycleBlock;
-    uint256 public cycleInterval; // blocks between cycles
+    uint256 public cycleInterval;
 
-    // Divisions
-    HoneyPot public honeypot;
-    Strategy public strategy;
-    HiveRegistry public registry;
-    HiveLaunchPad public launchPad;
-    HiveMarketMaker public marketMaker;
-    HiveCouncil public council;
+    // Division addresses (wired externally)
+    IHoneyPot public honeypot;
+    IStrategy public strategy;
+    IHiveRegistry public registry;
+    IHiveLaunchPad public launchPad;
+    IHiveMarketMaker public marketMaker;
+    IHiveCouncil public council;
 
     // Drones
-    Drone[] public drones;
+    address[] public drones;
     uint256 public droneCount;
 
     // Lifecycle
@@ -47,32 +84,41 @@ contract Queen is RitualPrecompileConsumer {
     event Upgraded(address indexed newStrategy);
     event Hibernated(bool status);
     event Died(string reason);
+    event DivisionSet(string name, address addr);
 
     // ═══ Constructor ═══
 
     constructor(
         string memory _name,
-        uint256 _cycleInterval
+        uint256 _cycleInterval,
+        address _honeypot,
+        address _strategy,
+        address _registry,
+        address _launchPad,
+        address _marketMaker,
+        address _council
     ) payable {
         owner = msg.sender;
         name = _name;
         birthBlock = block.number;
-        cycleInterval = _cycleInterval > 0 ? _cycleInterval : 100; // default 100 blocks
+        cycleInterval = _cycleInterval > 0 ? _cycleInterval : 100;
         alive = true;
 
-        // Deploy divisions
-        registry = new HiveRegistry();
-        honeypot = new HoneyPot(address(this));
-        strategy = new Strategy(address(this));
-        launchPad = new HiveLaunchPad(address(0)); // points not needed for now
-        marketMaker = new HiveMarketMaker(address(0));
-        council = new HiveCouncil(address(0));
+        // Wire divisions
+        if (_honeypot != address(0)) honeypot = IHoneyPot(_honeypot);
+        if (_strategy != address(0)) strategy = IStrategy(_strategy);
+        if (_registry != address(0)) registry = IHiveRegistry(_registry);
+        if (_launchPad != address(0)) launchPad = IHiveLaunchPad(_launchPad);
+        if (_marketMaker != address(0)) marketMaker = IHiveMarketMaker(_marketMaker);
+        if (_council != address(0)) council = IHiveCouncil(_council);
 
         // Register self
-        registry.register(name, cycleInterval);
+        if (address(registry) != address(0)) {
+            registry.register(name, cycleInterval);
+        }
 
         // Fund honeypot
-        if (msg.value > 0) {
+        if (msg.value > 0 && address(honeypot) != address(0)) {
             (bool success, ) = address(honeypot).call{value: msg.value}("");
             require(success, "Queen: honeypot funding failed");
         }
@@ -80,92 +126,78 @@ contract Queen is RitualPrecompileConsumer {
         emit Born(name, block.number);
     }
 
+    // ═══ Division Wiring ═══
+
+    function setDivision(string calldata divName, address addr) external onlyOwner {
+        if (keccak256(bytes(divName)) == keccak256("honeypot")) honeypot = IHoneyPot(addr);
+        else if (keccak256(bytes(divName)) == keccak256("strategy")) strategy = IStrategy(addr);
+        else if (keccak256(bytes(divName)) == keccak256("registry")) registry = IHiveRegistry(addr);
+        else if (keccak256(bytes(divName)) == keccak256("launchPad")) launchPad = IHiveLaunchPad(addr);
+        else if (keccak256(bytes(divName)) == keccak256("marketMaker")) marketMaker = IHiveMarketMaker(addr);
+        else if (keccak256(bytes(divName)) == keccak256("council")) council = IHiveCouncil(addr);
+        else revert("Queen: unknown division");
+        emit DivisionSet(divName, addr);
+    }
+
     // ═══ Strategy Cycle ═══
 
-    /// @notice Run a strategy cycle (called by Scheduler or manually)
     function runCycle() external {
         require(alive, "Queen: not alive");
         require(!hibernating, "Queen: hibernating");
-        require(
-            block.number >= lastCycleBlock + cycleInterval,
-            "Queen: too early"
-        );
+        require(block.number >= lastCycleBlock + cycleInterval, "Queen: too early");
 
         lastCycleBlock = block.number;
         totalCycles++;
 
-        // Build current state for LLM
         string memory currentState = _buildState();
-
-        // Generate strategy
         uint256 cycleId = strategy.generateStrategy(currentState);
-
-        // Execute strategy
         strategy.executeCycle(cycleId);
 
-        // Heartbeat
-        registry.heartbeat();
+        if (address(registry) != address(0)) {
+            registry.heartbeat();
+        }
 
         emit CycleExecuted(cycleId, 0);
     }
 
     // ═══ Drone Management ═══
 
-    /// @notice Spawn a new drone
     function spawnDrone(
         string calldata purpose,
-        Drone.DroneType droneType,
+        uint8 droneType,
         uint256 capital
     ) external onlyOwner returns (address droneAddress) {
-        Drone drone = new Drone{value: capital}(
-            address(this),
-            purpose,
-            droneType,
-            capital
-        );
+        // Drone must be deployed externally and added via addDrone
+        revert("Queen: deploy drone externally, then addDrone()");
+    }
 
-        droneAddress = address(drone);
+    function addDrone(address drone) external onlyOwner {
         drones.push(drone);
         droneCount++;
-
-        emit DroneSpawned(droneAddress, purpose);
+        emit DroneSpawned(drone, "added");
     }
 
-    /// @notice Recall drone (returns profits)
     function recallDrone(uint256 droneIdx) external onlyOwner {
         require(droneIdx < droneCount, "Queen: invalid drone");
-        Drone drone = drones[droneIdx];
-        drone.returnProfits();
+        IDrone(drones[droneIdx]).returnProfits();
     }
 
-    /// @notice Terminate drone
     function terminateDrone(uint256 droneIdx) external onlyOwner {
         require(droneIdx < droneCount, "Queen: invalid drone");
-        Drone drone = drones[droneIdx];
-        drone.terminate();
+        IDrone(drones[droneIdx]).terminate();
     }
 
     // ═══ Division Operations ═══
 
-    /// @notice Allocate capital to a division
     function allocateToDivision(address division, uint256 amount) external onlyOwner {
         honeypot.allocate(division, amount);
     }
 
-    /// @notice Create a token sale
     function createSale(
-        address project,
-        address token,
-        uint256 price,
-        uint256 hardCap,
-        uint256 softCap,
-        uint256 minBuy,
-        uint256 maxBuy,
-        uint256 startTime,
-        uint256 endTime,
-        uint256 vestingCliff,
-        uint256 vestingDuration,
-        bool whitelistOnly
+        address project, address token, uint256 price,
+        uint256 hardCap, uint256 softCap, uint256 minBuy, uint256 maxBuy,
+        uint256 startTime, uint256 endTime,
+        uint256 vestingCliff, uint256 vestingDuration, bool whitelistOnly
     ) external onlyOwner returns (uint256) {
         return launchPad.createSale(
             project, token, price, hardCap, softCap,
@@ -174,67 +206,49 @@ contract Queen is RitualPrecompileConsumer {
         );
     }
 
-    /// @notice Create a liquidity pool
     function createPool(address token, uint256 spreadBps, uint256 feeBps) external onlyOwner {
         marketMaker.createPool(token, spreadBps, feeBps);
     }
 
-    /// @notice Create a governance proposal
     function propose(
-        string calldata title,
-        string calldata description,
-        HiveCouncil.ProposalType proposalType,
-        address target,
-        bytes calldata executionData
+        string calldata title, string calldata description,
+        uint8 proposalType, address target, bytes calldata executionData
     ) external onlyOwner returns (uint256) {
         return council.propose(title, description, proposalType, target, executionData);
     }
 
     // ═══ Lifecycle ═══
 
-    /// @notice Hibernate (pause operations)
     function hibernate() external onlyOwner {
         hibernating = true;
         emit Hibernated(true);
     }
 
-    /// @notice Wake from hibernation
     function wake() external onlyOwner {
         hibernating = false;
-        registry.heartbeat();
+        if (address(registry) != address(0)) registry.heartbeat();
         emit Hibernated(false);
     }
 
-    /// @notice Wind down permanently
     function die(string memory reason) external onlyOwner {
         alive = false;
         hibernating = false;
-
-        // Return all funds to owner
         uint256 balance = address(this).balance;
         if (balance > 0) {
             (bool success, ) = owner.call{value: balance}("");
             require(success, "Queen: transfer failed");
         }
-
         emit Died(reason);
     }
 
-    /// @notice Self-upgrade: deploy new strategy and migrate
     function selfUpgrade() external onlyOwner {
-        // Generate upgrade plan via LLM
         string memory prompt = string(abi.encodePacked(
             "You are Hive. Current state: ", _buildState(), ". ",
-            "Analyze your performance and suggest improvements. ",
-            "Reply with: {improvements: [...], reasoning: ...}"
+            "Analyze your performance and suggest improvements."
         ));
-
         bytes memory llmInput = _encodeLlmCall(prompt);
         (bool success, bytes memory output) = LLM_PRECOMPILE.staticcall(llmInput);
-
         if (success && output.length > 0) {
-            string memory improvements = abi.decode(output, (string));
-            // Store upgrade reasoning (in production, deploy new strategy contract)
             emit Upgraded(address(strategy));
         }
     }
@@ -243,7 +257,6 @@ contract Queen is RitualPrecompileConsumer {
 
     function _buildState() internal view returns (string memory) {
         return string(abi.encodePacked(
-            "HoneyPot balance: ", _uint2str(address(honeypot).balance), " wei. ",
             "Queen balance: ", _uint2str(address(this).balance), " wei. ",
             "Drones: ", _uint2str(droneCount), ". ",
             "Cycles: ", _uint2str(totalCycles), ". ",
@@ -276,10 +289,11 @@ contract Queen is RitualPrecompileConsumer {
     // ═══ View ═══
 
     function hiveBalance() external view returns (uint256) {
-        return address(honeypot).balance + address(this).balance;
+        uint256 potBal = address(honeypot) != address(0) ? address(honeypot).balance : 0;
+        return potBal + address(this).balance;
     }
 
-    function getDrone(uint256 idx) external view returns (Drone) {
+    function getDrone(uint256 idx) external view returns (address) {
         require(idx < droneCount, "Queen: invalid drone");
         return drones[idx];
     }

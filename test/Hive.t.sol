@@ -331,8 +331,8 @@ contract HiveTest is Test {
     // ═══ HoneyPot Tests ═══
 
     function testHoneyPotDeposit() public {
-        queen = new Queen("TestHive", 100);
-        honeypot = queen.honeypot();
+        honeypot = new HoneyPot(address(this));
+        queen = new Queen("TestHive", 100, address(honeypot), address(0), address(0), address(0), address(0), address(0));
 
         vm.deal(address(this), 10 ether);
         (bool success, ) = address(honeypot).call{value: 10 ether}("");
@@ -340,8 +340,8 @@ contract HiveTest is Test {
     }
 
     function testHoneyPotAllocation() public {
-        queen = new Queen("TestHive", 100);
-        honeypot = queen.honeypot();
+        honeypot = new HoneyPot(address(this));
+        queen = new Queen("TestHive", 100, address(honeypot), address(0), address(0), address(0), address(0), address(0));
 
         vm.deal(address(this), 10 ether);
         (bool success, ) = address(honeypot).call{value: 10 ether}("");
@@ -356,12 +356,10 @@ contract HiveTest is Test {
     }
 
     function testHoneyPotPause() public {
-        queen = new Queen("TestHive", 100);
-        honeypot = queen.honeypot();
+        honeypot = new HoneyPot(address(this));
+        queen = new Queen("TestHive", 100, address(honeypot), address(0), address(0), address(0), address(0), address(0));
 
         assertFalse(honeypot.paused());
-        // Only queen can pause
-        vm.prank(address(queen));
         honeypot.emergencyPause();
         assertTrue(honeypot.paused());
     }
@@ -369,30 +367,29 @@ contract HiveTest is Test {
     // ═══ Drone Tests ═══
 
     function testDroneSpawn() public {
-        queen = new Queen("TestHive", 100);
+        queen = new Queen("TestHive", 100, address(0), address(0), address(0), address(0), address(0), address(0));
 
-        vm.deal(address(queen), 5 ether);
-        address droneAddr = queen.spawnDrone("Snipe airdrops", Drone.DroneType.Sniper, 1 ether);
+        Drone drone = new Drone(address(queen), "Snipe airdrops", Drone.DroneType.Sniper, 1 ether);
+        queen.addDrone(address(drone));
 
-        assertTrue(droneAddr != address(0));
         assertEq(queen.droneCount(), 1);
     }
 
     function testDroneTerminate() public {
-        queen = new Queen("TestHive", 100);
+        queen = new Queen("TestHive", 100, address(0), address(0), address(0), address(0), address(0), address(0));
 
-        vm.deal(address(queen), 5 ether);
-        queen.spawnDrone("Research", Drone.DroneType.Researcher, 1 ether);
+        Drone drone = new Drone(address(queen), "Research", Drone.DroneType.Researcher, 1 ether);
+        queen.addDrone(address(drone));
 
         queen.terminateDrone(0);
-        Drone drone = queen.getDrone(0);
-        assertTrue(drone.terminated());
+        address payable droneAddr = payable(queen.getDrone(0));
+        assertTrue(Drone(droneAddr).terminated());
     }
 
     // ═══ Queen Tests ═══
 
     function testQueenBirth() public {
-        queen = new Queen("Hive-1", 100);
+        queen = new Queen("Hive-1", 100, address(0), address(0), address(0), address(0), address(0), address(0));
 
         assertTrue(queen.alive());
         assertEq(queen.name(), "Hive-1");
@@ -400,7 +397,7 @@ contract HiveTest is Test {
     }
 
     function testQueenHibernation() public {
-        queen = new Queen("Hive-1", 100);
+        queen = new Queen("Hive-1", 100, address(0), address(0), address(0), address(0), address(0), address(0));
 
         assertFalse(queen.hibernating());
         queen.hibernate();
@@ -410,14 +407,14 @@ contract HiveTest is Test {
     }
 
     function testQueenDie() public {
-        queen = new Queen("Hive-1", 100);
+        queen = new Queen("Hive-1", 100, address(0), address(0), address(0), address(0), address(0), address(0));
 
         queen.die("unprofitable");
         assertFalse(queen.alive());
     }
 
     function testQueenCreatePool() public {
-        queen = new Queen("Hive-1", 100);
+        queen = new Queen("Hive-1", 100, address(0), address(0), address(0), address(0), address(0), address(0));
         queen.createPool(address(0x1234), 50, 30);
         // Pool created via market maker
     }
