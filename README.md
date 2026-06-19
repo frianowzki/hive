@@ -1,66 +1,376 @@
-## Foundry
+<p align="center">
+  <img src="logo_hive.png" width="200" alt="Hive Logo">
+</p>
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+<h1 align="center">HIVE</h1>
+<p align="center">Compliant AI Launchpad on Ritual Chain</p>
 
-Foundry consists of:
+<p align="center">
+  <a href="https://explorer.ritualfoundation.org">Explorer</a> •
+  <a href="#architecture">Architecture</a> •
+  <a href="#contracts">Contracts</a> •
+  <a href="#quickstart">Quickstart</a>
+</p>
 
-- **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
-- **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
-- **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
-- **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+---
 
-## Documentation
+## What is Hive?
 
-https://book.getfoundry.sh/
+Hive is a **compliant, AI-powered launchpad** built natively on [Ritual Chain](https://ritual.net) (Chain ID: 1979). It combines zero-knowledge identity verification, AI-driven price discovery, and decentralized governance into a single platform for launching and trading tokens.
 
-## Usage
+**Core thesis:** Compliance and decentralization are not opposites. Hive uses zk-proofs to verify identity (KYC for individuals, KYB for projects/institutions) without exposing personal data on-chain. Users self-custody through a dual-wallet architecture — their primary wallet (browser extension) controls a Hive wallet (passkey-based) — keeping full custody while meeting regulatory requirements.
+
+### Key Features
+
+- **ZK-Proofed Identity** — KYC/KYB verification via zero-knowledge proofs. Prove you're 18+, prove your country, prove your organization — without revealing the underlying data
+- **Dual Wallet Auth** — Primary wallet (ECDSA, e.g. MetaMask) + Hive wallet (Ritual passkey P-256). User always retains custody
+- **AI-Driven Price Discovery** — Continuous Clearing Auction (CCA) with Ritual LLM-powered pricing. Optimal token launch price determined by on-chain AI
+- **AI Agent Gateway** — On-chain chatbot powered by Ritual LLM precompile. Market analysis, token insights, strategy advice — all computed on-chain
+- **Agent Brain** — Sovereign AI brain that thinks, plans, and acts. Confidence-threshold decision making with 9 action types and on-chain memory
+- **On-Chain Governance** — DAO voting with staked-weighted power, delegation, proposal types, quorum enforcement, and time-locked execution
+- **4-Tier Staking** — Bronze → Silver → Gold → Diamond. Lock multiplier, auto-compound, fee discounts, priority access
+- **Fee Economy** — Treasury auto-distributes fees: 60% to stakers, 25% to referrers, 15% to reserve
+
+### Why Ritual Chain?
+
+Hive is designed as a **flagship showcase** for Ritual's four research frontiers:
+
+1. **Ritual LLM Precompile** — On-chain AI inference (HiveAgent, HiveBrain, HiveClearing)
+2. **Ritual HTTP Precompile** — Off-chain data feeds (HiveOracle)
+3. **Ritual ECIES Precompile** — Encrypted P2P messaging (HiveChat)
+4. **Ritual Passkey (P-256)** — Native passkey signatures for Hive wallets
+
+No other chain supports all four primitives natively.
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                          HIVE PROTOCOL                              │
+│                                                                     │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐           │
+│  │ HiveID   │  │HiveMulti │  │HiveVeri- │  │HiveRelay-│           │
+│  │ (Identity│  │  Sig     │  │  fier    │  │   er     │           │
+│  │  Layer)  │  │ (M-of-N) │  │  (ZK)    │  │ (MetaTx) │           │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘           │
+│       │              │              │              │                 │
+│  ┌────┴──────────────┴──────────────┴──────────────┴─────┐         │
+│  │                   HiveFactory                          │         │
+│  │              (Master Wiring Contract)                   │         │
+│  └────┬──────────────┬──────────────┬──────────────┬─────┘         │
+│       │              │              │              │                 │
+│  ┌────┴─────┐  ┌─────┴────┐  ┌─────┴────┐  ┌─────┴────┐           │
+│  │HiveClear-│  │HivePort- │  │HiveRepu- │  │HiveRefer-│           │
+│  │  ing     │  │  folio   │  │ tation   │  │   ral    │           │
+│  │ (CCA +   │  │(Holdings │  │(5-Tier   │  │(4-Tier   │           │
+│  │  AI)     │  │ + PnL)   │  │ Score)   │  │ Engine)  │           │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘           │
+│                                                                     │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐           │
+│  │HiveToken │  │HiveOracle│  │HiveAgent │  │HiveBrain │           │
+│  │(ERC20 +  │  │(Price    │  │(LLM      │  │(Sovereign│           │
+│  │ Vesting) │  │ Feed)    │  │ Gateway) │  │ Agent)   │           │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘           │
+│                                                                     │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐           │
+│  │HiveGovern│  │HiveStak- │  │HiveTreas-│  │HiveNotif-│           │
+│  │  ance    │  │   ing    │  │   ury    │  │ ication  │           │
+│  │ (DAO)    │  │(4-Tier)  │  │(Fee      │  │(On-Chain │           │
+│  │          │  │          │  │ Distrib) │  │ Events)  │           │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘           │
+│                                                                     │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐           │
+│  │HiveAuto- │  │HiveChat  │  │ Queen    │  │HiveLaunch│           │
+│  │Strategy  │  │(Encrypted│  │(Brain    │  │  Pad     │           │
+│  │(DCA/TP/  │  │  P2P)    │  │ Orchest) │  │(Token    │           │
+│  │ SL/Trail)│  │          │  │          │  │ Launch)  │           │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘           │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                    ┌─────────┴─────────┐
+                    │   Ritual Chain     │
+                    │  ┌──────────────┐  │
+                    │  │ LLM Precomp  │  │  ← On-chain AI inference
+                    │  │ HTTP Precomp │  │  ← Off-chain data feeds
+                    │  │ ECIES Precomp│  │  ← Encrypted messaging
+                    │  │ P-256 Passkey│  │  ← Native passkey auth
+                    │  └──────────────┘  │
+                    └────────────────────┘
+```
+
+### User Flow
+
+```
+User (MetaMask) ──→ HiveID ──→ Register (free) ──→ Get Hive Wallet (passkey)
+      │                                                │
+      │  Primary Wallet (ECDSA)                        │  Hive Wallet (P-256)
+      │  - Signs all transactions                      │  - Receives funds
+      │  - Controls Hive wallet                        │  - Internal operations
+      │                                                │
+      └──────────── Withdraw ──────────────────────────┘
+                    (to primary or other HiveID)
+```
+
+---
+
+## Contracts
+
+### 🔐 Identity & Security Layer
+
+| Contract | Address | Description |
+|----------|---------|-------------|
+| **HiveID** | `0x013c...08A01` | On-chain identity registry. Permanent username, dual-wallet binding (primary + hive), KYC/KYB verification types, internal transfers between HiveIDs |
+| **HiveMultiSig** | `0xd450...4B1B6` | M-of-N multi-signature wallet with 24h timelock. Required for Project/VC accounts |
+| **HiveVerifier** | `0xDD2A...23Eb6` | ZK proof verifier for KYC/KYB. 5 proof types (age, country, accreditation, org, sanctions). Nullifier + nonce replay prevention |
+| **HiveRelayer** | `0xa2FC...513c` | Meta-transaction relayer. Primary wallet signs, relayer executes from hive wallet |
+
+### 💰 Financial Infrastructure
+
+| Contract | Address | Description |
+|----------|---------|-------------|
+| **HiveClearing** | `0x6319...c20CC` | Continuous Clearing Auction with AI-driven pricing. Token sale mechanism where price is continuously determined by demand via Ritual LLM |
+| **HivePortfolio** | `0x81E3...a066` | Holdings tracking, weighted average entry price, vesting schedules, PnL calculation |
+| **HiveReputation** | `0x4cbe...526A` | 5-tier reputation scoring (Bronze → Diamond). Fee discounts based on score |
+| **HiveReferral** | `0x6fc9...41ED` | 4-tier referral engine with fee sharing |
+| **HiveOracle** | `0x5D72...1aEbE` | Price feed via Ritual HTTP precompile. Fetches real-time token prices from CoinGecko |
+| **HiveToken** | `0xDA81...5ec3` | ERC20 token with vesting schedules and transfer restrictions |
+| **HiveStaking** | `0x93dd...b408` | 4-tier staking (Bronze → Diamond). Lock multiplier, auto-compound, voting power |
+| **HiveTreasury** | `0x90fb...8C18` | Fee collector & distributor. Multi-sig controlled. Auto-distributes: 60% stakers, 25% referrers, 15% reserve |
+| **HoneyPot** | `—` | Legacy fee collector (superseded by HiveTreasury) |
+
+### 🤖 AI & Agent Layer
+
+| Contract | Address | Description |
+|----------|---------|-------------|
+| **HiveAgent** | `0x8424...4327` | AI Agent Gateway via Ritual LLM precompile. On-chain chatbot for market analysis, token insights, strategy advice |
+| **HiveBrain** | `0x0ad0...42B4` | Sovereign agent brain. think() → plan() → act() pipeline with confidence threshold (≥70%). 9 action types, on-chain memory, success rate tracking |
+| **Queen** | `—` | Brain orchestrator. Connects HoneyPot, Strategy, Drone, Registry, LaunchPad, MarketMaker |
+| **HiveAutoStrategy** | `0x1b3A...BEF9` | Automated trading strategies: DCA, Take Profit, Stop Loss, Trailing Stop |
+| **HiveMarketMaker** | `—` | AI-driven market making via Ritual LLM |
+
+### 🏛️ Governance
+
+| Contract | Address | Description |
+|----------|---------|-------------|
+| **HiveGovernance** | `0xeadd...2702` | DAO governance. Voting power from staked RITUAL. Proposal types, delegation, quorum, time-locked execution via multi-sig |
+| **HiveNotification** | `0x9a04...C42` | On-chain event system. Subscriptions, price alerts, webhook integration |
+
+### 🔧 Infrastructure
+
+| Contract | Address | Description |
+|----------|---------|-------------|
+| **HiveFactory** | `0x0241...63c6` | Master wiring contract. Single entry point connecting all modules. initialize() wires HiveID, Clearing, Reputation, Referral, Portfolio, Verifier, Treasury |
+| **HiveChat** | `0x615F...85B6` | Encrypted P2P messaging via Ritual ECIES precompile |
+| **HiveLaunchPad** | `—` | Token launch platform with CCA mechanics |
+| **HiveCouncil** | `—` | Council governance (multi-representative) |
+| **HivePoints** | `—` | On-chain points/rewards system |
+| **HiveRegistry** | `—` | Contract registry for module discovery |
+| **Drone** | `—` | Autonomous execution agents |
+| **Strategy** | `—` | Base strategy contract (parent of HiveAutoStrategy) |
+
+### 📚 Libraries & Interfaces
+
+| Contract | Description |
+|----------|-------------|
+| **HiveTypes** | Shared type definitions (AccountType, VerificationType, etc.) |
+| **RitualPrecompileConsumer** | Base contract for Ritual precompile integration (LLM, HTTP, ECIES) |
+| **IHive** | Hive protocol interface |
+| **IRitual** | Ritual precompile interface |
+
+---
+
+## Project Structure
+
+```
+hive/
+├── src/                          # Smart contracts (32 files, ~8,100 LOC)
+│   ├── agent/
+│   │   ├── HiveAgent.sol         # AI Agent Gateway (LLM precompile)
+│   │   └── HiveBrain.sol         # Sovereign agent brain
+│   ├── auction/
+│   │   └── HiveClearing.sol      # Continuous Clearing Auction + AI pricing
+│   ├── chat/
+│   │   └── HiveChat.sol          # Encrypted P2P messaging (ECIES)
+│   ├── council/
+│   │   └── HiveCouncil.sol       # Council governance
+│   ├── drone/
+│   │   └── Drone.sol             # Autonomous execution agents
+│   ├── factory/
+│   │   └── HiveFactory.sol       # Master wiring contract
+│   ├── governance/
+│   │   └── HiveGovernance.sol    # DAO governance
+│   ├── identity/
+│   │   └── HiveID.sol            # On-chain identity registry
+│   ├── interfaces/
+│   │   ├── IHive.sol             # Hive protocol interface
+│   │   └── IRitual.sol           # Ritual precompile interface
+│   ├── launch/
+│   │   └── HiveLaunchPad.sol     # Token launch platform
+│   ├── libraries/
+│   │   ├── HiveTypes.sol         # Shared type definitions
+│   │   └── RitualPrecompileConsumer.sol  # Ritual precompile base
+│   ├── maker/
+│   │   └── HiveMarketMaker.sol   # AI market maker
+│   ├── multisig/
+│   │   └── HiveMultiSig.sol      # M-of-N multi-sig wallet
+│   ├── notification/
+│   │   └── HiveNotification.sol  # On-chain event system
+│   ├── oracle/
+│   │   └── HiveOracle.sol        # Price feed (HTTP precompile)
+│   ├── points/
+│   │   └── HivePoints.sol        # Points/rewards system
+│   ├── portfolio/
+│   │   └── HivePortfolio.sol     # Holdings & PnL tracking
+│   ├── queen/
+│   │   └── Queen.sol             # Brain orchestrator
+│   ├── referral/
+│   │   └── HiveReferral.sol      # 4-tier referral engine
+│   ├── registry/
+│   │   └── HiveRegistry.sol      # Contract registry
+│   ├── relayer/
+│   │   └── HiveRelayer.sol       # Meta-transaction relayer
+│   ├── reputation/
+│   │   └── HiveReputation.sol    # 5-tier reputation scoring
+│   ├── staking/
+│   │   └── HiveStaking.sol       # 4-tier staking system
+│   ├── strategy/
+│   │   ├── HiveAutoStrategy.sol  # Automated trading strategies
+│   │   └── Strategy.sol          # Base strategy contract
+│   ├── token/
+│   │   └── HiveToken.sol         # ERC20 + vesting
+│   ├── treasury/
+│   │   ├── HiveTreasury.sol      # Fee collector & distributor
+│   │   └── HoneyPot.sol          # Legacy fee collector
+│   └── verifier/
+│       └── HiveVerifier.sol      # ZK proof verifier
+│
+├── test/                         # Test suite (135 tests)
+│   ├── Hive.t.sol                # Core integration tests
+│   ├── HiveID.t.sol              # HiveID unit tests
+│   ├── HiveSuite.t.sol           # Suite 1: ID, MultiSig, Clearing, etc.
+│   └── HiveSuite2.t.sol          # Suite 2: Verifier, Relayer, Oracle, etc.
+│
+├── script/
+│   └── Deploy.s.sol              # Deployment script (19 contracts)
+│
+├── subgraph/                     # TheGraph subgraph
+│   ├── schema.graphql            # 15 entity types
+│   ├── subgraph.yaml             # 8 data sources
+│   └── src/                      # AssemblyScript mappings
+│       ├── clearing.ts
+│       ├── identity.ts
+│       ├── staking.ts
+│       ├── governance.ts
+│       ├── treasury.ts
+│       ├── notification.ts
+│       ├── relayer.ts
+│       └── brain.ts
+│
+├── verification/                 # Contract verification package
+│   ├── README.md                 # Manual verification guide
+│   ├── DEPLOYMENT_MANIFEST.json  # Addresses, constructor args, compiler settings
+│   ├── flattened/                # 19 flattened source files
+│   └── abis/                     # 19 JSON ABIs
+│
+├── AUDIT_REPORT.md               # Security audit report
+├── AUDIT_REPORT.pdf              # Audit report (PDF)
+├── foundry.toml                  # Foundry configuration
+└── .env.example                  # Environment template
+```
+
+---
+
+## Network
+
+| Property | Value |
+|----------|-------|
+| **Chain** | Ritual Testnet |
+| **Chain ID** | 1979 |
+| **RPC** | `https://rpc.ritualfoundation.org` |
+| **Explorer** | `https://explorer.ritualfoundation.org` |
+| **Currency** | RITUAL |
+| **Deployer** | `0x4b171E1217b71E37777B7F56d89cCB441C1De301` |
+
+---
+
+## Quickstart
+
+### Prerequisites
+
+- [Foundry](https://book.getfoundry.sh/) (forge, cast, anvil)
+- Git
 
 ### Build
 
-```shell
-$ forge build
+```bash
+git clone https://github.com/frianowzki/hive.git
+cd hive
+forge build
 ```
 
 ### Test
 
-```shell
-$ forge test
+```bash
+forge test -vv
 ```
 
-### Format
-
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
+All 135 tests should pass.
 
 ### Deploy
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+```bash
+# Copy and fill environment
+cp .env.example .env
+# Edit .env with your PRIVATE_KEY
+
+# Deploy to Ritual Testnet
+forge script script/Deploy.s.sol \
+  --rpc-url https://rpc.ritualfoundation.org \
+  --broadcast \
+  --verify
 ```
 
-### Cast
+### Verify Contracts
 
-```shell
-$ cast <subcommand>
+See [`verification/README.md`](verification/README.md) for verification instructions.
+
+---
+
+## Compiler Settings
+
+```
+Solidity:     0.8.20
+Optimizer:    enabled (100 runs)
+via_ir:       true
+EVM Version:  default (shanghai)
 ```
 
-### Help
+`via_ir` is enabled to resolve stack-too-deep errors in complex contracts (HiveRelayer, HiveClearing).
 
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+---
+
+## Security
+
+See [`AUDIT_REPORT.md`](AUDIT_REPORT.md) for the full audit report.
+
+**Summary:**
+- **Critical:** 0
+- **High:** 0
+- **Medium:** 2 (HiveClearing rounding edge case, HiveRelayer nonce reuse window)
+- **Low:** 5 (event indexing, input validation, etc.)
+- **Informational:** 8 (gas optimizations, documentation)
+- **Status:** ✅ Approved for testnet deployment
+
+---
+
+## License
+
+MIT
+
+---
+
+<p align="center">
+  Built on <a href="https://ritual.net">Ritual Chain</a> • Powered by Ritual LLM, HTTP, ECIES, and Passkey precompiles
+</p>
