@@ -62,15 +62,9 @@ contract HiveFactory {
         relayer = HiveRelayer(payable(_relayer));
 
         // Wire modules together
-        // Verifier authorized to update HiveID verification
-        hiveID.addVerifier(_verifier);
-
-        // Reputation authorized to record activities
-        reputation.authorize(_hiveID);
-        reputation.authorize(address(this));
-
-        // Oracle authorized to update prices
-        // (Oracle has its own owner-only restriction)
+        // Wire modules together
+        // NOTE: hiveID.addVerifier() and reputation.authorize() must be called
+        // by their respective owners separately
 
         initialized = true;
         emit SystemInitialized();
@@ -78,29 +72,19 @@ contract HiveFactory {
 
     // ═══ Cross-Module Operations ═══
 
-    /// @notice Register user with full onboarding flow
-    /// @param username Unique username
-    /// @param hiveWallet Ritual passkey wallet
-    /// @param accountType User/Project/Investor
+    /// @notice Complete onboarding after user has registered on HiveID
+    /// @dev User must call hiveID.register() first, then this for referral + reputation
+    /// @param usernameHash The registered username hash
+    /// @param username The username string
     /// @param referralCode Optional referral code
-    function registerWithReferral(
+    function completeOnboarding(
+        bytes32 usernameHash,
         string calldata username,
-        address hiveWallet,
-        HiveID.AccountType accountType,
         bytes32 referralCode
-    ) external payable {
-        // Register HiveID
-        hiveID.register{value: msg.value}(
-            username,
-            hiveWallet,
-            accountType,
-            "",
-            ""
-        );
+    ) external {
+        require(hiveID.isRegistered(msg.sender), "Factory: not registered on HiveID");
 
         // Record referral if code provided
-        bytes32 usernameHash = keccak256(bytes(username));
-
         if (referralCode != bytes32(0)) {
             referral.registerReferral(usernameHash, referralCode);
 
