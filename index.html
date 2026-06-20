@@ -89,336 +89,336 @@
     89|
     90|        /* ═══ PAGE 2: FEATURES (Card Stack) ═══ */
     91|        .feat-stack{position:relative;width:100%;max-width:900px;margin:0 auto;height:320px;perspective:1200px}
-    92|        .feat-card{position:absolute;top:0;left:50%;width:100%;max-width:620px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:16px;padding:2rem 2.25rem;transform:translateX(-50%);transition:all .5s cubic-bezier(.4,0,.2,1);opacity:0;pointer-events:none;display:flex;flex-direction:column;justify-content:center}
-    93|        .feat-card.active{opacity:1;pointer-events:all;z-index:5;transform:translateX(-50%) scale(1);background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.15)}
-    94|        .feat-card.prev{opacity:1;z-index:3;transform:translateX(calc(-50% + 60px)) scale(.92);border-color:var(--border)}
-    95|        .feat-card.next{opacity:1;z-index:3;transform:translateX(calc(-50% - 60px)) scale(.92);border-color:var(--border)}
+    92|        .feat-card{position:absolute;top:0;width:440px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:16px;padding:2rem 2.25rem;transition:all .5s cubic-bezier(.4,0,.2,1);opacity:0;pointer-events:none;display:flex;flex-direction:column;justify-content:center}
+    93|        .feat-card.active{opacity:1;pointer-events:all;z-index:5;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.15)}
+    94|        .feat-card.prev{opacity:.7;z-index:3;left:0;transform:translateX(-10%);border-color:rgba(255,255,255,.04)}
+    95|        .feat-card.next{opacity:.7;z-index:3;left:auto;right:0;transform:translateX(10%);border-color:rgba(255,255,255,.04)}
     96|        .feat-card.prev,.feat-card.next{overflow:hidden}
-    97|        .feat-card.prev .fc-top,.feat-card.prev .fc-desc,.feat-card.next .fc-top,.feat-card.next .fc-desc{opacity:0}
-    98|        .feat-card .fc-top{display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem;transition:opacity .3s}
-    99|        .feat-card .fc-icon{width:48px;height:48px;background:var(--accent-glow);border:1px solid rgba(139,92,246,.2);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-   100|        .feat-card .fc-icon svg{width:22px;height:22px;color:var(--accent-light)}
-   101|        .feat-card .fc-title{font-family:var(--font-display);font-size:1.4rem;font-weight:800}
-   102|        .feat-card .fc-desc{font-size:.95rem;color:var(--text-dim);line-height:1.7}
-   103|        .feat-nav{display:flex;justify-content:center;align-items:center;gap:1.5rem;margin-top:1.5rem}
-   104|        .feat-nav-btn{width:42px;height:42px;border-radius:50%;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text-dim);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s}
-   105|        .feat-nav-btn:hover{border-color:var(--accent);color:var(--accent-light);background:var(--accent-glow)}
-   106|        .feat-nav-btn svg{width:16px;height:16px}
-   107|        .feat-dots{display:flex;gap:.4rem}
-   108|        .feat-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.12);transition:all .3s}
-   109|        .feat-dot.active{background:var(--accent);width:18px;border-radius:3px}
-   110|
-   111|        /* ═══ PAGE 3: SERVICES ═══ */
-   112|        .svc-grid{display:grid;grid-template-columns:repeat(3,1fr)}
-   113|        .svc-item{display:flex;align-items:center;gap:.6rem;padding:.85rem 1rem;border:1px solid var(--border);margin:-.5px;cursor:default;transition:all .3s;position:relative;overflow:hidden}
-   114|        .svc-item::before{content:'';position:absolute;inset:0;background:var(--accent-glow);opacity:0;transition:opacity .3s}
-   115|        .svc-item:hover{border-color:var(--accent);z-index:2}
-   116|        .svc-item:hover::before{opacity:1}
-   117|        .svc-name{font-size:.8rem;font-weight:500;color:var(--text-dim);transition:color .3s;position:relative;z-index:2}
-   118|        .svc-item:hover .svc-name{color:var(--text)}
-   119|        .svc-icon{width:16px;height:16px;color:var(--accent);position:relative;z-index:2;flex-shrink:0}
-   120|
-   121|        /* ═══ PAGE 4: ABOUT ═══ */
-   122|        .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;align-items:start}
-   123|        .about-text h3{font-family:var(--font-display);font-size:1.35rem;font-weight:700;margin-bottom:1rem}
-   124|        .about-text p{font-size:.85rem;color:var(--text-dim);line-height:1.7;margin-bottom:.6rem}
-   125|        .about-feats{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:1.25rem}
-   126|        .about-feat{display:flex;align-items:center;gap:.4rem;padding:.5rem .65rem;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;font-size:.75rem;font-weight:500}
-   127|        .about-feat i{color:var(--accent);font-style:normal}
-   128|        .team-card{background:var(--bg-card);border-radius:12px;padding:1.5rem;border:1px solid var(--border);display:grid;grid-template-columns:auto 1fr;gap:1.25rem;align-items:center;transition:all .3s}
-   129|        .team-card:hover{border-color:rgba(255,255,255,.1);background:var(--bg-card-hover)}
-   130|        .team-avatar{width:48px;height:48px;border-radius:12px;background:var(--accent-glow);border:1px solid rgba(139,92,246,.15);display:flex;align-items:center;justify-content:center}
-   131|        .team-avatar svg{width:22px;height:22px;color:var(--accent-light)}
-   132|        .team-role{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:.1rem}
-   133|        .team-name{font-family:var(--font-display);font-size:1.05rem;font-weight:700;margin-bottom:.25rem}
-   134|        .team-bio{font-size:.75rem;color:var(--text-dim);line-height:1.5}
-   135|        .team-link{display:inline-block;margin-top:.4rem;font-size:.65rem;font-weight:600;padding:.3rem .6rem;background:var(--accent-glow);border:1px solid rgba(139,92,246,.15);border-radius:5px;color:var(--accent-light);transition:all .3s}
-   136|        .team-link:hover{background:rgba(139,92,246,.2);border-color:var(--accent)}
-   137|
-   138|        /* ═══ PAGE 5: CONTACT ═══ */
-   139|        .contact-page{text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center}
-   140|        .contact-sub{font-size:.95rem;color:var(--text-dim);max-width:440px;margin:0 auto 2rem;line-height:1.65}
-   141|        .contact-actions{display:flex;gap:.75rem;margin-bottom:2.5rem}
-   142|        .contact-info{display:flex;gap:2.5rem}
-   143|        .contact-info-item{display:flex;align-items:center;gap:.4rem;font-size:.8rem;color:var(--text-dim)}
-   144|        .contact-info-item svg{width:14px;height:14px;color:var(--accent)}
-   145|        .contact-info-item a{color:var(--accent-light)}
-   146|
-   147|        /* ═══ RESPONSIVE ═══ */
-   148|        @media(max-width:1024px){
-   149|            .hero h1{font-size:2.5rem}
-   150|            .caps-grid{grid-template-columns:repeat(2,1fr)}
-   151|            .svc-grid{grid-template-columns:repeat(2,1fr)}
-   152|            .about-grid{grid-template-columns:1fr}
-   153|        }
-   154|        @media(max-width:768px){
-   155|            .navbar{padding:0 1.5rem}
-   156|            .nav-links{display:none}
-   157|            .page{padding:56px 1.5rem 3rem}
-   158|            .hero h1{font-size:2rem}
-   159|            .sec-title{font-size:1.5rem}
-   160|            .caps-grid,.svc-grid{grid-template-columns:1fr}
-   161|            .about-feats{grid-template-columns:1fr}
-   162|            .contact-info{flex-direction:column;gap:.75rem}
-   163|            .contact-actions{flex-direction:column}
-   164|            .page-dots{display:none}
-   165|            .mini-footer{padding:.4rem 1.5rem}
-   166|            .mini-footer-links{display:none}
-   167|        }
-   168|    </style>
-   169|</head>
-   170|<body>
-   171|    <nav class="navbar">
-   172|        <div class="logo">Hive</div>
-   173|        <ul class="nav-links">
-   174|            <li><a data-page="0" class="active">Home</a></li>
-   175|            <li><a data-page="1">Features</a></li>
-   176|            <li><a data-page="2">Services</a></li>
-   177|            <li><a data-page="3">About</a></li>
-   178|            <li><a data-page="4">Contact</a></li>
-   179|        </ul>
-   180|    </nav>
-   181|
-   182|    <div class="page-dots" id="pageDots">
-   183|        <div class="dot active" data-page="0"></div>
-   184|        <div class="dot" data-page="1"></div>
-   185|        <div class="dot" data-page="2"></div>
-   186|        <div class="dot" data-page="3"></div>
-   187|        <div class="dot" data-page="4"></div>
-   188|    </div>
+        .feat-card.prev .fc-top,.feat-card.prev .fc-desc,.feat-card.next .fc-top,.feat-card.next .fc-desc{opacity:0}
+        .feat-card .fc-top{display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem}
+    97|        .feat-card .fc-icon{width:48px;height:48px;background:var(--accent-glow);border:1px solid rgba(139,92,246,.2);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    98|        .feat-card .fc-icon svg{width:22px;height:22px;color:var(--accent-light)}
+    99|        .feat-card .fc-title{font-family:var(--font-display);font-size:1.4rem;font-weight:800}
+   100|        .feat-card .fc-desc{font-size:.95rem;color:var(--text-dim);line-height:1.7}
+   101|        .feat-nav{display:flex;justify-content:center;align-items:center;gap:1.5rem;margin-top:1.5rem}
+   102|        .feat-nav-btn{width:42px;height:42px;border-radius:50%;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text-dim);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s}
+   103|        .feat-nav-btn:hover{border-color:var(--accent);color:var(--accent-light);background:var(--accent-glow)}
+   104|        .feat-nav-btn svg{width:16px;height:16px}
+   105|        .feat-dots{display:flex;gap:.4rem}
+   106|        .feat-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.12);transition:all .3s}
+   107|        .feat-dot.active{background:var(--accent);width:18px;border-radius:3px}
+   108|
+   109|        /* ═══ PAGE 3: SERVICES ═══ */
+   110|        .svc-grid{display:grid;grid-template-columns:repeat(3,1fr)}
+   111|        .svc-item{display:flex;align-items:center;gap:.6rem;padding:.85rem 1rem;border:1px solid var(--border);margin:-.5px;cursor:default;transition:all .3s;position:relative;overflow:hidden}
+   112|        .svc-item::before{content:'';position:absolute;inset:0;background:var(--accent-glow);opacity:0;transition:opacity .3s}
+   113|        .svc-item:hover{border-color:var(--accent);z-index:2}
+   114|        .svc-item:hover::before{opacity:1}
+   115|        .svc-name{font-size:.8rem;font-weight:500;color:var(--text-dim);transition:color .3s;position:relative;z-index:2}
+   116|        .svc-item:hover .svc-name{color:var(--text)}
+   117|        .svc-icon{width:16px;height:16px;color:var(--accent);position:relative;z-index:2;flex-shrink:0}
+   118|
+   119|        /* ═══ PAGE 4: ABOUT ═══ */
+   120|        .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;align-items:start}
+   121|        .about-text h3{font-family:var(--font-display);font-size:1.35rem;font-weight:700;margin-bottom:1rem}
+   122|        .about-text p{font-size:.85rem;color:var(--text-dim);line-height:1.7;margin-bottom:.6rem}
+   123|        .about-feats{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:1.25rem}
+   124|        .about-feat{display:flex;align-items:center;gap:.4rem;padding:.5rem .65rem;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;font-size:.75rem;font-weight:500}
+   125|        .about-feat i{color:var(--accent);font-style:normal}
+   126|        .team-card{background:var(--bg-card);border-radius:12px;padding:1.5rem;border:1px solid var(--border);display:grid;grid-template-columns:auto 1fr;gap:1.25rem;align-items:center;transition:all .3s}
+   127|        .team-card:hover{border-color:rgba(255,255,255,.1);background:var(--bg-card-hover)}
+   128|        .team-avatar{width:48px;height:48px;border-radius:12px;background:var(--accent-glow);border:1px solid rgba(139,92,246,.15);display:flex;align-items:center;justify-content:center}
+   129|        .team-avatar svg{width:22px;height:22px;color:var(--accent-light)}
+   130|        .team-role{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:.1rem}
+   131|        .team-name{font-family:var(--font-display);font-size:1.05rem;font-weight:700;margin-bottom:.25rem}
+   132|        .team-bio{font-size:.75rem;color:var(--text-dim);line-height:1.5}
+   133|        .team-link{display:inline-block;margin-top:.4rem;font-size:.65rem;font-weight:600;padding:.3rem .6rem;background:var(--accent-glow);border:1px solid rgba(139,92,246,.15);border-radius:5px;color:var(--accent-light);transition:all .3s}
+   134|        .team-link:hover{background:rgba(139,92,246,.2);border-color:var(--accent)}
+   135|
+   136|        /* ═══ PAGE 5: CONTACT ═══ */
+   137|        .contact-page{text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center}
+   138|        .contact-sub{font-size:.95rem;color:var(--text-dim);max-width:440px;margin:0 auto 2rem;line-height:1.65}
+   139|        .contact-actions{display:flex;gap:.75rem;margin-bottom:2.5rem}
+   140|        .contact-info{display:flex;gap:2.5rem}
+   141|        .contact-info-item{display:flex;align-items:center;gap:.4rem;font-size:.8rem;color:var(--text-dim)}
+   142|        .contact-info-item svg{width:14px;height:14px;color:var(--accent)}
+   143|        .contact-info-item a{color:var(--accent-light)}
+   144|
+   145|        /* ═══ RESPONSIVE ═══ */
+   146|        @media(max-width:1024px){
+   147|            .hero h1{font-size:2.5rem}
+   148|            .caps-grid{grid-template-columns:repeat(2,1fr)}
+   149|            .svc-grid{grid-template-columns:repeat(2,1fr)}
+   150|            .about-grid{grid-template-columns:1fr}
+   151|        }
+   152|        @media(max-width:768px){
+   153|            .navbar{padding:0 1.5rem}
+   154|            .nav-links{display:none}
+   155|            .page{padding:56px 1.5rem 3rem}
+   156|            .hero h1{font-size:2rem}
+   157|            .sec-title{font-size:1.5rem}
+   158|            .caps-grid,.svc-grid{grid-template-columns:1fr}
+   159|            .about-feats{grid-template-columns:1fr}
+   160|            .contact-info{flex-direction:column;gap:.75rem}
+   161|            .contact-actions{flex-direction:column}
+   162|            .page-dots{display:none}
+   163|            .mini-footer{padding:.4rem 1.5rem}
+   164|            .mini-footer-links{display:none}
+   165|        }
+   166|    </style>
+   167|</head>
+   168|<body>
+   169|    <nav class="navbar">
+   170|        <div class="logo">Hive</div>
+   171|        <ul class="nav-links">
+   172|            <li><a data-page="0" class="active">Home</a></li>
+   173|            <li><a data-page="1">Features</a></li>
+   174|            <li><a data-page="2">Services</a></li>
+   175|            <li><a data-page="3">About</a></li>
+   176|            <li><a data-page="4">Contact</a></li>
+   177|        </ul>
+   178|    </nav>
+   179|
+   180|    <div class="page-dots" id="pageDots">
+   181|        <div class="dot active" data-page="0"></div>
+   182|        <div class="dot" data-page="1"></div>
+   183|        <div class="dot" data-page="2"></div>
+   184|        <div class="dot" data-page="3"></div>
+   185|        <div class="dot" data-page="4"></div>
+   186|    </div>
+   187|
+   188|    <div class="pages-wrapper">
    189|
-   190|    <div class="pages-wrapper">
-   191|
-   192|        <!-- PAGE 1: HERO -->
-   193|        <div class="page hero active" data-index="0">
-   194|            <div class="bg-grid"></div>
-   195|            <div class="bg-glow" style="top:-150px;right:-100px;background:var(--accent);opacity:.12"></div>
-   196|            <div class="page-inner">
-   197|                <div class="hero-content">
-   198|                    <h1 class="fi">The <span class="g">compliant AI launchpad</span> for forward-thinking DeFi.</h1>
-   199|                    <p class="hero-desc fi d1">Fully on-chain, zk-proofed AI launchpad built on Ritual Testnet.<br>AI market makers, federated learning, autonomous agents,<br>and DAO governance — all with KYC/KYB compliance.</p>
-   200|                    <div class="hero-actions fi d2">
-   201|                        <a href="#contact" class="btn btn-p" onclick="goToPage(4);return false">Open Hive<svg class="btn-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
-   202|                    </div>
-   203|                </div>
-   204|            </div>
-   205|        </div>
-   206|
-   207|        <!-- PAGE 2: FEATURES (Card Stack) -->
-   208|        <div class="page" data-index="1">
-   209|            <div class="bg-grid"></div>
-   210|            <div class="bg-glow" style="bottom:-150px;left:-150px;background:var(--accent);opacity:.1"></div>
-   211|            <div class="page-inner">
-   212|                <div class="sec-hdr fi">
-   213|                    <h2 class="sec-title">Features</h2>
-   214|                </div>
-   215|                <div class="feat-stack fi d1">
-   216|                    <div class="feat-card active" data-feat="0">
-   217|
-   218|                        <div class="fc-top"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div><span class="fc-title">ZK Identity & Compliance</span></div>
-   219|                        <p class="fc-desc">Groth16-based KYC/KYB verification with on-chain identity. Semi-custodial wallets with dual-auth. Full regulatory compliance without exposing personal data.</p>
-   220|                    </div>
-   221|                    <div class="feat-card" data-feat="1">
-   222|
-   223|                        <div class="fc-top"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 2.4-1.2 4.5-3 5.7V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.3C6.2 13.5 5 11.4 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg></div><span class="fc-title">AI Decision Engine</span></div>
-   224|                        <p class="fc-desc">HiveBrain orchestrates AI operations — price feeds via Allora, federated learning via FLock, autonomous strategies. Think → Plan → Act pipeline with confidence threshold.</p>
-   225|                    </div>
-   226|                    <div class="feat-card" data-feat="2">
-   227|
-   228|                        <div class="fc-top"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><span class="fc-title">AI Market Maker</span></div>
-   229|                        <p class="fc-desc">Constant-product AMM with AI-driven pricing. Liquidity pools, LP rewards, real-time oracle integration. On-chain AI determines optimal token launch price.</p>
-   230|                    </div>
-   231|                    <div class="feat-card" data-feat="3">
-   232|
-   233|                        <div class="fc-top"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg></div><span class="fc-title">DAO Governance</span></div>
-   234|                        <p class="fc-desc">Multi-sig council, proposal system, voting, treasury management. HiveClearing batch auctions for fair token launches with AI-driven price discovery.</p>
-   235|                    </div>
-   236|                    <div class="feat-card" data-feat="4">
-   237|
-   238|                        <div class="fc-top"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><span class="fc-title">Security & Privacy</span></div>
-   239|                        <p class="fc-desc">Ritual native precompiles — DKMS key management, ECIES encryption, Passkey authentication. TEE-bound keys never leave the enclave. Privacy-preserving by design.</p>
-   240|                    </div>
-   241|                    <div class="feat-card" data-feat="5">
-   242|
-   243|                        <div class="fc-top"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8M12 8v8"/></svg></div><span class="fc-title">Autonomous Agents</span></div>
-   244|                        <p class="fc-desc">Queen orchestrator routes tasks to Brain, Strategy, and Drone agents. Automated trading strategies, on-chain points, 4-tier referral engine.</p>
-   245|                    </div>
-   246|                </div>
-   247|                <div class="feat-nav fi d2">
-   248|                    <button class="feat-nav-btn" onclick="featNav(-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
-   249|                    <div class="feat-dots" id="featDots"><span class="feat-dot active"></span><span class="feat-dot"></span><span class="feat-dot"></span><span class="feat-dot"></span><span class="feat-dot"></span><span class="feat-dot"></span></div>
-   250|                    <button class="feat-nav-btn" onclick="featNav(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
-   251|                </div>
-   252|            </div>
-   253|        </div>
-   254|
-   255|        <!-- PAGE 3: SERVICES -->
-   256|        <div class="page" data-index="2">
-   257|            <div class="bg-grid"></div>
-   258|            <div class="page-inner">
-   259|                <div class="sec-hdr fi">
-   260|                    <h2 class="sec-title">What we build</h2>
-   261|                </div>
-   262|                <div class="svc-grid">
-   263|                    <div class="svc-item fi d1"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span class="svc-name">ZK Proof Verification (Groth16)</span></div>
-   264|                    <div class="svc-item fi d1"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span class="svc-name">AI Market Maker (AMM)</span></div>
-   265|                    <div class="svc-item fi d1"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="svc-name">Federated Learning (FLock)</span></div>
-   266|                    <div class="svc-item fi d2"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg><span class="svc-name">Price Oracles (Allora)</span></div>
-   267|                    <div class="svc-item fi d2"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg><span class="svc-name">Batch Auctions (HCA)</span></div>
-   268|                    <div class="svc-item fi d2"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span class="svc-name">Token Launches + Vesting</span></div>
-   269|                    <div class="svc-item fi d3"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><span class="svc-name">ETH Staking + Rewards</span></div>
-   270|                    <div class="svc-item fi d3"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span class="svc-name">Multi-Sig Wallets</span></div>
-   271|                    <div class="svc-item fi d3"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg><span class="svc-name">DAO Governance + Voting</span></div>
-   272|                    <div class="svc-item fi d4"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span class="svc-name">DKMS Key Management</span></div>
-   273|                    <div class="svc-item fi d4"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="svc-name">Encrypted P2P Chat (ECIES)</span></div>
-   274|                    <div class="svc-item fi d4"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8M12 8v8"/></svg><span class="svc-name">Autonomous Agent Orchestration</span></div>
-   275|                    <div class="svc-item fi d5"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg><span class="svc-name">Portfolio Management</span></div>
-   276|                    <div class="svc-item fi d5"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span class="svc-name">Referral & Points System</span></div>
-   277|                    <div class="svc-item fi d5"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span class="svc-name">Meta-Transaction Relay</span></div>
-   278|                </div>
-   279|            </div>
-   280|        </div>
-   281|
-   282|        <!-- PAGE 4: ABOUT -->
-   283|        <div class="page" data-index="3">
-   284|            <div class="bg-grid"></div>
-   285|            <div class="page-inner">
-   286|                <div class="sec-hdr fi">
-   287|                    <h2 class="sec-title">About us</h2>
-   288|                </div>
-   289|                <div class="about-grid">
-   290|                    <div class="about-text fi d1">
-   291|                        <h3>Building the future of compliant DeFi</h3>
-   292|                        <p>Hive is a fully on-chain AI launchpad built on Ritual Testnet (Chain ID 1979). We combine zero-knowledge proofs, artificial intelligence, and decentralized governance to create a compliant, privacy-preserving DeFi ecosystem.</p>
-   293|                        <p>Our architecture features 29 smart contracts, all fully interconnected and tested with 300 passing tests. Every component is designed for security, scalability, and compliance.</p>
-   294|                        <p>We leverage Ritual Testnet's native precompiles — LLM inference, HTTP requests, DKMS key management, ECIES encryption, and Passkey authentication.</p>
-   295|                        <div class="about-feats">
-   296|                            <div class="about-feat"><i>✓</i> 29 Contracts Deployed</div>
-   297|                            <div class="about-feat"><i>✓</i> 300 Tests Passing</div>
-   298|                            <div class="about-feat"><i>✓</i> Zero Critical Bugs</div>
-   299|                            <div class="about-feat"><i>✓</i> Fully Interconnected</div>
-   300|                        </div>
-   301|                    </div>
-   302|                    <div class="fi d2">
-   303|                        <div class="team-card">
-   304|                            <div class="team-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
-   305|                            <div>
-   306|                                <div class="team-role">Founder / Lead Dev</div>
-   307|                                <h4 class="team-name">Frian</h4>
-   308|                                <p class="team-bio">Full-stack Web3 builder. DeFi architect. Leading Hive's smart contract development, AI integration, and Ritual Testnet optimization.</p>
-   309|                                <a href="https://github.com/frianowzki" target="_blank" class="team-link">GitHub</a>
-   310|                            </div>
-   311|                        </div>
-   312|                    </div>
-   313|                </div>
-   314|            </div>
-   315|        </div>
-   316|
-   317|        <!-- PAGE 5: CONTACT -->
-   318|        <div class="page contact-page" data-index="4">
-   319|            <div class="bg-grid"></div>
-   320|            <div class="bg-glow" style="top:50%;left:50%;transform:translate(-50%,-50%);background:var(--accent);opacity:.12"></div>
-   321|            <div class="page-inner">
-   322|                <p class="contact-sub fi">Interested in building on Hive? Want to integrate with our AI launchpad? Or just want to chat about Ritual Testnet? Reach out.</p>
-   323|                <div class="contact-actions fi d1">
-   324|                    <a href="https://github.com/frianowzki/hive" target="_blank" class="btn btn-p">View on GitHub<svg class="btn-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg></a>
-   325|                    <a href="mailto:friokurniawan@gmail.com" class="btn btn-o">Email Us</a>
-   326|                </div>
-   327|                <div class="contact-info fi d2">
-   328|                    <div class="contact-info-item">
-   329|                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-   330|                        <span>Ritual Testnet (Chain ID 1979)</span>
-   331|                    </div>
-   332|                    <div class="contact-info-item">
-   333|                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-   334|                        <a href="mailto:friokurniawan@gmail.com">friokurniawan@gmail.com</a>
-   335|                    </div>
-   336|                    <div class="contact-info-item">
-   337|                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
-   338|                        <a href="https://github.com/frianowzki" target="_blank">@frianowzki</a>
-   339|                    </div>
-   340|                </div>
-   341|            </div>
-   342|        </div>
-   343|    </div>
-   344|
-   345|    <div class="mini-footer">
-   346|        <p>© 2026 Hive. Built on <a href="https://ritual.net" target="_blank">Ritual Testnet</a>.</p>
-   347|        <div class="mini-footer-links">
-   348|            <a href="https://github.com/frianowzki/hive" target="_blank">GitHub</a>
-   349|            <a href="https://x.com/widyakrnwn" target="_blank">X</a>
-   350|            <a href="https://discord.gg/ritual-net" target="_blank">Discord</a>
-   351|        </div>
-   352|    </div>
-   353|
-   354|    <script>
-   355|        let currentPage=0;const totalPages=5;let autoScroll=true;let autoScrollTimer=null;const autoScrollDuration=8000;let dotsTimeout;
-   356|
-   357|        function goToPage(index){
-   358|            if(index===currentPage||index<0||index>=totalPages)return;
-   359|            const pages=document.querySelectorAll('.page');
-   360|            const dots=document.querySelectorAll('.dot');
-   361|            const navLinks=document.querySelectorAll('.nav-links a[data-page]');
-   362|            pages.forEach(p=>{p.classList.remove('active');p.style.opacity='0';p.style.pointerEvents='none'});
-   363|            currentPage=index;
-   364|            const t=pages[currentPage];
-   365|            t.classList.add('active');t.style.opacity='1';t.style.pointerEvents='all';t.style.transform='translateY(0)';
-   366|            dots.forEach(d=>d.classList.remove('active'));
-   367|            if(dots[currentPage])dots[currentPage].classList.add('active');
-   368|            navLinks.forEach(l=>l.classList.remove('active'));
-   369|            if(navLinks[currentPage])navLinks[currentPage].classList.add('active');
-   370|            animatePage(currentPage);
-   371|            showDots();
-   372|            if(autoScroll)resetAutoScroll();
-   373|        }
-   374|        function nextPage(){goToPage((currentPage+1)%totalPages)}
-   375|        function prevPage(){goToPage((currentPage-1+totalPages)%totalPages)}
-   376|        function animatePage(i){
-   377|            const p=document.querySelectorAll('.page')[i];
-   378|            p.querySelectorAll('.fi').forEach(el=>{el.classList.remove('v')});
-   379|            setTimeout(()=>{p.querySelectorAll('.fi').forEach(el=>el.classList.add('v'))},50);
-   380|        }
-   381|        function showDots(){
-   382|            const d=document.getElementById('pageDots');
-   383|            d.classList.add('visible');
-   384|            clearTimeout(dotsTimeout);
-   385|            dotsTimeout=setTimeout(()=>{d.classList.remove('visible')},3000);
-   386|        }
-   387|
-   388|        function startAutoScroll(){autoScrollTimer=setTimeout(nextPage,autoScrollDuration)}
-   389|        function resetAutoScroll(){clearTimeout(autoScrollTimer);startAutoScroll()}
-   390|
-   391|        /* Feature Card Stack */
-   392|        let featIdx=0;
-   393|        function featNav(dir){
-   394|            const cards=document.querySelectorAll('.feat-card');
-   395|            const dots=document.querySelectorAll('.feat-dot');
-   396|            cards.forEach(c=>c.classList.remove('active','prev','next'));
-   397|            dots.forEach(d=>d.classList.remove('active'));
-   398|            featIdx=(featIdx+dir+cards.length)%cards.length;
-   399|            cards[featIdx].classList.add('active');
-   400|            dots[featIdx].classList.add('active');
-   401|            const prev=(featIdx-1+cards.length)%cards.length;
-   402|            const next=(featIdx+1)%cards.length;
-   403|            cards[prev].classList.add('prev');
-   404|            cards[next].classList.add('next');
-   405|        }
-   406|        /* Init stack */
-   407|        (function(){const c=document.querySelectorAll('.feat-card');if(c.length>1)c[1].classList.add('next');})();
-   408|
-   409|        let wheelTimeout;
-   410|        document.addEventListener('wheel',e=>{e.preventDefault();clearTimeout(wheelTimeout);wheelTimeout=setTimeout(()=>{if(e.deltaY>0)nextPage();else prevPage()},60)},{passive:false});
-   411|        let touchY=0;
-   412|        document.addEventListener('touchstart',e=>{touchY=e.touches[0].clientY});
-   413|        document.addEventListener('touchend',e=>{const d=touchY-e.changedTouches[0].clientY;if(Math.abs(d)>50){if(d>0)nextPage();else prevPage()}});
-   414|        document.addEventListener('keydown',e=>{if(e.key==='ArrowDown'||e.key==='ArrowRight'||e.key===' '){e.preventDefault();nextPage()}else if(e.key==='ArrowUp'||e.key==='ArrowLeft'){e.preventDefault();prevPage()}});
-   415|        document.querySelectorAll('.nav-links a[data-page]').forEach(l=>{l.addEventListener('click',()=>{goToPage(parseInt(l.dataset.page))})});
-   416|        document.querySelectorAll('.dot').forEach(d=>{d.addEventListener('click',()=>{goToPage(parseInt(d.dataset.page))})});
-   417|
-   418|        animatePage(0);
-   419|        showDots();
-   420|        if(autoScroll)startAutoScroll();
-   421|    </script>
-   422|</body>
-   423|</html>
-   424|
+   190|        <!-- PAGE 1: HERO -->
+   191|        <div class="page hero active" data-index="0">
+   192|            <div class="bg-grid"></div>
+   193|            <div class="bg-glow" style="top:-150px;right:-100px;background:var(--accent);opacity:.12"></div>
+   194|            <div class="page-inner">
+   195|                <div class="hero-content">
+   196|                    <h1 class="fi">The <span class="g">compliant AI launchpad</span> for forward-thinking DeFi.</h1>
+   197|                    <p class="hero-desc fi d1">Fully on-chain, zk-proofed AI launchpad built on Ritual Testnet.<br>AI market makers, federated learning, autonomous agents,<br>and DAO governance — all with KYC/KYB compliance.</p>
+   198|                    <div class="hero-actions fi d2">
+   199|                        <a href="#contact" class="btn btn-p" onclick="goToPage(4);return false">Open Hive<svg class="btn-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+   200|                    </div>
+   201|                </div>
+   202|            </div>
+   203|        </div>
+   204|
+   205|        <!-- PAGE 2: FEATURES (Card Stack) -->
+   206|        <div class="page" data-index="1">
+   207|            <div class="bg-grid"></div>
+   208|            <div class="bg-glow" style="bottom:-150px;left:-150px;background:var(--accent);opacity:.1"></div>
+   209|            <div class="page-inner">
+   210|                <div class="sec-hdr fi">
+   211|                    <h2 class="sec-title">Features</h2>
+   212|                </div>
+   213|                <div class="feat-stack fi d1">
+   214|                    <div class="feat-card active" data-feat="0">
+   215|
+   216|                        <div class="fc-top"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div><span class="fc-title">ZK Identity & Compliance</span></div>
+   217|                        <p class="fc-desc">Groth16-based KYC/KYB verification with on-chain identity. Semi-custodial wallets with dual-auth. Full regulatory compliance without exposing personal data.</p>
+   218|                    </div>
+   219|                    <div class="feat-card" data-feat="1">
+   220|
+   221|                        <div class="fc-top"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 2.4-1.2 4.5-3 5.7V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.3C6.2 13.5 5 11.4 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg></div><span class="fc-title">AI Decision Engine</span></div>
+   222|                        <p class="fc-desc">HiveBrain orchestrates AI operations — price feeds via Allora, federated learning via FLock, autonomous strategies. Think → Plan → Act pipeline with confidence threshold.</p>
+   223|                    </div>
+   224|                    <div class="feat-card" data-feat="2">
+   225|
+   226|                        <div class="fc-top"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><span class="fc-title">AI Market Maker</span></div>
+   227|                        <p class="fc-desc">Constant-product AMM with AI-driven pricing. Liquidity pools, LP rewards, real-time oracle integration. On-chain AI determines optimal token launch price.</p>
+   228|                    </div>
+   229|                    <div class="feat-card" data-feat="3">
+   230|
+   231|                        <div class="fc-top"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg></div><span class="fc-title">DAO Governance</span></div>
+   232|                        <p class="fc-desc">Multi-sig council, proposal system, voting, treasury management. HiveClearing batch auctions for fair token launches with AI-driven price discovery.</p>
+   233|                    </div>
+   234|                    <div class="feat-card" data-feat="4">
+   235|
+   236|                        <div class="fc-top"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><span class="fc-title">Security & Privacy</span></div>
+   237|                        <p class="fc-desc">Ritual native precompiles — DKMS key management, ECIES encryption, Passkey authentication. TEE-bound keys never leave the enclave. Privacy-preserving by design.</p>
+   238|                    </div>
+   239|                    <div class="feat-card" data-feat="5">
+   240|
+   241|                        <div class="fc-top"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8M12 8v8"/></svg></div><span class="fc-title">Autonomous Agents</span></div>
+   242|                        <p class="fc-desc">Queen orchestrator routes tasks to Brain, Strategy, and Drone agents. Automated trading strategies, on-chain points, 4-tier referral engine.</p>
+   243|                    </div>
+   244|                </div>
+   245|                <div class="feat-nav fi d2">
+   246|                    <button class="feat-nav-btn" onclick="featNav(-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+   247|                    <div class="feat-dots" id="featDots"><span class="feat-dot active"></span><span class="feat-dot"></span><span class="feat-dot"></span><span class="feat-dot"></span><span class="feat-dot"></span><span class="feat-dot"></span></div>
+   248|                    <button class="feat-nav-btn" onclick="featNav(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+   249|                </div>
+   250|            </div>
+   251|        </div>
+   252|
+   253|        <!-- PAGE 3: SERVICES -->
+   254|        <div class="page" data-index="2">
+   255|            <div class="bg-grid"></div>
+   256|            <div class="page-inner">
+   257|                <div class="sec-hdr fi">
+   258|                    <h2 class="sec-title">What we build</h2>
+   259|                </div>
+   260|                <div class="svc-grid">
+   261|                    <div class="svc-item fi d1"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span class="svc-name">ZK Proof Verification (Groth16)</span></div>
+   262|                    <div class="svc-item fi d1"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span class="svc-name">AI Market Maker (AMM)</span></div>
+   263|                    <div class="svc-item fi d1"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="svc-name">Federated Learning (FLock)</span></div>
+   264|                    <div class="svc-item fi d2"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg><span class="svc-name">Price Oracles (Allora)</span></div>
+   265|                    <div class="svc-item fi d2"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg><span class="svc-name">Batch Auctions (HCA)</span></div>
+   266|                    <div class="svc-item fi d2"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span class="svc-name">Token Launches + Vesting</span></div>
+   267|                    <div class="svc-item fi d3"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><span class="svc-name">ETH Staking + Rewards</span></div>
+   268|                    <div class="svc-item fi d3"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span class="svc-name">Multi-Sig Wallets</span></div>
+   269|                    <div class="svc-item fi d3"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg><span class="svc-name">DAO Governance + Voting</span></div>
+   270|                    <div class="svc-item fi d4"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span class="svc-name">DKMS Key Management</span></div>
+   271|                    <div class="svc-item fi d4"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="svc-name">Encrypted P2P Chat (ECIES)</span></div>
+   272|                    <div class="svc-item fi d4"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8M12 8v8"/></svg><span class="svc-name">Autonomous Agent Orchestration</span></div>
+   273|                    <div class="svc-item fi d5"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg><span class="svc-name">Portfolio Management</span></div>
+   274|                    <div class="svc-item fi d5"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span class="svc-name">Referral & Points System</span></div>
+   275|                    <div class="svc-item fi d5"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span class="svc-name">Meta-Transaction Relay</span></div>
+   276|                </div>
+   277|            </div>
+   278|        </div>
+   279|
+   280|        <!-- PAGE 4: ABOUT -->
+   281|        <div class="page" data-index="3">
+   282|            <div class="bg-grid"></div>
+   283|            <div class="page-inner">
+   284|                <div class="sec-hdr fi">
+   285|                    <h2 class="sec-title">About us</h2>
+   286|                </div>
+   287|                <div class="about-grid">
+   288|                    <div class="about-text fi d1">
+   289|                        <h3>Building the future of compliant DeFi</h3>
+   290|                        <p>Hive is a fully on-chain AI launchpad built on Ritual Testnet (Chain ID 1979). We combine zero-knowledge proofs, artificial intelligence, and decentralized governance to create a compliant, privacy-preserving DeFi ecosystem.</p>
+   291|                        <p>Our architecture features 29 smart contracts, all fully interconnected and tested with 300 passing tests. Every component is designed for security, scalability, and compliance.</p>
+   292|                        <p>We leverage Ritual Testnet's native precompiles — LLM inference, HTTP requests, DKMS key management, ECIES encryption, and Passkey authentication.</p>
+   293|                        <div class="about-feats">
+   294|                            <div class="about-feat"><i>✓</i> 29 Contracts Deployed</div>
+   295|                            <div class="about-feat"><i>✓</i> 300 Tests Passing</div>
+   296|                            <div class="about-feat"><i>✓</i> Zero Critical Bugs</div>
+   297|                            <div class="about-feat"><i>✓</i> Fully Interconnected</div>
+   298|                        </div>
+   299|                    </div>
+   300|                    <div class="fi d2">
+   301|                        <div class="team-card">
+   302|                            <div class="team-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+   303|                            <div>
+   304|                                <div class="team-role">Founder / Lead Dev</div>
+   305|                                <h4 class="team-name">Frian</h4>
+   306|                                <p class="team-bio">Full-stack Web3 builder. DeFi architect. Leading Hive's smart contract development, AI integration, and Ritual Testnet optimization.</p>
+   307|                                <a href="https://github.com/frianowzki" target="_blank" class="team-link">GitHub</a>
+   308|                            </div>
+   309|                        </div>
+   310|                    </div>
+   311|                </div>
+   312|            </div>
+   313|        </div>
+   314|
+   315|        <!-- PAGE 5: CONTACT -->
+   316|        <div class="page contact-page" data-index="4">
+   317|            <div class="bg-grid"></div>
+   318|            <div class="bg-glow" style="top:50%;left:50%;transform:translate(-50%,-50%);background:var(--accent);opacity:.12"></div>
+   319|            <div class="page-inner">
+   320|                <p class="contact-sub fi">Interested in building on Hive? Want to integrate with our AI launchpad? Or just want to chat about Ritual Testnet? Reach out.</p>
+   321|                <div class="contact-actions fi d1">
+   322|                    <a href="https://github.com/frianowzki/hive" target="_blank" class="btn btn-p">View on GitHub<svg class="btn-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg></a>
+   323|                    <a href="mailto:friokurniawan@gmail.com" class="btn btn-o">Email Us</a>
+   324|                </div>
+   325|                <div class="contact-info fi d2">
+   326|                    <div class="contact-info-item">
+   327|                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+   328|                        <span>Ritual Testnet (Chain ID 1979)</span>
+   329|                    </div>
+   330|                    <div class="contact-info-item">
+   331|                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+   332|                        <a href="mailto:friokurniawan@gmail.com">friokurniawan@gmail.com</a>
+   333|                    </div>
+   334|                    <div class="contact-info-item">
+   335|                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+   336|                        <a href="https://github.com/frianowzki" target="_blank">@frianowzki</a>
+   337|                    </div>
+   338|                </div>
+   339|            </div>
+   340|        </div>
+   341|    </div>
+   342|
+   343|    <div class="mini-footer">
+   344|        <p>© 2026 Hive. Built on <a href="https://ritual.net" target="_blank">Ritual Testnet</a>.</p>
+   345|        <div class="mini-footer-links">
+   346|            <a href="https://github.com/frianowzki/hive" target="_blank">GitHub</a>
+   347|            <a href="https://x.com/widyakrnwn" target="_blank">X</a>
+   348|            <a href="https://discord.gg/ritual-net" target="_blank">Discord</a>
+   349|        </div>
+   350|    </div>
+   351|
+   352|    <script>
+   353|        let currentPage=0;const totalPages=5;let autoScroll=true;let autoScrollTimer=null;const autoScrollDuration=8000;let dotsTimeout;
+   354|
+   355|        function goToPage(index){
+   356|            if(index===currentPage||index<0||index>=totalPages)return;
+   357|            const pages=document.querySelectorAll('.page');
+   358|            const dots=document.querySelectorAll('.dot');
+   359|            const navLinks=document.querySelectorAll('.nav-links a[data-page]');
+   360|            pages.forEach(p=>{p.classList.remove('active');p.style.opacity='0';p.style.pointerEvents='none'});
+   361|            currentPage=index;
+   362|            const t=pages[currentPage];
+   363|            t.classList.add('active');t.style.opacity='1';t.style.pointerEvents='all';t.style.transform='translateY(0)';
+   364|            dots.forEach(d=>d.classList.remove('active'));
+   365|            if(dots[currentPage])dots[currentPage].classList.add('active');
+   366|            navLinks.forEach(l=>l.classList.remove('active'));
+   367|            if(navLinks[currentPage])navLinks[currentPage].classList.add('active');
+   368|            animatePage(currentPage);
+   369|            showDots();
+   370|            if(autoScroll)resetAutoScroll();
+   371|        }
+   372|        function nextPage(){goToPage((currentPage+1)%totalPages)}
+   373|        function prevPage(){goToPage((currentPage-1+totalPages)%totalPages)}
+   374|        function animatePage(i){
+   375|            const p=document.querySelectorAll('.page')[i];
+   376|            p.querySelectorAll('.fi').forEach(el=>{el.classList.remove('v')});
+   377|            setTimeout(()=>{p.querySelectorAll('.fi').forEach(el=>el.classList.add('v'))},50);
+   378|        }
+   379|        function showDots(){
+   380|            const d=document.getElementById('pageDots');
+   381|            d.classList.add('visible');
+   382|            clearTimeout(dotsTimeout);
+   383|            dotsTimeout=setTimeout(()=>{d.classList.remove('visible')},3000);
+   384|        }
+   385|
+   386|        function startAutoScroll(){autoScrollTimer=setTimeout(nextPage,autoScrollDuration)}
+   387|        function resetAutoScroll(){clearTimeout(autoScrollTimer);startAutoScroll()}
+   388|
+   389|        /* Feature Card Stack */
+   390|        let featIdx=0;
+   391|        function featNav(dir){
+   392|            const cards=document.querySelectorAll('.feat-card');
+   393|            const dots=document.querySelectorAll('.feat-dot');
+   394|            cards.forEach(c=>c.classList.remove('active','prev','next'));
+   395|            dots.forEach(d=>d.classList.remove('active'));
+   396|            featIdx=(featIdx+dir+cards.length)%cards.length;
+   397|            cards[featIdx].classList.add('active');
+   398|            dots[featIdx].classList.add('active');
+   399|            const prev=(featIdx-1+cards.length)%cards.length;
+   400|            const next=(featIdx+1)%cards.length;
+   401|            cards[prev].classList.add('prev');
+   402|            cards[next].classList.add('next');
+   403|        }
+   404|        /* Init stack */
+   405|        (function(){const c=document.querySelectorAll('.feat-card');if(c.length>1)c[1].classList.add('next');})();
+   406|
+   407|        let wheelTimeout;
+   408|        document.addEventListener('wheel',e=>{e.preventDefault();clearTimeout(wheelTimeout);wheelTimeout=setTimeout(()=>{if(e.deltaY>0)nextPage();else prevPage()},60)},{passive:false});
+   409|        let touchY=0;
+   410|        document.addEventListener('touchstart',e=>{touchY=e.touches[0].clientY});
+   411|        document.addEventListener('touchend',e=>{const d=touchY-e.changedTouches[0].clientY;if(Math.abs(d)>50){if(d>0)nextPage();else prevPage()}});
+   412|        document.addEventListener('keydown',e=>{if(e.key==='ArrowDown'||e.key==='ArrowRight'||e.key===' '){e.preventDefault();nextPage()}else if(e.key==='ArrowUp'||e.key==='ArrowLeft'){e.preventDefault();prevPage()}});
+   413|        document.querySelectorAll('.nav-links a[data-page]').forEach(l=>{l.addEventListener('click',()=>{goToPage(parseInt(l.dataset.page))})});
+   414|        document.querySelectorAll('.dot').forEach(d=>{d.addEventListener('click',()=>{goToPage(parseInt(d.dataset.page))})});
+   415|
+   416|        animatePage(0);
+   417|        showDots();
+   418|        if(autoScroll)startAutoScroll();
+   419|    </script>
+   420|</body>
+   421|</html>
+   422|
