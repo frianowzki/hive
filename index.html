@@ -1,422 +1,422 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hive — Compliant AI Launchpad on Ritual Testnet</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        :root{
-            --bg:#000;--bg-card:rgba(255,255,255,0.03);--bg-card-hover:rgba(255,255,255,0.06);
-            --text:#fff;--text-dim:#888;--text-muted:#555;
-            --accent:#8b5cf6;--accent-light:#a78bfa;--accent-dark:#7c3aed;
-            --accent-glow:rgba(139,92,246,0.12);--green:#22c55e;
-            --border:rgba(255,255,255,0.06);
-            --font:'Inter',-apple-system,sans-serif;
-            --font-display:'Space Grotesk','Inter',sans-serif;
-        }
-        html{overflow:hidden;height:100%}
-        body{font-family:var(--font);background:var(--bg);color:var(--text);overflow:hidden;height:100%;-webkit-font-smoothing:antialiased}
-        ::selection{background:var(--accent);color:#fff}
-        a{color:inherit;text-decoration:none;transition:all .3s}
-
-        /* NAV */
-        .navbar{position:fixed;top:0;left:0;right:0;z-index:1000;padding:0 3rem;height:56px;display:flex;justify-content:space-between;align-items:center;background:transparent}
-        .logo{font-family:var(--font-display);font-size:1.35rem;font-weight:700;display:flex;align-items:center;letter-spacing:-.02em}
-        .nav-links{display:flex;gap:1.5rem;list-style:none;align-items:center}
-        .nav-links a{font-size:.7rem;font-weight:500;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);transition:color .3s;cursor:pointer;padding:.4rem 0;position:relative}
-        .nav-links a::after{content:'';position:absolute;bottom:0;left:0;width:0;height:1.5px;background:var(--accent);transition:width .3s}
-        .nav-links a:hover,.nav-links a.active{color:var(--text)}
-        .nav-links a:hover::after,.nav-links a.active::after{width:100%}
-
-        /* PAGES */
-        .pages-wrapper{height:100vh;overflow:hidden;position:relative}
-        .page{height:100vh;width:100%;position:absolute;top:0;left:0;opacity:0;transform:translateY(20px);transition:opacity .6s,transform .6s;pointer-events:none;display:flex;align-items:center;padding:56px 3rem 3rem;overflow-y:auto}
-        .page.active{opacity:1;transform:translateY(0);pointer-events:all;z-index:10}
-        .page-inner{width:100%;max-width:1100px;margin:0 auto;position:relative;z-index:2}
-
-        /* PAGE DOTS */
-        .page-dots{position:fixed;right:1.5rem;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:.5rem;opacity:0;transition:opacity .5s}
-        .page-dots.visible{opacity:1}
-        .dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.12);cursor:pointer;transition:all .3s}
-        .dot:hover{background:rgba(255,255,255,0.35)}
-        .dot.active{background:var(--accent);box-shadow:0 0 6px rgba(139,92,246,0.4)}
-
-        /* FOOTER */
-        .mini-footer{position:fixed;bottom:0;left:0;right:0;z-index:100;padding:.6rem 3rem;display:flex;justify-content:space-between;align-items:center;background:transparent;font-size:.7rem;color:var(--text-muted)}
-        .mini-footer p{font-family:var(--font-display);font-size:.7rem;font-weight:500;letter-spacing:.02em}
-        .mini-footer a{color:var(--text-dim)}
-        .mini-footer-links{display:flex;gap:1.5rem}
-        .mini-footer-links a{font-family:var(--font-display);font-size:.7rem;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);transition:color .3s}
-        .mini-footer-links a:hover{color:var(--text)}
-
-        /* BG */
-        .bg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse at center,black 20%,transparent 70%);-webkit-mask-image:radial-gradient(ellipse at center,black 20%,transparent 70%);pointer-events:none}
-        .bg-glow{position:absolute;width:500px;height:500px;border-radius:50%;filter:blur(120px);pointer-events:none}
-
-        /* FADE */
-        .fi{opacity:0;transform:translateY(12px);transition:all .5s cubic-bezier(.4,0,.2,1)}
-        .fi.v{opacity:1;transform:translateY(0)}
-        .d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}.d5{transition-delay:.4s}.d6{transition-delay:.48s}
-
-        /* ═══ PAGE 1: HERO ═══ */
-        .hero-content{max-width:640px}
-        .hero h1{font-family:var(--font-display);font-size:3.2rem;font-weight:800;line-height:1.08;letter-spacing:-.04em;margin-bottom:1rem}
-        .hero h1 .g{background:linear-gradient(135deg,var(--accent-light),var(--accent),#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-        .hero-desc{font-size:.95rem;color:var(--text-dim);margin-bottom:1.75rem;line-height:1.65;max-width:480px}
-        .hero-actions{display:flex;gap:.75rem;margin-bottom:2.5rem}
-        .hero-stats{display:flex;gap:2rem;padding-top:1.5rem;border-top:1px solid var(--border)}
-        .stat-val{font-family:var(--font-display);font-size:1.75rem;font-weight:800;line-height:1}
-        .stat-val .g{color:var(--green)}
-        .stat-lbl{font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-top:.3rem}
-
-        /* ═══ BUTTONS ═══ */
-        .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.65rem 1.25rem;font-family:var(--font);font-size:.75rem;font-weight:600;border-radius:6px;cursor:pointer;transition:all .3s;border:none;outline:none}
-        .btn-p{background:var(--accent);color:#fff;box-shadow:0 4px 16px rgba(139,92,246,.25)}
-        .btn-p:hover{background:var(--accent-dark);transform:translateY(-1px);box-shadow:0 6px 24px rgba(139,92,246,.3)}
-        .btn-o{background:transparent;color:var(--text);border:1px solid var(--border)}
-        .btn-o:hover{border-color:var(--accent);color:var(--accent-light);background:var(--accent-glow)}
-        .btn-i{width:13px;height:13px}
-
-        /* ═══ SECTION ═══ */
-        .sec-hdr{margin-bottom:2rem}
-        .sec-lbl{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem}
-        .sec-lbl::before{content:'';width:16px;height:1.5px;background:var(--accent)}
-        .sec-title{font-family:var(--font-display);font-size:2rem;font-weight:800;letter-spacing:-.03em}
-
-        /* ═══ PAGE 2: FEATURES (Card Stack) ═══ */
-        .feat-stack{position:relative;width:100%;max-width:700px;margin:0 auto;height:280px;perspective:1000px}
-        .feat-card{position:absolute;top:0;left:50%;width:100%;max-width:620px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:16px;padding:2rem;transform:translateX(-50%);transition:all .5s cubic-bezier(.4,0,.2,1);opacity:0;pointer-events:none;display:flex;flex-direction:column;justify-content:center}
-        .feat-card.active{opacity:1;pointer-events:all;z-index:5;transform:translateX(-50%) scale(1)}
-        .feat-card.prev{opacity:.4;z-index:3;transform:translateX(calc(-50% + 30px)) scale(.95);filter:blur(1px)}
-        .feat-card.next{opacity:.4;z-index:3;transform:translateX(calc(-50% - 30px)) scale(.95);filter:blur(1px)}
-        .feat-card .fc-top{display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem}
-        .feat-card .fc-icon{width:44px;height:44px;background:var(--accent-glow);border:1px solid rgba(139,92,246,.2);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-        .feat-card .fc-icon svg{width:20px;height:20px;color:var(--accent-light)}
-        .feat-card .fc-title{font-family:var(--font-display);font-size:1.3rem;font-weight:800}
-        .feat-card .fc-num{font-family:var(--font-display);font-size:.7rem;font-weight:700;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.75rem}
-        .feat-card .fc-desc{font-size:.9rem;color:var(--text-dim);line-height:1.7;max-width:520px}
-        .feat-nav{display:flex;justify-content:center;align-items:center;gap:1.5rem;margin-top:1.5rem}
-        .feat-nav-btn{width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text-dim);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s}
-        .feat-nav-btn:hover{border-color:var(--accent);color:var(--accent-light);background:var(--accent-glow)}
-        .feat-nav-btn svg{width:16px;height:16px}
-        .feat-dots{display:flex;gap:.4rem}
-        .feat-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.12);transition:all .3s}
-        .feat-dot.active{background:var(--accent);width:18px;border-radius:3px}
-
-        /* ═══ PAGE 3: SERVICES ═══ */
-        .svc-grid{display:grid;grid-template-columns:repeat(3,1fr)}
-        .svc-item{display:flex;align-items:center;gap:.6rem;padding:.85rem 1rem;border:1px solid var(--border);margin:-.5px;cursor:default;transition:all .3s;position:relative;overflow:hidden}
-        .svc-item::before{content:'';position:absolute;inset:0;background:var(--accent-glow);opacity:0;transition:opacity .3s}
-        .svc-item:hover{border-color:var(--accent);z-index:2}
-        .svc-item:hover::before{opacity:1}
-        .svc-name{font-size:.8rem;font-weight:500;color:var(--text-dim);transition:color .3s;position:relative;z-index:2}
-        .svc-item:hover .svc-name{color:var(--text)}
-        .svc-icon{width:16px;height:16px;color:var(--accent);position:relative;z-index:2;flex-shrink:0}
-
-        /* ═══ PAGE 4: ABOUT ═══ */
-        .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;align-items:start}
-        .about-text h3{font-family:var(--font-display);font-size:1.35rem;font-weight:700;margin-bottom:1rem}
-        .about-text p{font-size:.85rem;color:var(--text-dim);line-height:1.7;margin-bottom:.6rem}
-        .about-feats{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:1.25rem}
-        .about-feat{display:flex;align-items:center;gap:.4rem;padding:.5rem .65rem;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;font-size:.75rem;font-weight:500}
-        .about-feat i{color:var(--accent);font-style:normal}
-        .team-card{background:var(--bg-card);border-radius:12px;padding:1.5rem;border:1px solid var(--border);display:grid;grid-template-columns:auto 1fr;gap:1.25rem;align-items:center;transition:all .3s}
-        .team-card:hover{border-color:rgba(255,255,255,.1);background:var(--bg-card-hover)}
-        .team-avatar{width:48px;height:48px;border-radius:12px;background:var(--accent-glow);border:1px solid rgba(139,92,246,.15);display:flex;align-items:center;justify-content:center}
-        .team-avatar svg{width:22px;height:22px;color:var(--accent-light)}
-        .team-role{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:.1rem}
-        .team-name{font-family:var(--font-display);font-size:1.05rem;font-weight:700;margin-bottom:.25rem}
-        .team-bio{font-size:.75rem;color:var(--text-dim);line-height:1.5}
-        .team-link{display:inline-block;margin-top:.4rem;font-size:.65rem;font-weight:600;padding:.3rem .6rem;background:var(--accent-glow);border:1px solid rgba(139,92,246,.15);border-radius:5px;color:var(--accent-light);transition:all .3s}
-        .team-link:hover{background:rgba(139,92,246,.2);border-color:var(--accent)}
-
-        /* ═══ PAGE 5: CONTACT ═══ */
-        .contact-page{text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center}
-        .contact-sub{font-size:.95rem;color:var(--text-dim);max-width:440px;margin:0 auto 2rem;line-height:1.65}
-        .contact-actions{display:flex;gap:.75rem;margin-bottom:2.5rem}
-        .contact-info{display:flex;gap:2.5rem}
-        .contact-info-item{display:flex;align-items:center;gap:.4rem;font-size:.8rem;color:var(--text-dim)}
-        .contact-info-item svg{width:14px;height:14px;color:var(--accent)}
-        .contact-info-item a{color:var(--accent-light)}
-
-        /* ═══ RESPONSIVE ═══ */
-        @media(max-width:1024px){
-            .hero h1{font-size:2.5rem}
-            .caps-grid{grid-template-columns:repeat(2,1fr)}
-            .svc-grid{grid-template-columns:repeat(2,1fr)}
-            .about-grid{grid-template-columns:1fr}
-        }
-        @media(max-width:768px){
-            .navbar{padding:0 1.5rem}
-            .nav-links{display:none}
-            .page{padding:56px 1.5rem 3rem}
-            .hero h1{font-size:2rem}
-            .sec-title{font-size:1.5rem}
-            .caps-grid,.svc-grid{grid-template-columns:1fr}
-            .about-feats{grid-template-columns:1fr}
-            .contact-info{flex-direction:column;gap:.75rem}
-            .contact-actions{flex-direction:column}
-            .page-dots{display:none}
-            .mini-footer{padding:.4rem 1.5rem}
-            .mini-footer-links{display:none}
-        }
-    </style>
-</head>
-<body>
-    <nav class="navbar">
-        <div class="logo">Hive</div>
-        <ul class="nav-links">
-            <li><a data-page="0" class="active">Home</a></li>
-            <li><a data-page="1">Features</a></li>
-            <li><a data-page="2">Services</a></li>
-            <li><a data-page="3">About</a></li>
-            <li><a data-page="4">Contact</a></li>
-        </ul>
-    </nav>
-
-    <div class="page-dots" id="pageDots">
-        <div class="dot active" data-page="0"></div>
-        <div class="dot" data-page="1"></div>
-        <div class="dot" data-page="2"></div>
-        <div class="dot" data-page="3"></div>
-        <div class="dot" data-page="4"></div>
-    </div>
-
-    <div class="pages-wrapper">
-
-        <!-- PAGE 1: HERO -->
-        <div class="page hero active" data-index="0">
-            <div class="bg-grid"></div>
-            <div class="bg-glow" style="top:-150px;right:-100px;background:var(--accent);opacity:.12"></div>
-            <div class="page-inner">
-                <div class="hero-content">
-                    <h1 class="fi">The <span class="g">compliant AI launchpad</span> for forward-thinking DeFi.</h1>
-                    <p class="hero-desc fi d1">Fully on-chain, zk-proofed AI launchpad built on Ritual Testnet.<br>AI market makers, federated learning, autonomous agents,<br>and DAO governance — all with KYC/KYB compliance.</p>
-                    <div class="hero-actions fi d2">
-                        <a href="#contact" class="btn btn-p" onclick="goToPage(4);return false">Open Hive<svg class="btn-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- PAGE 2: FEATURES (Card Stack) -->
-        <div class="page" data-index="1">
-            <div class="bg-grid"></div>
-            <div class="bg-glow" style="bottom:-150px;left:-150px;background:var(--accent);opacity:.1"></div>
-            <div class="page-inner">
-                <div class="sec-hdr fi">
-                    <h2 class="sec-title">Features</h2>
-                </div>
-                <div class="feat-stack fi d1">
-                    <div class="feat-card active" data-feat="0">
-                        <div class="fc-num">01 / 06</div>
-                        <div class="fc-top"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div><span class="fc-title">ZK Identity & Compliance</span></div>
-                        <p class="fc-desc">Groth16-based KYC/KYB verification with on-chain identity. Semi-custodial wallets with dual-auth. Full regulatory compliance without exposing personal data.</p>
-                    </div>
-                    <div class="feat-card" data-feat="1">
-                        <div class="fc-num">02 / 06</div>
-                        <div class="fc-top"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 2.4-1.2 4.5-3 5.7V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.3C6.2 13.5 5 11.4 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg></div><span class="fc-title">AI Decision Engine</span></div>
-                        <p class="fc-desc">HiveBrain orchestrates AI operations — price feeds via Allora, federated learning via FLock, autonomous strategies. Think → Plan → Act pipeline with confidence threshold.</p>
-                    </div>
-                    <div class="feat-card" data-feat="2">
-                        <div class="fc-num">03 / 06</div>
-                        <div class="fc-top"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><span class="fc-title">AI Market Maker</span></div>
-                        <p class="fc-desc">Constant-product AMM with AI-driven pricing. Liquidity pools, LP rewards, real-time oracle integration. On-chain AI determines optimal token launch price.</p>
-                    </div>
-                    <div class="feat-card" data-feat="3">
-                        <div class="fc-num">04 / 06</div>
-                        <div class="fc-top"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg></div><span class="fc-title">DAO Governance</span></div>
-                        <p class="fc-desc">Multi-sig council, proposal system, voting, treasury management. HiveClearing batch auctions for fair token launches with AI-driven price discovery.</p>
-                    </div>
-                    <div class="feat-card" data-feat="4">
-                        <div class="fc-num">05 / 06</div>
-                        <div class="fc-top"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><span class="fc-title">Security & Privacy</span></div>
-                        <p class="fc-desc">Ritual native precompiles — DKMS key management, ECIES encryption, Passkey authentication. TEE-bound keys never leave the enclave. Privacy-preserving by design.</p>
-                    </div>
-                    <div class="feat-card" data-feat="5">
-                        <div class="fc-num">06 / 06</div>
-                        <div class="fc-top"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8M12 8v8"/></svg></div><span class="fc-title">Autonomous Agents</span></div>
-                        <p class="fc-desc">Queen orchestrator routes tasks to Brain, Strategy, and Drone agents. Automated trading strategies, on-chain points, 4-tier referral engine.</p>
-                    </div>
-                </div>
-                <div class="feat-nav fi d2">
-                    <button class="feat-nav-btn" onclick="featNav(-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
-                    <div class="feat-dots" id="featDots"><span class="feat-dot active"></span><span class="feat-dot"></span><span class="feat-dot"></span><span class="feat-dot"></span><span class="feat-dot"></span><span class="feat-dot"></span></div>
-                    <button class="feat-nav-btn" onclick="featNav(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
-                </div>
-            </div>
-        </div>
-
-        <!-- PAGE 3: SERVICES -->
-        <div class="page" data-index="2">
-            <div class="bg-grid"></div>
-            <div class="page-inner">
-                <div class="sec-hdr fi">
-                    <h2 class="sec-title">What we build</h2>
-                </div>
-                <div class="svc-grid">
-                    <div class="svc-item fi d1"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span class="svc-name">ZK Proof Verification (Groth16)</span></div>
-                    <div class="svc-item fi d1"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span class="svc-name">AI Market Maker (AMM)</span></div>
-                    <div class="svc-item fi d1"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="svc-name">Federated Learning (FLock)</span></div>
-                    <div class="svc-item fi d2"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg><span class="svc-name">Price Oracles (Allora)</span></div>
-                    <div class="svc-item fi d2"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg><span class="svc-name">Batch Auctions (HCA)</span></div>
-                    <div class="svc-item fi d2"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span class="svc-name">Token Launches + Vesting</span></div>
-                    <div class="svc-item fi d3"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><span class="svc-name">ETH Staking + Rewards</span></div>
-                    <div class="svc-item fi d3"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span class="svc-name">Multi-Sig Wallets</span></div>
-                    <div class="svc-item fi d3"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg><span class="svc-name">DAO Governance + Voting</span></div>
-                    <div class="svc-item fi d4"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span class="svc-name">DKMS Key Management</span></div>
-                    <div class="svc-item fi d4"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="svc-name">Encrypted P2P Chat (ECIES)</span></div>
-                    <div class="svc-item fi d4"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8M12 8v8"/></svg><span class="svc-name">Autonomous Agent Orchestration</span></div>
-                    <div class="svc-item fi d5"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg><span class="svc-name">Portfolio Management</span></div>
-                    <div class="svc-item fi d5"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span class="svc-name">Referral & Points System</span></div>
-                    <div class="svc-item fi d5"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span class="svc-name">Meta-Transaction Relay</span></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- PAGE 4: ABOUT -->
-        <div class="page" data-index="3">
-            <div class="bg-grid"></div>
-            <div class="page-inner">
-                <div class="sec-hdr fi">
-                    <h2 class="sec-title">About us</h2>
-                </div>
-                <div class="about-grid">
-                    <div class="about-text fi d1">
-                        <h3>Building the future of compliant DeFi</h3>
-                        <p>Hive is a fully on-chain AI launchpad built on Ritual Testnet (Chain ID 1979). We combine zero-knowledge proofs, artificial intelligence, and decentralized governance to create a compliant, privacy-preserving DeFi ecosystem.</p>
-                        <p>Our architecture features 29 smart contracts, all fully interconnected and tested with 300 passing tests. Every component is designed for security, scalability, and compliance.</p>
-                        <p>We leverage Ritual Testnet's native precompiles — LLM inference, HTTP requests, DKMS key management, ECIES encryption, and Passkey authentication.</p>
-                        <div class="about-feats">
-                            <div class="about-feat"><i>✓</i> 29 Contracts Deployed</div>
-                            <div class="about-feat"><i>✓</i> 300 Tests Passing</div>
-                            <div class="about-feat"><i>✓</i> Zero Critical Bugs</div>
-                            <div class="about-feat"><i>✓</i> Fully Interconnected</div>
-                        </div>
-                    </div>
-                    <div class="fi d2">
-                        <div class="team-card">
-                            <div class="team-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
-                            <div>
-                                <div class="team-role">Founder / Lead Dev</div>
-                                <h4 class="team-name">Frian</h4>
-                                <p class="team-bio">Full-stack Web3 builder. DeFi architect. Leading Hive's smart contract development, AI integration, and Ritual Testnet optimization.</p>
-                                <a href="https://github.com/frianowzki" target="_blank" class="team-link">GitHub</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- PAGE 5: CONTACT -->
-        <div class="page contact-page" data-index="4">
-            <div class="bg-grid"></div>
-            <div class="bg-glow" style="top:50%;left:50%;transform:translate(-50%,-50%);background:var(--accent);opacity:.12"></div>
-            <div class="page-inner">
-                <p class="contact-sub fi">Interested in building on Hive? Want to integrate with our AI launchpad? Or just want to chat about Ritual Testnet? Reach out.</p>
-                <div class="contact-actions fi d1">
-                    <a href="https://github.com/frianowzki/hive" target="_blank" class="btn btn-p">View on GitHub<svg class="btn-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg></a>
-                    <a href="mailto:friokurniawan@gmail.com" class="btn btn-o">Email Us</a>
-                </div>
-                <div class="contact-info fi d2">
-                    <div class="contact-info-item">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                        <span>Ritual Testnet (Chain ID 1979)</span>
-                    </div>
-                    <div class="contact-info-item">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                        <a href="mailto:friokurniawan@gmail.com">friokurniawan@gmail.com</a>
-                    </div>
-                    <div class="contact-info-item">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
-                        <a href="https://github.com/frianowzki" target="_blank">@frianowzki</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="mini-footer">
-        <p>© 2026 Hive. Built on <a href="https://ritual.net" target="_blank">Ritual Testnet</a>.</p>
-        <div class="mini-footer-links">
-            <a href="https://github.com/frianowzki/hive" target="_blank">GitHub</a>
-            <a href="https://x.com/widyakrnwn" target="_blank">X</a>
-            <a href="https://discord.gg/ritual-net" target="_blank">Discord</a>
-        </div>
-    </div>
-
-    <script>
-        let currentPage=0;const totalPages=5;let autoScroll=true;let autoScrollTimer=null;const autoScrollDuration=8000;let dotsTimeout;
-
-        function goToPage(index){
-            if(index===currentPage||index<0||index>=totalPages)return;
-            const pages=document.querySelectorAll('.page');
-            const dots=document.querySelectorAll('.dot');
-            const navLinks=document.querySelectorAll('.nav-links a[data-page]');
-            pages.forEach(p=>{p.classList.remove('active');p.style.opacity='0';p.style.pointerEvents='none'});
-            currentPage=index;
-            const t=pages[currentPage];
-            t.classList.add('active');t.style.opacity='1';t.style.pointerEvents='all';t.style.transform='translateY(0)';
-            dots.forEach(d=>d.classList.remove('active'));
-            if(dots[currentPage])dots[currentPage].classList.add('active');
-            navLinks.forEach(l=>l.classList.remove('active'));
-            if(navLinks[currentPage])navLinks[currentPage].classList.add('active');
-            animatePage(currentPage);
-            showDots();
-            if(autoScroll)resetAutoScroll();
-        }
-        function nextPage(){goToPage((currentPage+1)%totalPages)}
-        function prevPage(){goToPage((currentPage-1+totalPages)%totalPages)}
-        function animatePage(i){
-            const p=document.querySelectorAll('.page')[i];
-            p.querySelectorAll('.fi').forEach(el=>{el.classList.remove('v')});
-            setTimeout(()=>{p.querySelectorAll('.fi').forEach(el=>el.classList.add('v'))},50);
-        }
-        function showDots(){
-            const d=document.getElementById('pageDots');
-            d.classList.add('visible');
-            clearTimeout(dotsTimeout);
-            dotsTimeout=setTimeout(()=>{d.classList.remove('visible')},3000);
-        }
-
-        function startAutoScroll(){autoScrollTimer=setTimeout(nextPage,autoScrollDuration)}
-        function resetAutoScroll(){clearTimeout(autoScrollTimer);startAutoScroll()}
-
-        /* Feature Card Stack */
-        let featIdx=0;
-        function featNav(dir){
-            const cards=document.querySelectorAll('.feat-card');
-            const dots=document.querySelectorAll('.feat-dot');
-            cards.forEach(c=>c.classList.remove('active','prev','next'));
-            dots.forEach(d=>d.classList.remove('active'));
-            featIdx=(featIdx+dir+cards.length)%cards.length;
-            cards[featIdx].classList.add('active');
-            dots[featIdx].classList.add('active');
-            const prev=(featIdx-1+cards.length)%cards.length;
-            const next=(featIdx+1)%cards.length;
-            cards[prev].classList.add('prev');
-            cards[next].classList.add('next');
-        }
-        /* Init stack */
-        (function(){const c=document.querySelectorAll('.feat-card');if(c.length>1)c[1].classList.add('next');})();
-
-        let wheelTimeout;
-        document.addEventListener('wheel',e=>{e.preventDefault();clearTimeout(wheelTimeout);wheelTimeout=setTimeout(()=>{if(e.deltaY>0)nextPage();else prevPage()},60)},{passive:false});
-        let touchY=0;
-        document.addEventListener('touchstart',e=>{touchY=e.touches[0].clientY});
-        document.addEventListener('touchend',e=>{const d=touchY-e.changedTouches[0].clientY;if(Math.abs(d)>50){if(d>0)nextPage();else prevPage()}});
-        document.addEventListener('keydown',e=>{if(e.key==='ArrowDown'||e.key==='ArrowRight'||e.key===' '){e.preventDefault();nextPage()}else if(e.key==='ArrowUp'||e.key==='ArrowLeft'){e.preventDefault();prevPage()}});
-        document.querySelectorAll('.nav-links a[data-page]').forEach(l=>{l.addEventListener('click',()=>{goToPage(parseInt(l.dataset.page))})});
-        document.querySelectorAll('.dot').forEach(d=>{d.addEventListener('click',()=>{goToPage(parseInt(d.dataset.page))})});
-
-        animatePage(0);
-        showDots();
-        if(autoScroll)startAutoScroll();
-    </script>
-</body>
-</html>
+     1|<!DOCTYPE html>
+     2|<html lang="en">
+     3|<head>
+     4|    <meta charset="UTF-8">
+     5|    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     6|    <title>Hive — Compliant AI Launchpad on Ritual Testnet</title>
+     7|    <link rel="preconnect" href="https://fonts.googleapis.com">
+     8|    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+     9|    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    10|    <style>
+    11|        *{margin:0;padding:0;box-sizing:border-box}
+    12|        :root{
+    13|            --bg:#000;--bg-card:rgba(255,255,255,0.03);--bg-card-hover:rgba(255,255,255,0.06);
+    14|            --text:#fff;--text-dim:#888;--text-muted:#555;
+    15|            --accent:#8b5cf6;--accent-light:#a78bfa;--accent-dark:#7c3aed;
+    16|            --accent-glow:rgba(139,92,246,0.12);--green:#22c55e;
+    17|            --border:rgba(255,255,255,0.06);
+    18|            --font:'Inter',-apple-system,sans-serif;
+    19|            --font-display:'Space Grotesk','Inter',sans-serif;
+    20|        }
+    21|        html{overflow:hidden;height:100%}
+    22|        body{font-family:var(--font);background:var(--bg);color:var(--text);overflow:hidden;height:100%;-webkit-font-smoothing:antialiased}
+    23|        ::selection{background:var(--accent);color:#fff}
+    24|        a{color:inherit;text-decoration:none;transition:all .3s}
+    25|
+    26|        /* NAV */
+    27|        .navbar{position:fixed;top:0;left:0;right:0;z-index:1000;padding:0 3rem;height:56px;display:flex;justify-content:space-between;align-items:center;background:transparent}
+    28|        .logo{font-family:var(--font-display);font-size:1.35rem;font-weight:700;display:flex;align-items:center;letter-spacing:-.02em}
+    29|        .nav-links{display:flex;gap:1.5rem;list-style:none;align-items:center}
+    30|        .nav-links a{font-size:.7rem;font-weight:500;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);transition:color .3s;cursor:pointer;padding:.4rem 0;position:relative}
+    31|        .nav-links a::after{content:'';position:absolute;bottom:0;left:0;width:0;height:1.5px;background:var(--accent);transition:width .3s}
+    32|        .nav-links a:hover,.nav-links a.active{color:var(--text)}
+    33|        .nav-links a:hover::after,.nav-links a.active::after{width:100%}
+    34|
+    35|        /* PAGES */
+    36|        .pages-wrapper{height:100vh;overflow:hidden;position:relative}
+    37|        .page{height:100vh;width:100%;position:absolute;top:0;left:0;opacity:0;transform:translateY(20px);transition:opacity .6s,transform .6s;pointer-events:none;display:flex;align-items:center;padding:56px 3rem 3rem;overflow-y:auto}
+    38|        .page.active{opacity:1;transform:translateY(0);pointer-events:all;z-index:10}
+    39|        .page-inner{width:100%;max-width:1100px;margin:0 auto;position:relative;z-index:2}
+    40|
+    41|        /* PAGE DOTS */
+    42|        .page-dots{position:fixed;right:1.5rem;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:.5rem;opacity:0;transition:opacity .5s}
+    43|        .page-dots.visible{opacity:1}
+    44|        .dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.12);cursor:pointer;transition:all .3s}
+    45|        .dot:hover{background:rgba(255,255,255,0.35)}
+    46|        .dot.active{background:var(--accent);box-shadow:0 0 6px rgba(139,92,246,0.4)}
+    47|
+    48|        /* FOOTER */
+    49|        .mini-footer{position:fixed;bottom:0;left:0;right:0;z-index:100;padding:.6rem 3rem;display:flex;justify-content:space-between;align-items:center;background:transparent;font-size:.7rem;color:var(--text-muted)}
+    50|        .mini-footer p{font-family:var(--font-display);font-size:.7rem;font-weight:500;letter-spacing:.02em}
+    51|        .mini-footer a{color:var(--text-dim)}
+    52|        .mini-footer-links{display:flex;gap:1.5rem}
+    53|        .mini-footer-links a{font-family:var(--font-display);font-size:.7rem;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);transition:color .3s}
+    54|        .mini-footer-links a:hover{color:var(--text)}
+    55|
+    56|        /* BG */
+    57|        .bg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse at center,black 20%,transparent 70%);-webkit-mask-image:radial-gradient(ellipse at center,black 20%,transparent 70%);pointer-events:none}
+    58|        .bg-glow{position:absolute;width:500px;height:500px;border-radius:50%;filter:blur(120px);pointer-events:none}
+    59|
+    60|        /* FADE */
+    61|        .fi{opacity:0;transform:translateY(12px);transition:all .5s cubic-bezier(.4,0,.2,1)}
+    62|        .fi.v{opacity:1;transform:translateY(0)}
+    63|        .d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}.d5{transition-delay:.4s}.d6{transition-delay:.48s}
+    64|
+    65|        /* ═══ PAGE 1: HERO ═══ */
+    66|        .hero-content{max-width:640px}
+    67|        .hero h1{font-family:var(--font-display);font-size:3.2rem;font-weight:800;line-height:1.08;letter-spacing:-.04em;margin-bottom:1rem}
+    68|        .hero h1 .g{background:linear-gradient(135deg,var(--accent-light),var(--accent),#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    69|        .hero-desc{font-size:.95rem;color:var(--text-dim);margin-bottom:1.75rem;line-height:1.65;max-width:480px}
+    70|        .hero-actions{display:flex;gap:.75rem;margin-bottom:2.5rem}
+    71|        .hero-stats{display:flex;gap:2rem;padding-top:1.5rem;border-top:1px solid var(--border)}
+    72|        .stat-val{font-family:var(--font-display);font-size:1.75rem;font-weight:800;line-height:1}
+    73|        .stat-val .g{color:var(--green)}
+    74|        .stat-lbl{font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-top:.3rem}
+    75|
+    76|        /* ═══ BUTTONS ═══ */
+    77|        .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.65rem 1.25rem;font-family:var(--font);font-size:.75rem;font-weight:600;border-radius:6px;cursor:pointer;transition:all .3s;border:none;outline:none}
+    78|        .btn-p{background:var(--accent);color:#fff;box-shadow:0 4px 16px rgba(139,92,246,.25)}
+    79|        .btn-p:hover{background:var(--accent-dark);transform:translateY(-1px);box-shadow:0 6px 24px rgba(139,92,246,.3)}
+    80|        .btn-o{background:transparent;color:var(--text);border:1px solid var(--border)}
+    81|        .btn-o:hover{border-color:var(--accent);color:var(--accent-light);background:var(--accent-glow)}
+    82|        .btn-i{width:13px;height:13px}
+    83|
+    84|        /* ═══ SECTION ═══ */
+    85|        .sec-hdr{margin-bottom:2rem}
+    86|        .sec-lbl{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem}
+    87|        .sec-lbl::before{content:'';width:16px;height:1.5px;background:var(--accent)}
+    88|        .sec-title{font-family:var(--font-display);font-size:2rem;font-weight:800;letter-spacing:-.03em}
+    89|
+    90|        /* ═══ PAGE 2: FEATURES (Card Stack) ═══ */
+    91|        .feat-stack{position:relative;width:100%;max-width:900px;margin:0 auto;height:320px;perspective:1200px}
+    92|        .feat-card{position:absolute;top:0;width:440px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:16px;padding:2rem 2.25rem;transition:all .5s cubic-bezier(.4,0,.2,1);opacity:0;pointer-events:none;display:flex;flex-direction:column;justify-content:center}
+    93|        .feat-card.active{opacity:1;pointer-events:all;z-index:5;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.15)}
+    94|        .feat-card.prev{opacity:.7;z-index:3;left:0;transform:translateX(-10%);border-color:rgba(255,255,255,.04)}
+    95|        .feat-card.next{opacity:.7;z-index:3;left:auto;right:0;transform:translateX(10%);border-color:rgba(255,255,255,.04)}
+    96|        .feat-card .fc-top{display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem}
+    97|        .feat-card .fc-icon{width:48px;height:48px;background:var(--accent-glow);border:1px solid rgba(139,92,246,.2);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    98|        .feat-card .fc-icon svg{width:22px;height:22px;color:var(--accent-light)}
+    99|        .feat-card .fc-title{font-family:var(--font-display);font-size:1.4rem;font-weight:800}
+   100|        .feat-card .fc-desc{font-size:.95rem;color:var(--text-dim);line-height:1.7}
+   101|        .feat-nav{display:flex;justify-content:center;align-items:center;gap:1.5rem;margin-top:1.5rem}
+   102|        .feat-nav-btn{width:42px;height:42px;border-radius:50%;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text-dim);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s}
+   103|        .feat-nav-btn:hover{border-color:var(--accent);color:var(--accent-light);background:var(--accent-glow)}
+   104|        .feat-nav-btn svg{width:16px;height:16px}
+   105|        .feat-dots{display:flex;gap:.4rem}
+   106|        .feat-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.12);transition:all .3s}
+   107|        .feat-dot.active{background:var(--accent);width:18px;border-radius:3px}
+   108|
+   109|        /* ═══ PAGE 3: SERVICES ═══ */
+   110|        .svc-grid{display:grid;grid-template-columns:repeat(3,1fr)}
+   111|        .svc-item{display:flex;align-items:center;gap:.6rem;padding:.85rem 1rem;border:1px solid var(--border);margin:-.5px;cursor:default;transition:all .3s;position:relative;overflow:hidden}
+   112|        .svc-item::before{content:'';position:absolute;inset:0;background:var(--accent-glow);opacity:0;transition:opacity .3s}
+   113|        .svc-item:hover{border-color:var(--accent);z-index:2}
+   114|        .svc-item:hover::before{opacity:1}
+   115|        .svc-name{font-size:.8rem;font-weight:500;color:var(--text-dim);transition:color .3s;position:relative;z-index:2}
+   116|        .svc-item:hover .svc-name{color:var(--text)}
+   117|        .svc-icon{width:16px;height:16px;color:var(--accent);position:relative;z-index:2;flex-shrink:0}
+   118|
+   119|        /* ═══ PAGE 4: ABOUT ═══ */
+   120|        .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;align-items:start}
+   121|        .about-text h3{font-family:var(--font-display);font-size:1.35rem;font-weight:700;margin-bottom:1rem}
+   122|        .about-text p{font-size:.85rem;color:var(--text-dim);line-height:1.7;margin-bottom:.6rem}
+   123|        .about-feats{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:1.25rem}
+   124|        .about-feat{display:flex;align-items:center;gap:.4rem;padding:.5rem .65rem;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;font-size:.75rem;font-weight:500}
+   125|        .about-feat i{color:var(--accent);font-style:normal}
+   126|        .team-card{background:var(--bg-card);border-radius:12px;padding:1.5rem;border:1px solid var(--border);display:grid;grid-template-columns:auto 1fr;gap:1.25rem;align-items:center;transition:all .3s}
+   127|        .team-card:hover{border-color:rgba(255,255,255,.1);background:var(--bg-card-hover)}
+   128|        .team-avatar{width:48px;height:48px;border-radius:12px;background:var(--accent-glow);border:1px solid rgba(139,92,246,.15);display:flex;align-items:center;justify-content:center}
+   129|        .team-avatar svg{width:22px;height:22px;color:var(--accent-light)}
+   130|        .team-role{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:.1rem}
+   131|        .team-name{font-family:var(--font-display);font-size:1.05rem;font-weight:700;margin-bottom:.25rem}
+   132|        .team-bio{font-size:.75rem;color:var(--text-dim);line-height:1.5}
+   133|        .team-link{display:inline-block;margin-top:.4rem;font-size:.65rem;font-weight:600;padding:.3rem .6rem;background:var(--accent-glow);border:1px solid rgba(139,92,246,.15);border-radius:5px;color:var(--accent-light);transition:all .3s}
+   134|        .team-link:hover{background:rgba(139,92,246,.2);border-color:var(--accent)}
+   135|
+   136|        /* ═══ PAGE 5: CONTACT ═══ */
+   137|        .contact-page{text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center}
+   138|        .contact-sub{font-size:.95rem;color:var(--text-dim);max-width:440px;margin:0 auto 2rem;line-height:1.65}
+   139|        .contact-actions{display:flex;gap:.75rem;margin-bottom:2.5rem}
+   140|        .contact-info{display:flex;gap:2.5rem}
+   141|        .contact-info-item{display:flex;align-items:center;gap:.4rem;font-size:.8rem;color:var(--text-dim)}
+   142|        .contact-info-item svg{width:14px;height:14px;color:var(--accent)}
+   143|        .contact-info-item a{color:var(--accent-light)}
+   144|
+   145|        /* ═══ RESPONSIVE ═══ */
+   146|        @media(max-width:1024px){
+   147|            .hero h1{font-size:2.5rem}
+   148|            .caps-grid{grid-template-columns:repeat(2,1fr)}
+   149|            .svc-grid{grid-template-columns:repeat(2,1fr)}
+   150|            .about-grid{grid-template-columns:1fr}
+   151|        }
+   152|        @media(max-width:768px){
+   153|            .navbar{padding:0 1.5rem}
+   154|            .nav-links{display:none}
+   155|            .page{padding:56px 1.5rem 3rem}
+   156|            .hero h1{font-size:2rem}
+   157|            .sec-title{font-size:1.5rem}
+   158|            .caps-grid,.svc-grid{grid-template-columns:1fr}
+   159|            .about-feats{grid-template-columns:1fr}
+   160|            .contact-info{flex-direction:column;gap:.75rem}
+   161|            .contact-actions{flex-direction:column}
+   162|            .page-dots{display:none}
+   163|            .mini-footer{padding:.4rem 1.5rem}
+   164|            .mini-footer-links{display:none}
+   165|        }
+   166|    </style>
+   167|</head>
+   168|<body>
+   169|    <nav class="navbar">
+   170|        <div class="logo">Hive</div>
+   171|        <ul class="nav-links">
+   172|            <li><a data-page="0" class="active">Home</a></li>
+   173|            <li><a data-page="1">Features</a></li>
+   174|            <li><a data-page="2">Services</a></li>
+   175|            <li><a data-page="3">About</a></li>
+   176|            <li><a data-page="4">Contact</a></li>
+   177|        </ul>
+   178|    </nav>
+   179|
+   180|    <div class="page-dots" id="pageDots">
+   181|        <div class="dot active" data-page="0"></div>
+   182|        <div class="dot" data-page="1"></div>
+   183|        <div class="dot" data-page="2"></div>
+   184|        <div class="dot" data-page="3"></div>
+   185|        <div class="dot" data-page="4"></div>
+   186|    </div>
+   187|
+   188|    <div class="pages-wrapper">
+   189|
+   190|        <!-- PAGE 1: HERO -->
+   191|        <div class="page hero active" data-index="0">
+   192|            <div class="bg-grid"></div>
+   193|            <div class="bg-glow" style="top:-150px;right:-100px;background:var(--accent);opacity:.12"></div>
+   194|            <div class="page-inner">
+   195|                <div class="hero-content">
+   196|                    <h1 class="fi">The <span class="g">compliant AI launchpad</span> for forward-thinking DeFi.</h1>
+   197|                    <p class="hero-desc fi d1">Fully on-chain, zk-proofed AI launchpad built on Ritual Testnet.<br>AI market makers, federated learning, autonomous agents,<br>and DAO governance — all with KYC/KYB compliance.</p>
+   198|                    <div class="hero-actions fi d2">
+   199|                        <a href="#contact" class="btn btn-p" onclick="goToPage(4);return false">Open Hive<svg class="btn-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+   200|                    </div>
+   201|                </div>
+   202|            </div>
+   203|        </div>
+   204|
+   205|        <!-- PAGE 2: FEATURES (Card Stack) -->
+   206|        <div class="page" data-index="1">
+   207|            <div class="bg-grid"></div>
+   208|            <div class="bg-glow" style="bottom:-150px;left:-150px;background:var(--accent);opacity:.1"></div>
+   209|            <div class="page-inner">
+   210|                <div class="sec-hdr fi">
+   211|                    <h2 class="sec-title">Features</h2>
+   212|                </div>
+   213|                <div class="feat-stack fi d1">
+   214|                    <div class="feat-card active" data-feat="0">
+   215|
+   216|                        <div class="fc-top"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div><span class="fc-title">ZK Identity & Compliance</span></div>
+   217|                        <p class="fc-desc">Groth16-based KYC/KYB verification with on-chain identity. Semi-custodial wallets with dual-auth. Full regulatory compliance without exposing personal data.</p>
+   218|                    </div>
+   219|                    <div class="feat-card" data-feat="1">
+   220|
+   221|                        <div class="fc-top"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 2.4-1.2 4.5-3 5.7V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.3C6.2 13.5 5 11.4 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg></div><span class="fc-title">AI Decision Engine</span></div>
+   222|                        <p class="fc-desc">HiveBrain orchestrates AI operations — price feeds via Allora, federated learning via FLock, autonomous strategies. Think → Plan → Act pipeline with confidence threshold.</p>
+   223|                    </div>
+   224|                    <div class="feat-card" data-feat="2">
+   225|
+   226|                        <div class="fc-top"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><span class="fc-title">AI Market Maker</span></div>
+   227|                        <p class="fc-desc">Constant-product AMM with AI-driven pricing. Liquidity pools, LP rewards, real-time oracle integration. On-chain AI determines optimal token launch price.</p>
+   228|                    </div>
+   229|                    <div class="feat-card" data-feat="3">
+   230|
+   231|                        <div class="fc-top"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg></div><span class="fc-title">DAO Governance</span></div>
+   232|                        <p class="fc-desc">Multi-sig council, proposal system, voting, treasury management. HiveClearing batch auctions for fair token launches with AI-driven price discovery.</p>
+   233|                    </div>
+   234|                    <div class="feat-card" data-feat="4">
+   235|
+   236|                        <div class="fc-top"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><span class="fc-title">Security & Privacy</span></div>
+   237|                        <p class="fc-desc">Ritual native precompiles — DKMS key management, ECIES encryption, Passkey authentication. TEE-bound keys never leave the enclave. Privacy-preserving by design.</p>
+   238|                    </div>
+   239|                    <div class="feat-card" data-feat="5">
+   240|
+   241|                        <div class="fc-top"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8M12 8v8"/></svg></div><span class="fc-title">Autonomous Agents</span></div>
+   242|                        <p class="fc-desc">Queen orchestrator routes tasks to Brain, Strategy, and Drone agents. Automated trading strategies, on-chain points, 4-tier referral engine.</p>
+   243|                    </div>
+   244|                </div>
+   245|                <div class="feat-nav fi d2">
+   246|                    <button class="feat-nav-btn" onclick="featNav(-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+   247|                    <div class="feat-dots" id="featDots"><span class="feat-dot active"></span><span class="feat-dot"></span><span class="feat-dot"></span><span class="feat-dot"></span><span class="feat-dot"></span><span class="feat-dot"></span></div>
+   248|                    <button class="feat-nav-btn" onclick="featNav(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+   249|                </div>
+   250|            </div>
+   251|        </div>
+   252|
+   253|        <!-- PAGE 3: SERVICES -->
+   254|        <div class="page" data-index="2">
+   255|            <div class="bg-grid"></div>
+   256|            <div class="page-inner">
+   257|                <div class="sec-hdr fi">
+   258|                    <h2 class="sec-title">What we build</h2>
+   259|                </div>
+   260|                <div class="svc-grid">
+   261|                    <div class="svc-item fi d1"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span class="svc-name">ZK Proof Verification (Groth16)</span></div>
+   262|                    <div class="svc-item fi d1"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span class="svc-name">AI Market Maker (AMM)</span></div>
+   263|                    <div class="svc-item fi d1"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="svc-name">Federated Learning (FLock)</span></div>
+   264|                    <div class="svc-item fi d2"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg><span class="svc-name">Price Oracles (Allora)</span></div>
+   265|                    <div class="svc-item fi d2"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg><span class="svc-name">Batch Auctions (HCA)</span></div>
+   266|                    <div class="svc-item fi d2"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span class="svc-name">Token Launches + Vesting</span></div>
+   267|                    <div class="svc-item fi d3"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><span class="svc-name">ETH Staking + Rewards</span></div>
+   268|                    <div class="svc-item fi d3"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span class="svc-name">Multi-Sig Wallets</span></div>
+   269|                    <div class="svc-item fi d3"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg><span class="svc-name">DAO Governance + Voting</span></div>
+   270|                    <div class="svc-item fi d4"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span class="svc-name">DKMS Key Management</span></div>
+   271|                    <div class="svc-item fi d4"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="svc-name">Encrypted P2P Chat (ECIES)</span></div>
+   272|                    <div class="svc-item fi d4"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8M12 8v8"/></svg><span class="svc-name">Autonomous Agent Orchestration</span></div>
+   273|                    <div class="svc-item fi d5"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg><span class="svc-name">Portfolio Management</span></div>
+   274|                    <div class="svc-item fi d5"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span class="svc-name">Referral & Points System</span></div>
+   275|                    <div class="svc-item fi d5"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span class="svc-name">Meta-Transaction Relay</span></div>
+   276|                </div>
+   277|            </div>
+   278|        </div>
+   279|
+   280|        <!-- PAGE 4: ABOUT -->
+   281|        <div class="page" data-index="3">
+   282|            <div class="bg-grid"></div>
+   283|            <div class="page-inner">
+   284|                <div class="sec-hdr fi">
+   285|                    <h2 class="sec-title">About us</h2>
+   286|                </div>
+   287|                <div class="about-grid">
+   288|                    <div class="about-text fi d1">
+   289|                        <h3>Building the future of compliant DeFi</h3>
+   290|                        <p>Hive is a fully on-chain AI launchpad built on Ritual Testnet (Chain ID 1979). We combine zero-knowledge proofs, artificial intelligence, and decentralized governance to create a compliant, privacy-preserving DeFi ecosystem.</p>
+   291|                        <p>Our architecture features 29 smart contracts, all fully interconnected and tested with 300 passing tests. Every component is designed for security, scalability, and compliance.</p>
+   292|                        <p>We leverage Ritual Testnet's native precompiles — LLM inference, HTTP requests, DKMS key management, ECIES encryption, and Passkey authentication.</p>
+   293|                        <div class="about-feats">
+   294|                            <div class="about-feat"><i>✓</i> 29 Contracts Deployed</div>
+   295|                            <div class="about-feat"><i>✓</i> 300 Tests Passing</div>
+   296|                            <div class="about-feat"><i>✓</i> Zero Critical Bugs</div>
+   297|                            <div class="about-feat"><i>✓</i> Fully Interconnected</div>
+   298|                        </div>
+   299|                    </div>
+   300|                    <div class="fi d2">
+   301|                        <div class="team-card">
+   302|                            <div class="team-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+   303|                            <div>
+   304|                                <div class="team-role">Founder / Lead Dev</div>
+   305|                                <h4 class="team-name">Frian</h4>
+   306|                                <p class="team-bio">Full-stack Web3 builder. DeFi architect. Leading Hive's smart contract development, AI integration, and Ritual Testnet optimization.</p>
+   307|                                <a href="https://github.com/frianowzki" target="_blank" class="team-link">GitHub</a>
+   308|                            </div>
+   309|                        </div>
+   310|                    </div>
+   311|                </div>
+   312|            </div>
+   313|        </div>
+   314|
+   315|        <!-- PAGE 5: CONTACT -->
+   316|        <div class="page contact-page" data-index="4">
+   317|            <div class="bg-grid"></div>
+   318|            <div class="bg-glow" style="top:50%;left:50%;transform:translate(-50%,-50%);background:var(--accent);opacity:.12"></div>
+   319|            <div class="page-inner">
+   320|                <p class="contact-sub fi">Interested in building on Hive? Want to integrate with our AI launchpad? Or just want to chat about Ritual Testnet? Reach out.</p>
+   321|                <div class="contact-actions fi d1">
+   322|                    <a href="https://github.com/frianowzki/hive" target="_blank" class="btn btn-p">View on GitHub<svg class="btn-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg></a>
+   323|                    <a href="mailto:friokurniawan@gmail.com" class="btn btn-o">Email Us</a>
+   324|                </div>
+   325|                <div class="contact-info fi d2">
+   326|                    <div class="contact-info-item">
+   327|                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+   328|                        <span>Ritual Testnet (Chain ID 1979)</span>
+   329|                    </div>
+   330|                    <div class="contact-info-item">
+   331|                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+   332|                        <a href="mailto:friokurniawan@gmail.com">friokurniawan@gmail.com</a>
+   333|                    </div>
+   334|                    <div class="contact-info-item">
+   335|                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+   336|                        <a href="https://github.com/frianowzki" target="_blank">@frianowzki</a>
+   337|                    </div>
+   338|                </div>
+   339|            </div>
+   340|        </div>
+   341|    </div>
+   342|
+   343|    <div class="mini-footer">
+   344|        <p>© 2026 Hive. Built on <a href="https://ritual.net" target="_blank">Ritual Testnet</a>.</p>
+   345|        <div class="mini-footer-links">
+   346|            <a href="https://github.com/frianowzki/hive" target="_blank">GitHub</a>
+   347|            <a href="https://x.com/widyakrnwn" target="_blank">X</a>
+   348|            <a href="https://discord.gg/ritual-net" target="_blank">Discord</a>
+   349|        </div>
+   350|    </div>
+   351|
+   352|    <script>
+   353|        let currentPage=0;const totalPages=5;let autoScroll=true;let autoScrollTimer=null;const autoScrollDuration=8000;let dotsTimeout;
+   354|
+   355|        function goToPage(index){
+   356|            if(index===currentPage||index<0||index>=totalPages)return;
+   357|            const pages=document.querySelectorAll('.page');
+   358|            const dots=document.querySelectorAll('.dot');
+   359|            const navLinks=document.querySelectorAll('.nav-links a[data-page]');
+   360|            pages.forEach(p=>{p.classList.remove('active');p.style.opacity='0';p.style.pointerEvents='none'});
+   361|            currentPage=index;
+   362|            const t=pages[currentPage];
+   363|            t.classList.add('active');t.style.opacity='1';t.style.pointerEvents='all';t.style.transform='translateY(0)';
+   364|            dots.forEach(d=>d.classList.remove('active'));
+   365|            if(dots[currentPage])dots[currentPage].classList.add('active');
+   366|            navLinks.forEach(l=>l.classList.remove('active'));
+   367|            if(navLinks[currentPage])navLinks[currentPage].classList.add('active');
+   368|            animatePage(currentPage);
+   369|            showDots();
+   370|            if(autoScroll)resetAutoScroll();
+   371|        }
+   372|        function nextPage(){goToPage((currentPage+1)%totalPages)}
+   373|        function prevPage(){goToPage((currentPage-1+totalPages)%totalPages)}
+   374|        function animatePage(i){
+   375|            const p=document.querySelectorAll('.page')[i];
+   376|            p.querySelectorAll('.fi').forEach(el=>{el.classList.remove('v')});
+   377|            setTimeout(()=>{p.querySelectorAll('.fi').forEach(el=>el.classList.add('v'))},50);
+   378|        }
+   379|        function showDots(){
+   380|            const d=document.getElementById('pageDots');
+   381|            d.classList.add('visible');
+   382|            clearTimeout(dotsTimeout);
+   383|            dotsTimeout=setTimeout(()=>{d.classList.remove('visible')},3000);
+   384|        }
+   385|
+   386|        function startAutoScroll(){autoScrollTimer=setTimeout(nextPage,autoScrollDuration)}
+   387|        function resetAutoScroll(){clearTimeout(autoScrollTimer);startAutoScroll()}
+   388|
+   389|        /* Feature Card Stack */
+   390|        let featIdx=0;
+   391|        function featNav(dir){
+   392|            const cards=document.querySelectorAll('.feat-card');
+   393|            const dots=document.querySelectorAll('.feat-dot');
+   394|            cards.forEach(c=>c.classList.remove('active','prev','next'));
+   395|            dots.forEach(d=>d.classList.remove('active'));
+   396|            featIdx=(featIdx+dir+cards.length)%cards.length;
+   397|            cards[featIdx].classList.add('active');
+   398|            dots[featIdx].classList.add('active');
+   399|            const prev=(featIdx-1+cards.length)%cards.length;
+   400|            const next=(featIdx+1)%cards.length;
+   401|            cards[prev].classList.add('prev');
+   402|            cards[next].classList.add('next');
+   403|        }
+   404|        /* Init stack */
+   405|        (function(){const c=document.querySelectorAll('.feat-card');if(c.length>1)c[1].classList.add('next');})();
+   406|
+   407|        let wheelTimeout;
+   408|        document.addEventListener('wheel',e=>{e.preventDefault();clearTimeout(wheelTimeout);wheelTimeout=setTimeout(()=>{if(e.deltaY>0)nextPage();else prevPage()},60)},{passive:false});
+   409|        let touchY=0;
+   410|        document.addEventListener('touchstart',e=>{touchY=e.touches[0].clientY});
+   411|        document.addEventListener('touchend',e=>{const d=touchY-e.changedTouches[0].clientY;if(Math.abs(d)>50){if(d>0)nextPage();else prevPage()}});
+   412|        document.addEventListener('keydown',e=>{if(e.key==='ArrowDown'||e.key==='ArrowRight'||e.key===' '){e.preventDefault();nextPage()}else if(e.key==='ArrowUp'||e.key==='ArrowLeft'){e.preventDefault();prevPage()}});
+   413|        document.querySelectorAll('.nav-links a[data-page]').forEach(l=>{l.addEventListener('click',()=>{goToPage(parseInt(l.dataset.page))})});
+   414|        document.querySelectorAll('.dot').forEach(d=>{d.addEventListener('click',()=>{goToPage(parseInt(d.dataset.page))})});
+   415|
+   416|        animatePage(0);
+   417|        showDots();
+   418|        if(autoScroll)startAutoScroll();
+   419|    </script>
+   420|</body>
+   421|</html>
+   422|
