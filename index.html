@@ -126,7 +126,7 @@
         .marquee-item .svc-name{font-size:.8rem;font-weight:500;color:var(--text-dim);transition:color .3s;position:relative;z-index:2}
         .marquee-item:hover .svc-name{color:var(--text)}
         .marquee-item .svc-icon{width:16px;height:16px;color:var(--accent);flex-shrink:0;position:relative;z-index:2}
-        .marquee-item .flicker-canvas{position:absolute;inset:0;pointer-events:none;opacity:.15}
+        .marquee-item .flicker-canvas{position:absolute;inset:0;pointer-events:none;opacity:.3}
         .marquee-fade{position:relative}
         .marquee-fade::before,.marquee-fade::after{content:'';position:absolute;top:0;bottom:0;width:80px;z-index:10;pointer-events:none}
         .marquee-fade::before{left:0;background:linear-gradient(90deg,var(--bg),transparent)}
@@ -552,10 +552,10 @@
                     for(let y=0;y<rows;y++){
                         for(let x=0;x<cols;x++){
                             const v=dots[y*cols+x];
-                            const alpha=v*.4;
+                            const alpha=v*.6;
                             ctx.fillStyle=`rgba(139,92,246,${alpha})`;
                             ctx.beginPath();
-                            ctx.arc(x*cellSize+cellSize/2,y*cellSize+cellSize/2,1.2,0,Math.PI*2);
+                            ctx.arc(x*cellSize+cellSize/2,y*cellSize+cellSize/2,1.5,0,Math.PI*2);
                             ctx.fill();
                         }
                     }
