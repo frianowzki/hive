@@ -137,8 +137,8 @@
         .about-feat i{color:var(--accent);font-style:normal}
         .team-card{background:var(--bg-card);border-radius:12px;padding:1.5rem;border:1px solid var(--border);display:grid;grid-template-columns:auto 1fr;gap:1.25rem;align-items:center;transition:all .3s}
         .team-card:hover{border-color:rgba(255,255,255,.1);background:var(--bg-card-hover)}
-        .team-avatar{width:48px;height:48px;border-radius:12px;background:var(--accent-glow);border:1px solid rgba(139,92,246,.15);display:flex;align-items:center;justify-content:center}
-        .team-avatar svg{width:22px;height:22px;color:var(--accent-light)}
+        .team-avatar{width:64px;height:64px;border-radius:14px;overflow:hidden;border:1px solid rgba(139,92,246,.15);flex-shrink:0}
+        .team-avatar img{width:100%;height:100%;object-fit:cover}
         .team-role{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:.1rem}
         .team-name{font-family:var(--font-display);font-size:1.05rem;font-weight:700;margin-bottom:.25rem}
         .team-bio{font-size:.75rem;color:var(--text-dim);line-height:1.5}
@@ -390,7 +390,7 @@
                 <div class="about-grid">
                     <div class="about-text fi d1">
                         <h3>Building the future of compliant DeFi</h3>
-                        <p>Hive is a fully on-chain AI launchpad built on Ritual Testnet (Chain ID 1979). We combine zero-knowledge proofs, artificial intelligence, and decentralized governance to create a compliant, privacy-preserving DeFi ecosystem.</p>
+                        <p>Hive is a fully on-chain AI launchpad built on Ritual Testnet. We combine zero-knowledge proofs, artificial intelligence, and decentralized governance to create a compliant, privacy-preserving DeFi ecosystem.</p>
                         <p>Our architecture features 29 smart contracts, all fully interconnected and tested with 300 passing tests. Every component is designed for security, scalability, and compliance.</p>
                         <p>We leverage Ritual Testnet's native precompiles — LLM inference, HTTP requests, DKMS key management, ECIES encryption, and Passkey authentication.</p>
                         <div class="about-feats">
@@ -402,12 +402,11 @@
                     </div>
                     <div class="fi d2">
                         <div class="team-card">
-                            <div class="team-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+                            <div class="team-avatar"><img src="assets/frian-avatar.jpg" alt="Frian"></div>
                             <div>
                                 <div class="team-role">Founder / Lead Dev</div>
                                 <h4 class="team-name">Frian</h4>
                                 <p class="team-bio">Full-stack Web3 builder. DeFi architect. Leading Hive's smart contract development, AI integration, and Ritual Testnet optimization.</p>
-                                <a href="https://github.com/frianowzki" target="_blank" class="team-link">GitHub</a>
                             </div>
                         </div>
                     </div>
@@ -428,7 +427,7 @@
                 <div class="contact-info fi d2">
                     <div class="contact-info-item">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                        <span>Ritual Testnet (Chain ID 1979)</span>
+                        <span>Ritual Testnet</span>
                     </div>
                     <div class="contact-info-item">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
