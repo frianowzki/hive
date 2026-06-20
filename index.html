@@ -111,9 +111,9 @@
         .feat-dot.active{background:var(--accent);width:18px;border-radius:3px}
 
         /* ═══ PAGE 2: Hexagon Pattern for Feature Card ═══ */
-        .feat-card .fc-hex-bg{position:absolute;inset:0;pointer-events:none;opacity:.06}
+        .feat-card .fc-hex-bg{position:absolute;inset:0;pointer-events:none;opacity:.15}
         .feat-card .fc-hex-bg svg{width:100%;height:100%}
-        .feat-card .fc-hex-bg .hex-line{stroke:var(--accent);stroke-width:.5;fill:none}
+        .feat-card .fc-hex-bg .hex-line{stroke:var(--accent);stroke-width:1;fill:none}
 
         /* ═══ PAGE 3: SERVICES (Marquee) ═══ */
         .marquee-wrap{display:flex;flex-direction:column;gap:1rem;overflow:hidden;width:100%;padding:1rem 0}
@@ -126,7 +126,7 @@
         .marquee-item .svc-name{font-size:.8rem;font-weight:500;color:var(--text-dim);transition:color .3s;position:relative;z-index:2}
         .marquee-item:hover .svc-name{color:var(--text)}
         .marquee-item .svc-icon{width:16px;height:16px;color:var(--accent);flex-shrink:0;position:relative;z-index:2}
-        .marquee-item .flicker-canvas{position:absolute;inset:0;pointer-events:none;opacity:.3}
+        .marquee-item .flicker-canvas{position:absolute;inset:0;pointer-events:none;opacity:.5}
         .marquee-fade{position:relative}
         .marquee-fade::before,.marquee-fade::after{content:'';position:absolute;top:0;bottom:0;width:80px;z-index:10;pointer-events:none}
         .marquee-fade::before{left:0;background:linear-gradient(90deg,var(--bg),transparent)}
@@ -212,7 +212,7 @@
                     <h1 class="fi">The <span class="g">compliant AI launchpad</span> for forward-thinking DeFi.</h1>
                     <p class="hero-desc fi d1">Fully on-chain, zk-proofed AI launchpad built on Ritual Testnet.<br>AI market makers, federated learning, autonomous agents,<br>and DAO governance — all with KYC/KYB compliance.</p>
                     <div class="hero-actions fi d2">
-                        <a href="#contact" class="btn btn-p" onclick="goToPage(4);return false">Open Hive<svg class="btn-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+                        <a href="#contact" class="btn btn-p cool-btn" id="ctaBtn" onclick="goToPage(4);return false">Open Hive<svg class="btn-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
                     </div>
                 </div>
             </div>
@@ -552,10 +552,10 @@
                     for(let y=0;y<rows;y++){
                         for(let x=0;x<cols;x++){
                             const v=dots[y*cols+x];
-                            const alpha=v*.6;
+                            const alpha=v*.8;
                             ctx.fillStyle=`rgba(139,92,246,${alpha})`;
                             ctx.beginPath();
-                            ctx.arc(x*cellSize+cellSize/2,y*cellSize+cellSize/2,1.5,0,Math.PI*2);
+                            ctx.arc(x*cellSize+cellSize/2,y*cellSize+cellSize/2,1.8,0,Math.PI*2);
                             ctx.fill();
                         }
                     }
@@ -563,6 +563,51 @@
                 }
                 draw();
                 new ResizeObserver(()=>resize()).observe(canvas.parentElement);
+            });
+        })();
+
+        /* Cool Mode — particle burst on CTA click */
+        (function(){
+            const btn=document.getElementById('ctaBtn');
+            if(!btn)return;
+            const colors=['#8b5cf6','#a78bfa','#c4b5fd','#7c3aed','#ddd6fe','#fff'];
+            function spawnParticles(x,y){
+                const count=18;
+                for(let i=0;i<count;i++){
+                    const p=document.createElement('div');
+                    const size=Math.random()*6+3;
+                    const angle=(Math.PI*2/count)*i+Math.random()*.5;
+                    const velocity=Math.random()*120+60;
+                    const dx=Math.cos(angle)*velocity;
+                    const dy=Math.sin(angle)*velocity;
+                    const color=colors[Math.floor(Math.random()*colors.length)];
+                    const shape=Math.random()>.5?'50%':'2px';
+                    Object.assign(p.style,{
+                        position:'fixed',left:x+'px',top:y+'px',width:size+'px',height:size+'px',
+                        background:color,borderRadius:shape,pointerEvents:'none',zIndex:'9999',
+                        transform:'translate(-50%,-50%)',opacity:'1',
+                        transition:'none'
+                    });
+                    document.body.appendChild(p);
+                    const start=performance.now();
+                    const dur=600+Math.random()*400;
+                    const spin=Math.random()*360;
+                    function animate(now){
+                        const t=Math.min((now-start)/dur,1);
+                        const ease=1-Math.pow(1-t,3);
+                        p.style.left=(x+dx*ease)+'px';
+                        p.style.top=(y+dy*ease+40*t*t)+'px';
+                        p.style.opacity=String(1-t);
+                        p.style.transform=`translate(-50%,-50%) rotate(${spin+ease*360}deg) scale(${1-t*.5})`;
+                        if(t<1)requestAnimationFrame(animate);
+                        else p.remove();
+                    }
+                    requestAnimationFrame(animate);
+                }
+            }
+            btn.addEventListener('click',function(e){
+                const r=btn.getBoundingClientRect();
+                spawnParticles(r.left+r.width/2,r.top+r.height/2);
             });
         })();
     </script>
