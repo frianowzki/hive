@@ -91,9 +91,11 @@
         .feat-stack{position:relative;width:100%;max-width:900px;margin:0 auto;height:320px;perspective:1200px}
         .feat-card{position:absolute;top:0;left:50%;width:100%;max-width:620px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:16px;padding:2rem 2.25rem;transform:translateX(-50%);transition:all .5s cubic-bezier(.4,0,.2,1);opacity:0;pointer-events:none;display:flex;flex-direction:column;justify-content:center}
         .feat-card.active{opacity:1;pointer-events:all;z-index:5;transform:translateX(-50%) scale(1);background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.15)}
-        .feat-card.prev{opacity:1;z-index:3;transform:translateX(calc(-50% + 30px)) scale(.95);border-color:var(--border)}
-        .feat-card.next{opacity:1;z-index:3;transform:translateX(calc(-50% - 30px)) scale(.95);border-color:var(--border)}
-        .feat-card .fc-top{display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem}
+        .feat-card.prev{opacity:1;z-index:3;transform:translateX(calc(-50% + 60px)) scale(.92);border-color:var(--border)}
+        .feat-card.next{opacity:1;z-index:3;transform:translateX(calc(-50% - 60px)) scale(.92);border-color:var(--border)}
+        .feat-card.prev,.feat-card.next{overflow:hidden}
+        .feat-card.prev .fc-top,.feat-card.prev .fc-desc,.feat-card.next .fc-top,.feat-card.next .fc-desc{opacity:0}
+        .feat-card .fc-top{display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem;transition:opacity .3s}
         .feat-card .fc-icon{width:48px;height:48px;background:var(--accent-glow);border:1px solid rgba(139,92,246,.2);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
         .feat-card .fc-icon svg{width:22px;height:22px;color:var(--accent-light)}
         .feat-card .fc-title{font-family:var(--font-display);font-size:1.4rem;font-weight:800}
