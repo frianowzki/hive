@@ -242,9 +242,8 @@
                     </div>
                 </div>
                 <div class="feat-nav fi d2">
-                    <button class="feat-nav-btn" onclick="featNav(-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
-                    <div class="feat-dots" id="featDots"><span class="feat-dot active"></span><span class="feat-dot"></span><span class="feat-dot"></span><span class="feat-dot"></span><span class="feat-dot"></span><span class="feat-dot"></span></div>
-                    <button class="feat-nav-btn" onclick="featNav(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+                    <button class="feat-nav-btn" onclick="featNav(-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6" /></svg></button>
+                    <button class="feat-nav-btn" onclick="featNav(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6" /></svg></button>
                 </div>
             </div>
         </div>
@@ -392,16 +391,9 @@
         let featAutoTimer=null;
         function featNav(dir){
             const cards=document.querySelectorAll('.feat-card');
-            const dots=document.querySelectorAll('.feat-dot');
             cards.forEach(c=>c.classList.remove('active','prev','next'));
-            dots.forEach(d=>d.classList.remove('active'));
             featIdx=(featIdx+dir+cards.length)%cards.length;
             cards[featIdx].classList.add('active');
-            dots[featIdx].classList.add('active');
-            const prev=(featIdx-1+cards.length)%cards.length;
-            const next=(featIdx+1)%cards.length;
-            cards[prev].classList.add('prev');
-            cards[next].classList.add('next');
             resetFeatAutoScroll();
         }
         function startFeatAutoScroll(){featAutoTimer=setTimeout(()=>{featNav(1)},featAutoDuration)}
