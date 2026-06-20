@@ -89,26 +89,9 @@
 
         /* ═══ PAGE 2: FEATURES (Collapse Cards) ═══ */
         .features-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem}
-
-        /* Typing Animation */
-        .typing-title{font-family:var(--font-display);font-size:2rem;font-weight:800;letter-spacing:-.03em;display:inline-block}
-        .typing-cursor{display:inline-block;width:2px;height:1.1em;background:var(--accent);margin-left:2px;vertical-align:text-bottom;animation:blink .7s step-end infinite}
-        @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-
-        /* Sparkles Text */
-        .sparkles-wrap{position:relative;display:inline-block}
-        .sparkle{position:absolute;width:4px;height:4px;border-radius:50%;background:var(--accent-light);pointer-events:none;animation:sparkleAnim 1.5s ease-in-out infinite}
-        @keyframes sparkleAnim{0%,100%{opacity:0;transform:scale(0)}50%{opacity:1;transform:scale(1)}}
-
-        /* Shine Border */
-        @keyframes rotateBorder{0%{--angle:0deg}100%{--angle:360deg}}
-        .feat-card.shine{position:relative;background:rgba(139,92,246,.06);border:none}
-        .feat-card.shine::before{content:'';position:absolute;inset:-1px;border-radius:13px;padding:1px;background:conic-gradient(from var(--angle,0deg),transparent 40%,var(--accent),var(--accent-light),transparent 60%);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:rotateBorder 3s linear infinite;pointer-events:none}
-        @property --angle{syntax:'<angle>';initial-value:0deg;inherits:false}
-
         .feat-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .4s cubic-bezier(.4,0,.2,1)}
         .feat-card:hover{border-color:rgba(255,255,255,.12);background:rgba(255,255,255,.05)}
-        .feat-card.active{background:rgba(139,92,246,.06)}
+        .feat-card.active{border-color:var(--accent);background:rgba(139,92,246,.06)}
         .feat-header{display:flex;align-items:center;gap:.75rem;padding:1.1rem 1.25rem}
         .feat-icon{width:38px;height:38px;background:var(--accent-glow);border:1px solid rgba(139,92,246,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .3s}
         .feat-card.active .feat-icon{background:rgba(139,92,246,.2);border-color:var(--accent)}
@@ -223,7 +206,8 @@
             <div class="bg-glow" style="bottom:-150px;left:-150px;background:var(--accent);opacity:.1"></div>
             <div class="page-inner">
                 <div class="sec-hdr fi">
-                    <h2 class="sec-title"><span class="sparkles-wrap" id="sparklesTitle"><span class="typing-title" id="typingTitle"></span><span class="typing-cursor"></span></span></h2>
+                    <div class="sec-lbl">What we do</div>
+                    <h2 class="sec-title">Features</h2>
                 </div>
                 <div class="features-grid">
                     <div class="feat-card active fi d1" onclick="toggleFeat(this)">
@@ -416,41 +400,9 @@
 
         function toggleFeat(el){
             const wasActive=el.classList.contains('active');
-            document.querySelectorAll('.feat-card').forEach(c=>{c.classList.remove('active');c.classList.remove('shine')});
-            if(!wasActive){el.classList.add('active');el.classList.add('shine')}
+            document.querySelectorAll('.feat-card').forEach(c=>c.classList.remove('active'));
+            if(!wasActive)el.classList.add('active');
         }
-
-        /* Typing Animation */
-        (function(){
-            const words=['Features','Capabilities','What We Build'];
-            let wi=0,ci=0,del=false;
-            const el=document.getElementById('typingTitle');
-            function tick(){
-                if(!el)return;
-                const w=words[wi];
-                if(!del){ci++;el.textContent=w.slice(0,ci);if(ci===w.length){setTimeout(()=>{del=true;tick()},1800);return}}
-                else{ci--;el.textContent=w.slice(0,ci);if(ci===0){del=false;wi=(wi+1)%words.length}}
-                setTimeout(del?60:100,tick);
-            }
-            tick();
-        })();
-
-        /* Sparkles */
-        (function(){
-            const wrap=document.getElementById('sparklesTitle');
-            if(!wrap)return;
-            function spawn(){
-                const s=document.createElement('span');s.className='sparkle';
-                const rect=wrap.getBoundingClientRect();
-                s.style.left=Math.random()*rect.width+'px';
-                s.style.top=Math.random()*rect.height+'px';
-                s.style.animationDelay=Math.random()*1+'s';
-                s.style.width=s.style.height=(2+Math.random()*3)+'px';
-                wrap.appendChild(s);
-                setTimeout(()=>s.remove(),1500);
-            }
-            setInterval(spawn,300);
-        })();
 
         let wheelTimeout;
         document.addEventListener('wheel',e=>{e.preventDefault();clearTimeout(wheelTimeout);wheelTimeout=setTimeout(()=>{if(e.deltaY>0)nextPage();else prevPage()},60)},{passive:false});
