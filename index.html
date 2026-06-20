@@ -88,8 +88,8 @@
         .sec-title{font-family:var(--font-display);font-size:2rem;font-weight:800;letter-spacing:-.03em}
 
         /* ═══ PAGE 2: FEATURES (Card Stack) ═══ */
-        .feat-stack{position:relative;width:580px;height:320px;perspective:1200px}
-        .feat-card{position:absolute;top:0;left:0;width:580px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:16px;padding:2rem 2.25rem;transition:all .5s cubic-bezier(.4,0,.2,1);opacity:0;pointer-events:none;display:flex;flex-direction:column;justify-content:center}
+        .feat-stack{position:relative;width:580px;flex:1;min-height:0;perspective:1200px}
+        .feat-card{position:absolute;top:0;left:0;right:0;bottom:0;width:580px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:16px;padding:2.5rem 2.5rem;transition:all .5s cubic-bezier(.4,0,.2,1);opacity:0;pointer-events:none;display:flex;flex-direction:column;justify-content:center}
         .feat-card.active{opacity:1;pointer-events:all;z-index:5;background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.15)}
         .feat-card.prev,.feat-card.next{display:none}
         .feat-card .fc-top{display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem}
@@ -205,7 +205,7 @@
         <div class="page" data-index="1">
             <div class="bg-grid"></div>
             <div class="bg-glow" style="bottom:-150px;left:-150px;background:var(--accent);opacity:.1"></div>
-            <div class="page-inner">
+            <div class="page-inner" style="display:flex;flex-direction:column;height:100%">
                 <div class="sec-hdr fi">
                     <h2 class="sec-title">Features</h2>
                 </div>
