@@ -2060,8 +2060,40 @@
                                         </select>
                                     </div>
                                     <div>
-                                        <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Est. Unlock Date (optional)</div>
-                                        <input class="form-input" type="date" id="unlockDate" style="font-size:.75rem">
+                                        <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Auto-Unlock Time (UTC)</div>
+                                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:.35rem">
+                                            <div>
+                                                <div style="font-size:.5rem;color:var(--text-muted);margin-bottom:.15rem">DD</div>
+                                                <input class="form-input" id="unlockDay" type="number" min="1" max="31" placeholder="15" style="padding:.35rem .4rem;font-size:.7rem;text-align:center">
+                                            </div>
+                                            <div>
+                                                <div style="font-size:.5rem;color:var(--text-muted);margin-bottom:.15rem">MM</div>
+                                                <input class="form-input" id="unlockMonth" type="number" min="1" max="12" placeholder="07" style="padding:.35rem .4rem;font-size:.7rem;text-align:center">
+                                            </div>
+                                            <div>
+                                                <div style="font-size:.5rem;color:var(--text-muted);margin-bottom:.15rem">YYYY</div>
+                                                <input class="form-input" id="unlockYear" type="number" min="2025" max="2030" placeholder="2026" style="padding:.35rem .4rem;font-size:.7rem;text-align:center">
+                                            </div>
+                                            <div>
+                                                <div style="font-size:.5rem;color:var(--text-muted);margin-bottom:.15rem">HH</div>
+                                                <input class="form-input" id="unlockHour" type="number" min="0" max="23" placeholder="14" style="padding:.35rem .4rem;font-size:.7rem;text-align:center">
+                                            </div>
+                                            <div>
+                                                <div style="font-size:.5rem;color:var(--text-muted);margin-bottom:.15rem">MM</div>
+                                                <input class="form-input" id="unlockMinute" type="number" min="0" max="59" placeholder="00" style="padding:.35rem .4rem;font-size:.7rem;text-align:center">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style="margin-top:1rem;padding:1rem;background:rgba(139,92,246,.05);border:1px solid rgba(139,92,246,.15);border-radius:8px">
+                                    <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                        <span style="font-size:.7rem;font-weight:600;color:var(--accent)">Automated Trigger</span>
+                                    </div>
+                                    <div style="font-size:.65rem;color:var(--text-dim);line-height:1.6">
+                                        If auto-unlock time is set, Hive Victory will <strong>automatically</strong> unlock tokens and add liquidity at the exact UTC time. No manual action needed. 
+                                        You can still unlock manually before the scheduled time if plans change.
                                     </div>
                                 </div>
 
