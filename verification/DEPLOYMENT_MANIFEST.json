@@ -237,7 +237,23 @@
         "DroneType(3)",
         "uint256(0)"
       ]
+    },
+    {
+      "name": "HiveUSD",
+      "address": "0x60601e48038E32dBCd9A9667c589bf6D39A32fb5",
+      "source": "src/token/HiveUSD.sol",
+      "constructorArgsDecoded": [
+        "address(0x63C5341454F66a32553CE598e06861E11095d39C) \u2014 minter"
+      ]
+    },
+    {
+      "name": "HiveFaucet",
+      "address": "0x8FCe666BA58154F55ebF6cC63F3965E945130F88",
+      "source": "src/faucet/HiveFaucet.sol",
+      "constructorArgsDecoded": [
+        "address(0x60601e48038E32dBCd9A9667c589bf6D39A32fb5) \u2014 hiveUSD token"
+      ]
     }
   ],
-  "totalContracts": 29
+  "totalContracts": 31
 }

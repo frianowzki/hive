@@ -108,10 +108,17 @@ contract HiveStaking {
     // ═══ Configuration ═══
 
     address public treasury;        // HiveTreasury for fee notifications
+    address public hiveToken;       // HIVE token for rewards
 
     function setTreasury(address _treasury) external {
         require(msg.sender == owner, "HiveStaking: not owner");
         treasury = _treasury;
+    }
+
+    function setHiveToken(address _hiveToken) external {
+        require(msg.sender == owner, "HiveStaking: not owner");
+        require(_hiveToken != address(0), "HiveStaking: zero address");
+        hiveToken = _hiveToken;
     }
 
     event TreasurySet(address indexed treasury);
@@ -227,8 +234,12 @@ contract HiveStaking {
         info.rewardsAccrued = 0;
         info.lastCompoundAt = block.timestamp;
 
-        (bool success, ) = msg.sender.call{value: rewards}("");
-        require(success, "HiveStaking: transfer failed");
+        // Transfer HIVE tokens as rewards
+        require(hiveToken != address(0), "HiveStaking: HIVE not set");
+        (bool success, ) = hiveToken.call(
+            abi.encodeWithSignature("transfer(address,uint256)", msg.sender, rewards)
+        );
+        require(success, "HiveStaking: HIVE transfer failed");
 
         emit RewardsClaimed(msg.sender, rewards);
     }

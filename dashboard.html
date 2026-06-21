@@ -1,0 +1,1738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hive Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{
+            --bg:#000;--bg-card:rgba(255,255,255,0.03);--bg-card-hover:rgba(255,255,255,0.06);
+            --text:#fff;--text-dim:#888;--text-muted:#555;
+            --accent:#8b5cf6;--accent-light:#a78bfa;--accent-dark:#7c3aed;
+            --accent-glow:rgba(139,92,246,0.12);--green:#22c55e;--red:#ef4444;--yellow:#eab308;
+            --border:rgba(255,255,255,0.06);
+            --font:'Inter',-apple-system,sans-serif;
+            --font-display:'Space Grotesk','Inter',sans-serif;
+            --font-mono:'JetBrains Mono',monospace;
+            --sidebar-width:220px;
+            --sidebar-collapsed:56px;
+        }
+        html,body{height:100%;overflow:hidden}
+        body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+        ::selection{background:var(--accent);color:#fff}
+        a{color:inherit;text-decoration:none}
+
+        /* ═══ SIDEBAR ═══ */
+        .sidebar{
+            position:fixed;top:0;left:0;bottom:0;z-index:100;
+            width:var(--sidebar-collapsed);
+            background:rgba(8,8,8,.95);
+            border-right:1px solid var(--border);
+            display:flex;flex-direction:column;
+            transition:width .25s cubic-bezier(.4,0,.2,1);
+            overflow:hidden;
+        }
+        .sidebar:hover,.sidebar.expanded{
+            width:var(--sidebar-width);
+        }
+        .sidebar-top{
+            display:flex;align-items:center;justify-content:space-between;
+            height:56px;padding:0 .75rem;border-bottom:1px solid var(--border);
+            flex-shrink:0;
+        }
+        .sidebar-logo{
+            display:flex;align-items:center;gap:.75rem;
+        }
+        .sidebar-logo .logo-text{
+            font-family:var(--font-display);font-size:1.1rem;font-weight:700;
+            white-space:nowrap;opacity:0;transition:opacity .2s;
+        }
+        .sidebar:hover .logo-text,.sidebar.expanded .logo-text{opacity:1}
+        .sidebar-toggle{
+            display:flex;align-items:center;justify-content:center;
+            width:28px;height:28px;border-radius:6px;
+            cursor:pointer;transition:all .15s;
+        }
+        .sidebar-toggle:hover{background:var(--bg-card-hover)}
+        .toggle-arrow{
+            font-size:1rem;color:var(--text-dim);transition:transform .2s;
+            display:block;line-height:1;
+        }
+        .sidebar.expanded .toggle-arrow{transform:rotate(180deg)}
+
+        .sidebar-nav{flex:1;overflow-y:auto;overflow-x:hidden;padding:.5rem 0}
+        .sidebar-nav::-webkit-scrollbar{width:3px}
+        .sidebar-nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+
+        .nav-section{margin-bottom:.25rem}
+        .nav-section-label{
+            font-size:.55rem;font-weight:600;text-transform:uppercase;letter-spacing:.12em;
+            color:var(--text-muted);padding:.75rem 1rem .35rem;white-space:nowrap;
+            opacity:0;transition:opacity .2s;
+        }
+        .sidebar:hover .nav-section-label,.sidebar.expanded .nav-section-label{opacity:1}
+
+        .nav-item{
+            display:flex;align-items:center;gap:.75rem;
+            padding:.55rem 1rem;cursor:pointer;transition:all .15s;
+            border-left:2px solid transparent;position:relative;
+        }
+        .nav-item:hover{background:var(--bg-card-hover)}
+        .nav-item.active{
+            border-left-color:var(--accent);background:var(--accent-glow);
+        }
+        .nav-item .nav-icon{
+            width:24px;height:24px;display:flex;align-items:center;justify-content:center;
+            flex-shrink:0;color:var(--text-dim);transition:color .15s;
+        }
+        .nav-item:hover .nav-icon,.nav-item.active .nav-icon{color:var(--accent-light)}
+        .nav-item .nav-icon svg{width:18px;height:18px}
+        .nav-item .nav-label{
+            font-size:.75rem;font-weight:500;white-space:nowrap;
+            opacity:0;transition:opacity .2s;
+        }
+        .sidebar:hover .nav-label,.sidebar.expanded .nav-label{opacity:1}
+
+        .nav-item .nav-badge{
+            margin-left:auto;font-size:.55rem;font-weight:600;
+            padding:.1rem .35rem;border-radius:3px;
+            background:var(--accent-glow);color:var(--accent-light);
+            opacity:0;transition:opacity .2s;
+        }
+        .sidebar:hover .nav-badge,.sidebar.expanded .nav-badge{opacity:1}
+
+        /* Sidebar footer */
+        .sidebar-footer{
+            border-top:1px solid var(--border);padding:.5rem;flex-shrink:0;
+        }
+        .sidebar-user{
+            display:flex;align-items:center;gap:.6rem;
+            padding:.5rem;border-radius:8px;cursor:pointer;transition:background .15s;
+        }
+        .sidebar-user:hover{background:var(--bg-card-hover)}
+        .sidebar-user .user-avatar{
+            width:32px;height:32px;border-radius:8px;
+            background:linear-gradient(135deg,var(--accent),var(--accent-dark));
+            display:flex;align-items:center;justify-content:center;
+            flex-shrink:0;font-size:.7rem;font-weight:700;
+        }
+        .sidebar-user .user-info{overflow:hidden;opacity:0;transition:opacity .2s}
+        .sidebar:hover .user-info,.sidebar.expanded .user-info{opacity:1}
+        .sidebar-user .user-name{font-size:.75rem;font-weight:600;white-space:nowrap}
+        .sidebar-user .user-role{font-size:.6rem;color:var(--text-dim);white-space:nowrap}
+
+        /* ═══ MAIN CONTENT ═══ */
+        .main{
+            margin-left:var(--sidebar-collapsed);
+            height:100vh;overflow-y:auto;
+            transition:margin-left .25s cubic-bezier(.4,0,.2,1);
+        }
+        .sidebar:hover~.main,.sidebar.expanded~.main{
+            margin-left:var(--sidebar-width);
+        }
+
+        .topbar{
+            position:sticky;top:0;z-index:50;
+            height:56px;display:flex;align-items:center;justify-content:space-between;
+            padding:0 2rem;
+            background:rgba(0,0,0,.8);backdrop-filter:blur(12px);
+            border-bottom:1px solid var(--border);
+        }
+        .topbar-left{display:flex;align-items:center;gap:1rem}
+        .topbar-title{font-family:var(--font-display);font-size:.95rem;font-weight:700}
+        .topbar-breadcrumb{font-size:.7rem;color:var(--text-dim)}
+        .topbar-right{display:flex;align-items:center;gap:.75rem}
+        .topbar-chain{
+            display:flex;align-items:center;gap:.4rem;
+            font-size:.65rem;font-weight:600;color:var(--green);
+            padding:.3rem .6rem;border-radius:6px;
+            background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.15);
+        }
+        .topbar-chain .chain-dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+        .topbar-wallet{
+            display:flex;align-items:center;gap:.5rem;
+            padding:.4rem .75rem;border-radius:8px;
+            background:var(--bg-card);border:1px solid var(--border);
+            font-size:.7rem;font-weight:500;cursor:pointer;transition:all .15s;
+        }
+        .topbar-wallet:hover{border-color:var(--accent);background:var(--accent-glow)}
+        .topbar-wallet .wallet-dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+
+        /* Wallet Dropdown */
+        .wallet-dropdown{
+            position:absolute;top:calc(100% + 8px);right:0;z-index:200;
+            min-width:180px;padding:.35rem;
+            background:rgba(15,15,15,.95);backdrop-filter:blur(16px);
+            border:1px solid var(--border);border-radius:10px;
+            box-shadow:0 8px 32px rgba(0,0,0,.5);
+            display:none;
+        }
+        .wallet-dropdown.show{display:block}
+        .wallet-dropdown-item{
+            display:flex;align-items:center;gap:.6rem;
+            padding:.55rem .75rem;border-radius:7px;
+            font-size:.75rem;font-weight:500;color:var(--text-dim);
+            cursor:pointer;transition:all .15s;
+        }
+        .wallet-dropdown-item:hover{background:var(--bg-card-hover);color:var(--text)}
+        .wallet-dropdown-item svg{width:14px;height:14px;flex-shrink:0}
+        .wallet-dropdown-item.danger:hover{color:var(--red)}
+
+        /* ═══ DASHBOARD CONTENT ═══ */
+        .content{padding:2rem}
+        .content-header{margin-bottom:2rem}
+        .content-header h1{font-family:var(--font-display);font-size:1.5rem;font-weight:800;margin-bottom:.25rem}
+        .content-header p{font-size:.8rem;color:var(--text-dim)}
+
+        /* Stats grid */
+        .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
+        .stat-card{
+            background:var(--bg-card);border:1px solid var(--border);border-radius:12px;
+            padding:1.25rem;transition:all .2s;position:relative;overflow:hidden;
+        }
+        .stat-card:hover{border-color:rgba(255,255,255,.1);background:var(--bg-card-hover)}
+        .stat-card::before{
+            content:'';position:absolute;top:0;left:0;right:0;height:2px;
+            background:linear-gradient(90deg,var(--accent),transparent);opacity:0;transition:opacity .2s;
+        }
+        .stat-card:hover::before{opacity:1}
+        .stat-label{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:.5rem}
+        .stat-value{font-family:var(--font-display);font-size:1.6rem;font-weight:800;margin-bottom:.15rem}
+        .stat-change{font-size:.65rem;font-weight:500;display:flex;align-items:center;gap:.25rem}
+        .stat-change.up{color:var(--green)}
+        .stat-change.down{color:var(--red)}
+
+        /* Sections */
+        .section-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:2rem}
+        .section-card{
+            background:var(--bg-card);border:1px solid var(--border);border-radius:12px;
+            padding:1.5rem;transition:all .2s;
+        }
+        .section-card:hover{border-color:rgba(255,255,255,.1)}
+        .section-title{
+            font-family:var(--font-display);font-size:.85rem;font-weight:700;
+            margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;
+        }
+        .section-title .badge{
+            font-size:.55rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;
+            padding:.2rem .45rem;border-radius:4px;
+            background:var(--accent-glow);color:var(--accent-light);
+        }
+
+        /* Table */
+        .data-table{width:100%;border-collapse:collapse}
+        .data-table th{
+            font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;
+            color:var(--text-muted);text-align:left;padding:.5rem .75rem;
+            border-bottom:1px solid var(--border);
+        }
+        .data-table td{
+            font-size:.75rem;padding:.6rem .75rem;border-bottom:1px solid rgba(255,255,255,.02);
+        }
+        .data-table tr:hover td{background:rgba(255,255,255,.02)}
+        .data-table .mono{font-family:var(--font-mono);font-size:.7rem}
+        .status-badge{
+            display:inline-flex;align-items:center;gap:.3rem;
+            font-size:.6rem;font-weight:600;padding:.2rem .5rem;border-radius:4px;
+        }
+        .status-badge.active{background:rgba(34,197,94,.1);color:var(--green)}
+        .status-badge.pending{background:rgba(234,179,8,.1);color:var(--yellow)}
+
+        /* Quick actions */
+        .actions-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem}
+        .action-btn{
+            display:flex;align-items:center;gap:.6rem;
+            padding:.85rem 1rem;border-radius:10px;
+            background:var(--bg-card);border:1px solid var(--border);
+            cursor:pointer;transition:all .2s;
+        }
+        .action-btn:hover{border-color:var(--accent);background:var(--accent-glow)}
+        .action-btn .action-icon{
+            width:36px;height:36px;border-radius:8px;
+            background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.12);
+            display:flex;align-items:center;justify-content:center;flex-shrink:0;
+        }
+        .action-btn .action-icon svg{width:18px;height:18px;color:var(--accent-light)}
+        .action-btn .action-text{font-size:.75rem;font-weight:600}
+
+        /* CTA Button (same as landing page) */
+        .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.65rem 1.25rem;font-family:var(--font);font-size:.75rem;font-weight:600;border-radius:6px;cursor:pointer;transition:all .3s;border:none;outline:none}
+        .btn-p{background:var(--accent);color:#fff;box-shadow:0 4px 16px rgba(139,92,246,.25)}
+        .btn-p:hover{background:var(--accent-dark);transform:translateY(-1px);box-shadow:0 6px 24px rgba(139,92,246,.3)}
+        .btn-p:active{transform:translateY(0)}
+
+        /* Responsive */
+        @media(max-width:1024px){
+            .stats-grid{grid-template-columns:repeat(2,1fr)}
+            .section-grid{grid-template-columns:1fr}
+            .actions-grid{grid-template-columns:repeat(2,1fr)}
+        }
+        @media(max-width:768px){
+            .sidebar{width:0;border:none}
+            .sidebar.expanded{width:var(--sidebar-width);border-right:1px solid var(--border)}
+            .main{margin-left:0}
+            .sidebar.expanded~.main{margin-left:var(--sidebar-width)}
+            .stats-grid{grid-template-columns:1fr}
+            .content{padding:1rem}
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-top">
+            <div class="sidebar-logo">
+                <span class="logo-text">Hive</span>
+            </div>
+            <div class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar">
+                <span class="toggle-arrow" id="toggleArrow">‹</span>
+            </div>
+        </div>
+
+        <div class="sidebar-nav">
+            <!-- Overview -->
+            <div class="nav-section">
+                <div class="nav-section-label">Overview</div>
+                <div class="nav-item active" data-page="dashboard" onclick="switchPage('dashboard')">
+                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+                    <span class="nav-label">Dashboard</span>
+                </div>
+            </div>
+
+            <!-- DeFi -->
+            <div class="nav-section">
+                <div class="nav-section-label">DeFi</div>
+                <div class="nav-item" data-page="portfolio" onclick="switchPage('portfolio')">
+                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg></div>
+                    <span class="nav-label">Portfolio</span>
+                </div>
+                <div class="nav-item" data-page="staking" onclick="switchPage('staking')">
+                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+                    <span class="nav-label">Staking</span>
+                </div>
+                <div class="nav-item" data-page="launch" onclick="switchPage('launch')">
+                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+                    <span class="nav-label">Token Launch</span>
+                </div>
+                <div class="nav-item" data-page="auction" onclick="switchPage('auction')">
+                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg></div>
+                    <span class="nav-label">Auctions</span>
+                </div>
+                <div class="nav-item" data-page="maker" onclick="switchPage('maker')">
+                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9.5V4a1 1 0 0 1 1-1h4.5"/><path d="M2 14.5V20a1 1 0 0 0 1 1h4.5"/><path d="M22 9.5V4a1 1 0 0 0-1-1h-4.5"/><path d="M22 14.5V20a1 1 0 0 1-1 1h-4.5"/><circle cx="12" cy="12" r="3"/></svg></div>
+                    <span class="nav-label">AI Market Maker</span>
+                </div>
+                <div class="nav-item" data-page="faucet" onclick="switchPage('faucet')">
+                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2c-4 4-6 8-6 12a6 6 0 0 0 12 0c0-4-2-8-6-12z"/></svg></div>
+                    <span class="nav-label">Faucet</span>
+                </div>
+            </div>
+
+            <!-- AI Agents -->
+            <div class="nav-section">
+                <div class="nav-section-label">AI Agents</div>
+                <div class="nav-item" data-page="agents" onclick="switchPage('agents')">
+                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 2.4-1.2 4.5-3 5.7V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.3C6.2 13.5 5 11.4 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg></div>
+                    <span class="nav-label">Agents</span>
+                    <span class="nav-badge">3</span>
+                </div>
+                <div class="nav-item" data-page="strategy" onclick="switchPage('strategy')">
+                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20M2 12h20"/></svg></div>
+                    <span class="nav-label">Strategies</span>
+                </div>
+                <div class="nav-item" data-page="flock" onclick="switchPage('flock')">
+                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+                    <span class="nav-label">Federated Learning</span>
+                </div>
+            </div>
+
+            <!-- Governance -->
+            <div class="nav-section">
+                <div class="nav-section-label">Governance</div>
+                <div class="nav-item" data-page="governance" onclick="switchPage('governance')">
+                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+                    <span class="nav-label">Proposals</span>
+                </div>
+                <div class="nav-item" data-page="multisig" onclick="switchPage('multisig')">
+                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+                    <span class="nav-label">Multi-Sig</span>
+                </div>
+            </div>
+
+            <!-- Identity -->
+            <div class="nav-section">
+                <div class="nav-section-label">Identity</div>
+                <div class="nav-item" data-page="identity" onclick="switchPage('identity')">
+                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+                    <span class="nav-label">KYC / KYB</span>
+                </div>
+            </div>
+
+            <!-- System -->
+            <div class="nav-section">
+                <div class="nav-section-label">System</div>
+                <div class="nav-item" data-page="oracle" onclick="switchPage('oracle')">
+                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/></svg></div>
+                    <span class="nav-label">Oracles</span>
+                </div>
+                <div class="nav-item" data-page="points" onclick="switchPage('points')">
+                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+                    <span class="nav-label">Points</span>
+                </div>
+                <div class="nav-item" data-page="referral" onclick="switchPage('referral')">
+                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
+                    <span class="nav-label">Referral</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-user">
+                <div class="user-avatar" id="userAvatar">?</div>
+                <div class="user-info">
+                    <div class="user-name" id="userName">Not Connected</div>
+                    <div class="user-role" id="userRole">Connect wallet</div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+        <div class="topbar">
+            <div class="topbar-left">
+                <div class="topbar-title" id="pageTitle">Dashboard</div>
+                <div class="topbar-breadcrumb" id="breadcrumb">Hive / Overview</div>
+            </div>
+            <div class="topbar-right">
+                <div class="topbar-chain" id="chainBadge">
+                    <span class="chain-dot"></span>
+                    <span>Ritual Chain</span>
+                </div>
+                <div class="topbar-wallet" id="walletBadge" onclick="toggleWalletMenu()" style="position:relative">
+                    <span class="wallet-dot" id="walletDot" style="background:var(--text-muted)"></span>
+                    <span id="walletAddr">Connect Wallet</span>
+                    <div class="wallet-dropdown" id="walletDropdown">
+                        <div class="wallet-dropdown-item" onclick="copyAddress(event)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                            Copy Address
+                        </div>
+                        <div class="wallet-dropdown-item danger" onclick="disconnectWallet(event)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                            Disconnect
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE: Dashboard -->
+        <div class="content page-content" id="page-dashboard">
+            <div class="content-header">
+                <h1>Welcome to Hive</h1>
+                <p>Compliant AI launchpad on Ritual Chain</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Value Locked</div>
+                    <div class="stat-value" id="stat-tvl">—</div>
+                    <div class="stat-change up">↑ Loading...</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Active Proposals</div>
+                    <div class="stat-value" id="stat-proposals">—</div>
+                    <div class="stat-change">Loading...</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">AI Agents Online</div>
+                    <div class="stat-value" id="stat-agents">—</div>
+                    <div class="stat-change up">↑ Loading...</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Your Points</div>
+                    <div class="stat-value" id="stat-points">—</div>
+                    <div class="stat-change">Loading...</div>
+                </div>
+            </div>
+
+            <div class="section-grid">
+                <div class="section-card">
+                    <div class="section-title">
+                        Recent Transactions
+                        <span class="badge">Live</span>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>Action</th><th>Amount</th><th>Status</th><th>Time</th></tr>
+                        </thead>
+                        <tbody id="tx-table">
+                            <tr><td colspan="4" style="color:var(--text-muted);text-align:center;padding:2rem">Connect wallet to view transactions</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="section-card">
+                    <div class="section-title">
+                        Quick Actions
+                    </div>
+                    <div class="actions-grid">
+                        <div class="action-btn" onclick="switchPage('staking')">
+                            <div class="action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+                            <span class="action-text">Stake</span>
+                        </div>
+                        <div class="action-btn" onclick="switchPage('launch')">
+                            <div class="action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+                            <span class="action-text">Launch</span>
+                        </div>
+                        <div class="action-btn" onclick="switchPage('governance')">
+                            <div class="action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+                            <span class="action-text">Vote</span>
+                        </div>
+                        <div class="action-btn" onclick="switchPage('portfolio')">
+                            <div class="action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg></div>
+                            <span class="action-text">Portfolio</span>
+                        </div>
+                        <div class="action-btn" onclick="switchPage('agents')">
+                            <div class="action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 2.4-1.2 4.5-3 5.7V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.3C6.2 13.5 5 11.4 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg></div>
+                            <span class="action-text">Agents</span>
+                        </div>
+                        <div class="action-btn" onclick="switchPage('identity')">
+                            <div class="action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+                            <span class="action-text">KYC</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE: Staking -->
+        <div class="content page-content" id="page-staking" style="display:none">
+            <div class="content-header">
+                <h1>Staking</h1>
+                <p>Stake RITUAL to earn rewards, unlock tiers, and get fee discounts</p>
+            </div>
+            <div id="staking-content">
+                <div style="color:var(--text-muted);text-align:center;padding:4rem">Connect wallet to view staking</div>
+            </div>
+        </div>
+
+        <!-- PAGE: Governance -->
+        <div class="content page-content" id="page-governance" style="display:none">
+            <div class="content-header">
+                <h1>Proposals</h1>
+                <p>Vote on protocol proposals and shape the future of Hive</p>
+            </div>
+            <div id="governance-content">
+                <div style="color:var(--text-muted);text-align:center;padding:4rem">Loading proposals...</div>
+            </div>
+        </div>
+
+        <!-- PAGE: Agents -->
+        <div class="content page-content" id="page-agents" style="display:none">
+            <div class="content-header">
+                <h1>AI Agents</h1>
+                <p>Monitor and manage registered AI agents on the Hive network</p>
+            </div>
+            <div id="agents-content">
+                <div style="color:var(--text-muted);text-align:center;padding:4rem">Loading agents...</div>
+            </div>
+        </div>
+
+        <!-- PAGE: Points -->
+        <div class="content page-content" id="page-points" style="display:none">
+            <div class="content-header">
+                <h1>Points</h1>
+                <p>Earn points through staking, governance, and referrals</p>
+            </div>
+            <div id="points-content">
+                <div style="color:var(--text-muted);text-align:center;padding:4rem">Connect wallet to view points</div>
+            </div>
+        </div>
+
+        <!-- PAGE: Faucet -->
+        <div class="content page-content" id="page-faucet" style="display:none">
+            <div class="content-header">
+                <h1>hiveUSD Faucet</h1>
+                <p>Claim 1,000 hiveUSD every 24 hours for testing and sale participation</p>
+            </div>
+            <div id="faucet-content">
+                <div style="color:var(--text-muted);text-align:center;padding:4rem">Connect wallet to access faucet</div>
+            </div>
+        </div>
+
+        <!-- PAGE: Portfolio -->
+        <div class="content page-content" id="page-portfolio" style="display:none">
+            <div id="portfolio-content">
+                <div style="color:var(--text-muted);text-align:center;padding:4rem">Connect wallet to view portfolio</div>
+            </div>
+        </div>
+
+        <!-- PAGE: Generic placeholder for other pages -->
+        <div class="content page-content" id="page-generic" style="display:none">
+            <div class="content-header">
+                <h1 id="generic-title">Page</h1>
+                <p id="generic-desc">Loading...</p>
+            </div>
+            <div class="section-card" style="text-align:center;padding:4rem 2rem">
+                <div style="color:var(--text-muted);font-size:.85rem">Connect wallet to view data</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="hive-contracts.js"></script>
+    <script>
+        // ═══ SIDEBAR ═══
+        function toggleSidebar(){
+            document.getElementById('sidebar').classList.toggle('expanded');
+        }
+
+        // ═══ PAGE NAVIGATION ═══
+        const pageConfig = {
+            dashboard: { title:'Dashboard', breadcrumb:'Hive / Overview' },
+            portfolio: { title:'', breadcrumb:'' },
+            staking: { title:'', breadcrumb:'' },
+            launch: { title:'Token Launch', breadcrumb:'Hive / DeFi / Launch' },
+            auction: { title:'Auctions', breadcrumb:'Hive / DeFi / Auctions' },
+            maker: { title:'AI Market Maker', breadcrumb:'Hive / DeFi / Market Maker' },
+            agents: { title:'AI Agents', breadcrumb:'Hive / AI / Agents' },
+            strategy: { title:'Strategies', breadcrumb:'Hive / AI / Strategies' },
+            flock: { title:'Federated Learning', breadcrumb:'Hive / AI / FLock' },
+            governance: { title:'Proposals', breadcrumb:'Hive / Governance / Proposals' },
+            multisig: { title:'Multi-Sig', breadcrumb:'Hive / Governance / Multi-Sig' },
+            identity: { title:'KYC / KYB', breadcrumb:'Hive / Identity / KYC' },
+            oracle: { title:'Oracles', breadcrumb:'Hive / System / Oracles' },
+            points: { title:'Points', breadcrumb:'Hive / System / Points' },
+            referral: { title:'Referral', breadcrumb:'Hive / System / Referral' },
+            faucet: { title:'', breadcrumb:'' },
+        };
+
+        // ═══ STATE ═══
+        let connectedAddress = null;
+        let hiveReady = false;
+
+        // ═══ PAGE SWITCHING ═══
+        function switchPage(page){
+            document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+            const navItem = document.querySelector(`.nav-item[data-page="${page}"]`);
+            if(navItem) navItem.classList.add('active');
+
+            const config = pageConfig[page] || { title:page, breadcrumb:'Hive' };
+            document.getElementById('pageTitle').textContent = config.title;
+            document.getElementById('breadcrumb').textContent = config.breadcrumb;
+
+            // Hide all pages
+            document.querySelectorAll('.page-content').forEach(p => p.style.display = 'none');
+
+            if(page === 'dashboard'){
+                document.getElementById('page-dashboard').style.display = '';
+            } else if(page === 'staking'){
+                document.getElementById('page-staking').style.display = '';
+                loadStakingPage();
+            } else if(page === 'governance'){
+                document.getElementById('page-governance').style.display = '';
+                loadGovernancePage();
+            } else if(page === 'agents'){
+                document.getElementById('page-agents').style.display = '';
+                loadAgentsPage();
+            } else if(page === 'points'){
+                document.getElementById('page-points').style.display = '';
+                loadPointsPage();
+            } else if(page === 'portfolio'){
+                document.getElementById('page-portfolio').style.display = '';
+                loadPortfolioPage();
+            } else if(page === 'faucet'){
+                document.getElementById('page-faucet').style.display = '';
+                loadFaucetPage();
+            } else {
+                document.getElementById('page-generic').style.display = '';
+                document.getElementById('generic-title').textContent = config.title;
+                document.getElementById('generic-desc').textContent = config.breadcrumb;
+            }
+        }
+
+        // ═══ WALLET ═══
+        function toggleWalletMenu(){
+            if(!connectedAddress){
+                connectFromDashboard();
+                return;
+            }
+            const dd = document.getElementById('walletDropdown');
+            dd.classList.toggle('show');
+        }
+
+        function copyAddress(e){
+            e.stopPropagation();
+            navigator.clipboard.writeText(connectedAddress);
+            const dd = document.getElementById('walletDropdown');
+            dd.classList.remove('show');
+        }
+
+        function disconnectWallet(e){
+            e.stopPropagation();
+            connectedAddress = null;
+            hive.address = null;
+            document.getElementById('walletDropdown').classList.remove('show');
+            window.location.href = 'index.html';
+        }
+
+        // Close dropdown on outside click
+        document.addEventListener('click', (e) => {
+            const badge = document.getElementById('walletBadge');
+            const dd = document.getElementById('walletDropdown');
+            if(dd && !badge.contains(e.target)){
+                dd.classList.remove('show');
+            }
+        });
+
+        async function connectFromDashboard(){
+            if(connectedAddress) return;
+            if(typeof window.ethereum === 'undefined'){
+                alert('Please install MetaMask or another Web3 wallet');
+                return;
+            }
+            try {
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                if(parseInt(chainId, 16) !== 1979){
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: '0x7BB' }],
+                        });
+                    } catch(switchError){
+                        if(switchError.code === 4902){
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [{
+                                    chainId: '0x7BB',
+                                    chainName: 'Ritual Chain',
+                                    rpcUrls: ['https://rpc.ritualfoundation.org'],
+                                    nativeCurrency: { name: 'RITUAL', symbol: 'RITUAL', decimals: 18 },
+                                    blockExplorerUrls: ['https://explorer.ritualfoundation.org'],
+                                }],
+                            });
+                        }
+                    }
+                }
+                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                if(accounts.length > 0){
+                    connectedAddress = accounts[0];
+                    hive.address = connectedAddress;
+                    updateWalletUI();
+                    hiveReady = await hive.init();
+                    loadDashboardData();
+                }
+            } catch(e){ console.error('[Hive] Connect error:', e); }
+        }
+
+        function updateWalletUI(){
+            if(!connectedAddress) return;
+            const short = connectedAddress.slice(0,6) + '...' + connectedAddress.slice(-4);
+            document.getElementById('walletAddr').textContent = short;
+            document.getElementById('walletDot').style.background = 'var(--green)';
+            document.getElementById('userName').textContent = short;
+            document.getElementById('userRole').textContent = 'User';
+            document.getElementById('userAvatar').textContent = connectedAddress.slice(2,4).toUpperCase();
+        }
+
+        // ═══ DASHBOARD DATA ═══
+        async function loadDashboardData(){
+            if(!connectedAddress) return;
+            try {
+                hiveReady = await hive.init();
+                const stats = await hive.getDashboardStats(connectedAddress);
+
+                // TVL = total staked across protocol
+                document.getElementById('stat-tvl').textContent = hive.formatEther(stats.totalStaked) + ' RITUAL';
+
+                // Active proposals
+                document.getElementById('stat-proposals').textContent = Number(stats.proposalCount);
+
+                // AI Agents
+                document.getElementById('stat-agents').textContent = Number(stats.agentCount);
+
+                // User points
+                document.getElementById('stat-points').textContent = Number(stats.userPoints).toLocaleString();
+
+                // Load transactions
+                loadTransactions();
+            } catch(e){
+                console.error('[Hive] Dashboard load error:', e);
+                // Show fallback
+                document.getElementById('stat-tvl').textContent = '—';
+                document.getElementById('stat-proposals').textContent = '—';
+                document.getElementById('stat-agents').textContent = '—';
+                document.getElementById('stat-points').textContent = '—';
+            }
+        }
+
+        async function loadTransactions(){
+            const tbody = document.getElementById('tx-table');
+            try {
+                const txs = await hive.getRecentTransactions(connectedAddress, 10);
+                if(txs.length === 0){
+                    tbody.innerHTML = '<tr><td colspan="4" style="color:var(--text-muted);text-align:center;padding:2rem">No transactions found on-chain</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = txs.map(tx => `
+                    <tr>
+                        <td>${tx.type}</td>
+                        <td class="mono">${tx.amount > 0n ? hive.formatEther(tx.amount) + ' RITUAL' : '—'}</td>
+                        <td><span class="status-badge active">Confirmed</span></td>
+                        <td style="color:var(--text-muted)">
+                            <a href="${hive.explorerTx(tx.hash)}" target="_blank" style="color:var(--accent-light)">${hive.timeAgo(tx.timestamp)}</a>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch(e){
+                tbody.innerHTML = '<tr><td colspan="4" style="color:var(--text-muted);text-align:center;padding:2rem">Error loading transactions</td></tr>';
+            }
+        }
+
+        // ═══ STAKING PAGE ═══
+        async function loadStakingPage(){
+            const container = document.getElementById('staking-content');
+            if(!connectedAddress){
+                container.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:4rem">Connect wallet to view staking</div>';
+                return;
+            }
+            try {
+                const info = await hive.getStakeInfo(connectedAddress);
+                container.innerHTML = `
+                    <style>
+                        .stk-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.58rem;margin-bottom:1.15rem;max-width:576px}
+                        .stk-stat{padding:.4rem .75rem;background:var(--bg-card);border:1px solid var(--border);border-radius:6px}
+                        .stk-stat .lbl{font-size:.6rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.2rem}
+                        .stk-stat .val{font-size:.85rem;font-weight:700;font-family:var(--font-display)}
+                        .stk-stat .sub{font-size:.55rem;color:var(--text-dim);margin-top:0}
+                        .stk-grid{display:flex;flex-direction:column;gap:.75rem;max-width:576px}
+                        .stk-left{display:flex;flex-direction:column;gap:.75rem}
+                        .stk-right{display:flex;flex-direction:column;gap:.5rem}
+                        .stk-section-title{font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.15rem}
+                        .stk-field{display:flex;align-items:center;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:.52rem .75rem;transition:border-color .15s}
+                        .stk-field:focus-within{border-color:var(--accent)}
+                        .stk-field input{background:transparent;border:none;outline:none;color:var(--text);font-size:.8rem;font-family:var(--font-mono);width:100%;font-weight:600}
+                        .stk-field .max-btn{background:var(--accent);color:#fff;border:none;padding:.15rem .45rem;border-radius:4px;font-size:.55rem;font-weight:700;cursor:pointer;margin-left:.35rem;white-space:nowrap}
+                        .stk-field .max-btn:hover{opacity:.85}
+                        .lock-row{display:flex;gap:.35rem;flex-wrap:wrap}
+                        .lock-opt{padding:.46rem .75rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;cursor:pointer;transition:all .15s;font-size:.65rem;text-align:center;flex:1}
+                        .lock-opt:hover{border-color:rgba(255,255,255,.15)}
+                        .lock-opt.active{border-color:var(--accent);background:rgba(139,92,246,.08)}
+                        .lock-opt .lk-days{font-weight:700;display:block;font-size:.7rem}
+                        .lock-opt .lk-apy{color:var(--green);font-size:.5rem;display:block}
+                        .stk-btn-sm{padding:.58rem .86rem;border-radius:6px;border:none;font-weight:600;font-size:.7rem;cursor:pointer;transition:all .15s;width:100%;text-align:left}
+                        .stk-btn-sm.primary{background:var(--accent);color:#fff}
+                        .stk-btn-sm.primary:hover{opacity:.9}
+                        .stk-btn-sm.primary:disabled{opacity:.4;cursor:not-allowed}
+                        .stk-btn-sm.secondary{background:transparent;color:var(--text-dim);border:1px solid var(--border)}
+                        .stk-btn-sm.secondary:hover{border-color:var(--accent);color:var(--text)}
+                        .stk-btn-sm.outline{background:transparent;color:var(--text-dim);border:1px solid var(--border);text-align:center;padding:.4rem .58rem;font-size:.6rem}
+                        .stk-btn-sm.outline:hover{border-color:var(--accent);color:var(--text)}
+                    </style>
+
+                    <div class="stk-stats">
+                        <div class="stk-stat">
+                            <div class="lbl">Your Stake</div>
+                            <div class="val">${hive.formatEther(info.amount)} <span style="font-size:.6rem;font-weight:500;color:var(--text-dim)">RITUAL</span></div>
+                            <div class="sub">${info.tierName} Tier</div>
+                        </div>
+                        <div class="stk-stat">
+                            <div class="lbl">Pending Rewards</div>
+                            <div class="val">${hive.formatEther(info.pendingRewards)} <span style="font-size:.6rem;font-weight:500;color:var(--text-dim)">HIVE</span></div>
+                            <div class="sub" style="color:${info.autoCompound ? 'var(--green)' : 'var(--text-dim)'}">Auto-compound: ${info.autoCompound ? 'ON' : 'OFF'}</div>
+                        </div>
+                        <div class="stk-stat">
+                            <div class="lbl">Fee Discount</div>
+                            <div class="val">${info.discount}%</div>
+                            <div class="sub">${Number(info.multiplier) / 100}x multiplier</div>
+                        </div>
+                    </div>
+
+                    <div class="stk-grid">
+                        <div class="stk-left">
+                            <div>
+                                <div class="stk-section-title">Amount</div>
+                                <div class="stk-field">
+                                    <input id="stake-amount" type="number" placeholder="0.00" step="any" min="0">
+                                    <button class="max-btn" onclick="setMaxStake()">MAX</button>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="stk-section-title">Lock Period</div>
+                                <div class="lock-row">
+                                    <div class="lock-opt active" data-days="0" onclick="selectLock(0)">
+                                        <span class="lk-days">Flexible</span><span class="lk-apy">5% APR</span>
+                                    </div>
+                                    <div class="lock-opt" data-days="7" onclick="selectLock(7)">
+                                        <span class="lk-days">7 Days</span><span class="lk-apy">8% APR</span>
+                                    </div>
+                                    <div class="lock-opt" data-days="30" onclick="selectLock(30)">
+                                        <span class="lk-days">30 Days</span><span class="lk-apy">12% APY</span>
+                                    </div>
+                                    <div class="lock-opt" data-days="90" onclick="selectLock(90)">
+                                        <span class="lk-days">90 Days</span><span class="lk-apy">18% APY</span>
+                                    </div>
+                                    <div class="lock-opt" data-days="365" onclick="selectLock(365)">
+                                        <span class="lk-days">365 Days</span><span class="lk-apy">25% APY</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:.35rem;margin-top:.58rem">
+                                <button class="stk-btn-sm primary" id="stake-btn" onclick="executeStake()" style="flex:1;padding:.46rem .58rem;font-size:.6rem;text-align:center">Stake RITUAL</button>
+                                <button class="stk-btn-sm secondary" onclick="executeUnstake()" style="flex:1;padding:.46rem .58rem;font-size:.6rem;text-align:center;${parseFloat(hive.formatEther(info.amount)) <= 0 ? 'opacity:.35;cursor:not-allowed;pointer-events:none' : ''}">Unstake RITUAL</button>
+                            </div>
+                            <div style="display:flex;gap:.35rem;margin-top:.29rem">
+                                <button class="stk-btn-sm outline" onclick="doClaimRewards()" style="flex:1;text-align:center">Claim HIVE</button>
+                                <button class="stk-btn-sm outline" onclick="doCompound()" style="flex:1;text-align:center">Compound</button>
+                                <button class="stk-btn-sm outline" onclick="doToggleCompound()" style="flex:1;text-align:center">Auto: ${info.autoCompound ? 'ON' : 'OFF'}</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch(e){
+                container.innerHTML = '<div style="color:var(--red);text-align:center;padding:2rem">Error loading staking data</div>';
+            }
+        }
+
+        let selectedLockDays = 0;
+
+        function selectLock(days){
+            selectedLockDays = days;
+            document.querySelectorAll('.lock-opt').forEach(el => {
+                el.classList.toggle('active', parseInt(el.dataset.days) === days);
+            });
+        }
+
+        async function setMaxStake(){
+            if(!connectedAddress || !hive.provider) return;
+            try {
+                const bal = await hive.provider.getBalance(connectedAddress);
+                const max = parseFloat(ethers.formatEther(bal)) * 0.95; // leave 5% for gas
+                document.getElementById('stake-amount').value = max > 0 ? max.toFixed(4) : '0';
+            } catch(e){}
+        }
+
+        async function executeStake(){
+            const amountEl = document.getElementById('stake-amount');
+            const amount = amountEl?.value;
+            if(!amount || parseFloat(amount) <= 0){ alert('Enter a valid amount'); return; }
+
+            const btn = document.getElementById('stake-btn');
+            try {
+                btn.disabled = true;
+                btn.textContent = 'Signing...';
+                const wei = ethers.parseEther(amount);
+                await hive.stake(wei, selectedLockDays);
+                btn.textContent = 'Done!';
+                loadStakingPage();
+            } catch(e){
+                alert('Error: ' + (e.reason || e.message));
+                btn.disabled = false;
+                btn.textContent = 'Stake RITUAL';
+            }
+        }
+
+        async function executeUnstake(){
+            if(!confirm('Unstake all RITUAL?')) return;
+            try {
+                const info = await hive.getStakeInfo(connectedAddress);
+                const amount = info.amount;
+                if(amount <= 0n){ alert('No RITUAL staked'); return; }
+                await hive.unstake(amount);
+                loadStakingPage();
+            } catch(e){ alert('Error: ' + (e.reason || e.message)); }
+        }
+
+        async function doClaimRewards(){
+            try {
+                const receipt = await hive.claimRewards();
+                alert('Claimed! Tx: ' + receipt.hash);
+                loadStakingPage();
+            } catch(e){ alert('Error: ' + e.message); }
+        }
+
+        async function doCompound(){
+            try {
+                const receipt = await hive.compoundRewards();
+                alert('Compounded! Tx: ' + receipt.hash);
+                loadStakingPage();
+            } catch(e){ alert('Error: ' + e.message); }
+        }
+
+        async function doToggleCompound(){
+            try {
+                const receipt = await hive.toggleAutoCompound();
+                alert('Toggled! Tx: ' + receipt.hash);
+                loadStakingPage();
+            } catch(e){ alert('Error: ' + e.message); }
+        }
+
+        // ═══ GOVERNANCE PAGE ═══
+        async function loadGovernancePage(){
+            const container = document.getElementById('governance-content');
+            try {
+                const { total, proposals } = await hive.getProposals(0, 10);
+                if(proposals.length === 0){
+                    container.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:4rem">No proposals yet</div>';
+                    return;
+                }
+                container.innerHTML = `
+                    <div class="section-card">
+                        <div class="section-title">Proposals <span class="badge">${total} Total</span></div>
+                        <table class="data-table">
+                            <thead><tr><th>ID</th><th>Description</th><th>For</th><th>Against</th><th>State</th><th>Action</th></tr></thead>
+                            <tbody>
+                                ${proposals.map(p => `
+                                    <tr>
+                                        <td class="mono">#${p.id}</td>
+                                        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.description}</td>
+                                        <td class="mono" style="color:var(--green)">${hive.formatEther(p.forVotes)}</td>
+                                        <td class="mono" style="color:var(--red)">${hive.formatEther(p.againstVotes)}</td>
+                                        <td><span class="status-badge ${p.stateName === 'Active' ? 'active' : 'pending'}">${p.stateName}</span></td>
+                                        <td>${p.stateName === 'Active' ? `<button class="action-btn" style="padding:.3rem .6rem;font-size:.7rem" onclick="doVote(${p.id})">Vote</button>` : '—'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } catch(e){
+                container.innerHTML = '<div style="color:var(--red);text-align:center;padding:2rem">Error loading governance data</div>';
+            }
+        }
+
+        async function doVote(proposalId){
+            const support = prompt('Vote: 0 = Against, 1 = For, 2 = Abstain');
+            if(support === null) return;
+            try {
+                const receipt = await hive.castVote(proposalId, parseInt(support));
+                alert('Voted! Tx: ' + receipt.hash);
+                loadGovernancePage();
+            } catch(e){ alert('Error: ' + e.message); }
+        }
+
+        // ═══ AGENTS PAGE ═══
+        async function loadAgentsPage(){
+            const container = document.getElementById('agents-content');
+            try {
+                const agents = await hive.getAgents();
+                if(agents.length === 0){
+                    container.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:4rem">No agents registered</div>';
+                    return;
+                }
+                container.innerHTML = `
+                    <div class="section-card">
+                        <div class="section-title">Active Agents <span class="badge">${agents.length}</span></div>
+                        <table class="data-table">
+                            <thead><tr><th>Name</th><th>Address</th><th>Status</th><th>Last Heartbeat</th></tr></thead>
+                            <tbody>
+                                ${agents.map(a => `
+                                    <tr>
+                                        <td>${a.name}</td>
+                                        <td class="mono"><a href="${hive.explorerAddr(a.address)}" target="_blank" style="color:var(--accent-light)">${hive.shortAddr(a.address)}</a></td>
+                                        <td><span class="status-badge ${a.alive ? 'active' : 'pending'}">${a.alive ? 'Online' : 'Offline'}</span></td>
+                                        <td style="color:var(--text-muted)">${hive.timeAgo(Number(a.lastHeartbeat))}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } catch(e){
+                container.innerHTML = '<div style="color:var(--red);text-align:center;padding:2rem">Error loading agents</div>';
+            }
+        }
+
+        // ═══ POINTS PAGE ═══
+        async function loadPointsPage(){
+            const container = document.getElementById('points-content');
+            try {
+                const info = await hive.getPointsInfo(connectedAddress);
+                container.innerHTML = `
+                    <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+                        <div class="stat-card">
+                            <div class="stat-label">Your Points</div>
+                            <div class="stat-value">${Number(info.user).toLocaleString()}</div>
+                            <div class="stat-change">Rank #${info.rank}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Global Points</div>
+                            <div class="stat-value">${Number(info.global).toLocaleString()}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Top Holders</div>
+                            <div class="stat-value">${info.topHolders.addresses.length}</div>
+                        </div>
+                    </div>
+                    ${info.topHolders.addresses.length > 0 ? `
+                    <div class="section-card" style="margin-top:1rem">
+                        <div class="section-title">Leaderboard <span class="badge">Top 10</span></div>
+                        <table class="data-table">
+                            <thead><tr><th>#</th><th>Address</th><th>Points</th></tr></thead>
+                            <tbody>
+                                ${info.topHolders.addresses.map((addr, i) => `
+                                    <tr>
+                                        <td>${i + 1}</td>
+                                        <td class="mono"><a href="${hive.explorerAddr(addr)}" target="_blank" style="color:var(--accent-light)">${hive.shortAddr(addr)}</a></td>
+                                        <td class="mono">${Number(info.topHolders.points[i]).toLocaleString()}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>` : ''}
+                `;
+            } catch(e){
+                container.innerHTML = '<div style="color:var(--red);text-align:center;padding:2rem">Error loading points</div>';
+            }
+        }
+
+        // ═══ FAUCET PAGE ═══
+        let faucetTimer = null;
+
+        async function loadFaucetPage(){
+            const container = document.getElementById('faucet-content');
+            if(!connectedAddress){
+                container.innerHTML = `
+                    <div style="text-align:center;padding:4rem 2rem">
+                        <div style="font-size:.95rem;font-weight:600;margin-bottom:.5rem">Connect Your Wallet</div>
+                        <div style="color:var(--text-muted);font-size:.8rem;margin-bottom:1.5rem">Connect your Hive wallet to claim hiveUSD</div>
+                        <button class="action-btn" onclick="connectFromDashboard()" style="margin:0 auto;padding:.75rem 2rem;border-radius:10px;background:var(--accent);border:none;color:#fff;font-weight:600;cursor:pointer">
+                            Connect Wallet
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                const info = await hive.getFaucetInfo(connectedAddress);
+                const canClaim = info.canClaim;
+                const timeLeft = Number(info.timeLeft);
+
+                if(!canClaim && timeLeft > 0){
+                    startFaucetCountdown(timeLeft);
+                }
+
+                container.innerHTML = `
+                    <div style="padding:2rem 0">
+                        ${canClaim ? `
+                            <div style="font-size:1.1rem;font-weight:700;margin-bottom:1rem">Ready to Claim</div>
+                            <button class="btn btn-p" onclick="doClaimFaucet()" style="padding:.85rem 2.5rem;font-size:.8rem;border-radius:10px">
+                                Claim 1,000 hiveUSD
+                            </button>
+                        ` : `
+                            <div style="font-size:1.1rem;font-weight:700;margin-bottom:.35rem">Cooldown Active</div>
+                            <div style="color:var(--text-muted);font-size:.8rem;margin-bottom:1rem">Next claim in</div>
+                            <div id="faucet-countdown" style="
+                                font-family:var(--font-mono);font-size:2.2rem;font-weight:800;
+                                color:var(--accent-light);letter-spacing:.05em;margin-bottom:1.5rem
+                            ">${formatCountdown(timeLeft)}</div>
+                            <button disabled style="
+                                padding:.85rem 2.5rem;border-radius:10px;
+                                background:rgba(255,255,255,.05);border:1px solid var(--border);
+                                color:var(--text-muted);font-weight:600;font-size:.8rem;cursor:not-allowed
+                            ">
+                                Claim Unavailable
+                            </button>
+                        `}
+                    </div>
+
+                    <div style="margin-top:3rem">
+                        <div style="color:var(--text-dim);font-size:.85rem;line-height:1.7">
+                            hiveUSD is a testnet stablecoin pegged 1:1 to USD. Use it to test token sales,
+                            participate in launchpad auctions, and explore DeFi features on Hive.
+                        </div>
+                    </div>
+
+                    <div style="margin-top:1.5rem;font-size:.78rem;color:var(--text-muted);line-height:2">
+                        <div>Token — <a href="https://explorer.ritualfoundation.org/address/0x60601e48038E32dBCd9A9667c589bf6D39A32fb5" target="_blank" style="color:var(--accent-light);font-family:var(--font-mono)">0x60601e48038E32dBCd9A9667c589bf6D39A32fb5</a></div>
+                        <div>Faucet — <a href="https://explorer.ritualfoundation.org/address/0x8FCe666BA58154F55ebF6cC63F3965E945130F88" target="_blank" style="color:var(--accent-light);font-family:var(--font-mono)">0x8FCe666BA58154F55ebF6cC63F3965E945130F88</a></div>
+                    </div>
+                `;
+            } catch(e){
+                console.error('[Hive] Faucet error:', e);
+                container.innerHTML = '<div style="color:var(--red);text-align:center;padding:2rem">Error loading faucet</div>';
+            }
+        }
+
+        function formatCountdown(seconds){
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = seconds % 60;
+            return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        }
+
+        function startFaucetCountdown(initial){
+            if(faucetTimer) clearInterval(faucetTimer);
+            let remaining = initial;
+            faucetTimer = setInterval(() => {
+                remaining--;
+                if(remaining <= 0){
+                    clearInterval(faucetTimer);
+                    loadFaucetPage(); // Reload to show claim button
+                    return;
+                }
+                const el = document.getElementById('faucet-countdown');
+                if(el) el.textContent = formatCountdown(remaining);
+            }, 1000);
+        }
+
+        // ═══ FAUCET CAPTCHA ═══
+        let captchaA = 0, captchaB = 0, captchaOp = '+';
+
+        function generateCaptcha(){}
+
+        function checkCaptcha(){ return true; }
+
+        async function doClaimFaucet(){
+            if(!connectedAddress) return;
+            try {
+                const receipt = await hive.claimFaucet();
+                loadFaucetPage();
+            } catch(e){
+                alert('Claim failed: ' + (e.reason || e.message || 'Unknown error'));
+            }
+        }
+
+
+        // ═══ PORTFOLIO PAGE ═══
+        let pnlChart = null;
+        let chartCollapsed = false;
+
+        async function loadPortfolioPage(){
+            const container = document.getElementById('portfolio-content');
+            if(!connectedAddress){
+                container.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:4rem">Connect wallet to view portfolio</div>';
+                return;
+            }
+
+            container.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:4rem">Loading portfolio...</div>';
+
+            try {
+                const [stats, stakeInfo, pointsInfo, ritualRaw] = await Promise.all([
+                    hive.getDashboardStats(connectedAddress).catch(() => null),
+                    hive.getStakeInfo(connectedAddress).catch(() => null),
+                    hive.getPointsInfo(connectedAddress).catch(() => ({ total: 0, rank: 0 })),
+                    hive.provider ? hive.provider.getBalance(connectedAddress).catch(() => 0n) : Promise.resolve(0n)
+                ]);
+
+                const ritual = parseFloat(ethers.formatEther(ritualRaw));
+                const hivBal = stats ? parseFloat(ethers.formatEther(stats.tokenBalance)) : 0;
+                const staked = stakeInfo ? parseFloat(ethers.formatEther(stakeInfo.amount)) : 0;
+                const rewards = stakeInfo ? parseFloat(ethers.formatEther(stakeInfo.pendingRewards)) : 0;
+                const tier = stakeInfo ? stakeInfo.tier : 0;
+                const tierNames = ['None', 'Bronze', 'Silver', 'Gold', 'Diamond'];
+
+                let usdBal = 0;
+                try {
+                    const usdContract = hive.getContract('hiveUSD');
+                    if(usdContract){
+                        const raw = await usdContract.balanceOf(connectedAddress);
+                        usdBal = parseFloat(ethers.formatEther(raw));
+                    }
+                } catch(e) {}
+
+                const hiveUSDAddr = '0x60601e48038E32dBCd9A9667c589bf6D39A32fb5';
+                let usdPrice = 1.0;
+                try {
+                    const oraclePrice = await hive.getOraclePriceFormatted(hiveUSDAddr);
+                    if(oraclePrice) usdPrice = oraclePrice;
+                } catch(e) {}
+
+                const ritualPrice = 0.50;
+                const hivePrice = 0.01;
+                const ritualValue = ritual * ritualPrice;
+                const hiveValue = hivBal * hivePrice;
+                const usdValue = usdBal * usdPrice;
+                const stakedValue = staked * ritualPrice;
+                const totalValue = ritualValue + hiveValue + usdValue + stakedValue + rewards;
+
+                const pnlData = generatePnLData(totalValue);
+                const pnlChange = pnlData[pnlData.length - 1] - pnlData[0];
+                const pnlPct = pnlData[0] > 0 ? ((pnlChange / pnlData[0]) * 100) : 0;
+                const isPositive = pnlChange >= 0;
+                const pnlColor = isPositive ? 'var(--green)' : 'var(--red)';
+
+                container.innerHTML = `
+                    <style>
+                        .p-desc{color:var(--text-dim);font-size:.8rem;margin-bottom:.5rem}
+                        .p-total{font-size:2.5rem;font-weight:800;font-family:var(--font-display);margin-bottom:.25rem}
+                        .p-pnl{font-size:.9rem;font-weight:600;color:${pnlColor};margin-bottom:1.5rem}
+                        .p-pnl span{font-size:.75rem;opacity:.7;margin-left:.25rem}
+                        .p-actions{display:flex;gap:.75rem;margin-bottom:2rem}
+                        .p-action{flex:1;padding:.85rem 1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:all .15s;text-align:center}
+                        .p-action:hover{border-color:var(--accent);background:rgba(139,92,246,.05)}
+                        .p-action svg{width:20px;height:20px;margin-bottom:.35rem;stroke:var(--text-dim)}
+                        .p-action .lbl{font-size:.75rem;color:var(--text-dim);font-weight:500}
+                        .chart-wrap{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;margin-bottom:2rem;overflow:hidden}
+                        .chart-toggle{display:flex;justify-content:space-between;align-items:center;padding:.75rem 1rem;cursor:pointer;user-select:none}
+                        .chart-toggle h3{font-size:.8rem;font-weight:600;color:var(--text-dim)}
+                        .chart-toggle .arr{cursor:pointer}
+                        .chart-toggle .arr svg{width:16px;height:16px;stroke:var(--text-muted);transition:transform .2s}
+                        .chart-toggle .arr.collapsed svg{transform:rotate(180deg)}
+                        .chart-body{padding:0 1rem 1rem;transition:all .2s}
+                        .chart-body.hidden{display:none}
+                        .c-tabs{display:flex;gap:.25rem}
+                        .c-tab{padding:.3rem .6rem;font-size:.65rem;border-radius:5px;cursor:pointer;background:transparent;color:var(--text-dim);border:1px solid var(--border);transition:all .15s}
+                        .c-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+                        .asset-list{display:flex;flex-direction:column;gap:.5rem}
+                        .asset-row{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;transition:all .15s}
+                        .asset-row:hover{border-color:rgba(255,255,255,.1)}
+                        .a-name{display:flex;align-items:center;gap:.6rem;font-weight:600;font-size:.85rem}
+                        .a-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700}
+                        .a-amount{font-family:var(--font-mono);font-size:.85rem;color:var(--text-dim)}
+                        .a-value{font-family:var(--font-mono);font-size:.85rem;font-weight:600}
+                    </style>
+
+                    <div class="p-desc">Total portfolio value across all Hive contracts</div>
+                    <div class="p-total">$${totalValue.toFixed(2)}</div>
+                    <div class="p-pnl">${isPositive ? '▲' : '▼'} ${isPositive ? '+' : ''}${pnlPct.toFixed(2)}% <span>(${isPositive ? '+' : ''}$${pnlChange.toFixed(2)} 30d)</span></div>
+
+                    <div class="p-actions">
+                        <div class="p-action" onclick="showDepositModal()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <div class="lbl">Deposit</div>
+                        </div>
+                        <div class="p-action" onclick="showSendModal()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                            <div class="lbl">Send</div>
+                        </div>
+                        <div class="p-action" onclick="showWithdrawModal()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            <div class="lbl">Withdraw</div>
+                        </div>
+                    </div>
+
+                    <div class="chart-wrap">
+                        <div class="chart-toggle">
+                            <h3>Portfolio Value</h3>
+                            <div style="display:flex;align-items:center;gap:.75rem">
+                                <div class="c-tabs" ${chartCollapsed ? 'style="display:none"' : ''}>
+                                    <div class="c-tab active" onclick="event.stopPropagation();updateChart('7d')">7D</div>
+                                    <div class="c-tab" onclick="event.stopPropagation();updateChart('30d')">30D</div>
+                                    <div class="c-tab" onclick="event.stopPropagation();updateChart('90d')">90D</div>
+                                </div>
+                                <div class="arr ${chartCollapsed ? 'collapsed' : ''}" onclick="togglePortfolioChart()">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chart-body ${chartCollapsed ? 'hidden' : ''}">
+                            <canvas id="pnlChart" height="60"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="asset-list">
+                        <div class="asset-row"><div class="a-name"><div class="a-icon" style="background:rgba(139,92,246,.15);color:var(--accent)">R</div>RITUAL</div><div class="a-amount">${ritual.toFixed(4)}</div><div class="a-value">$${ritualValue.toFixed(2)}</div></div>
+                                                <div class="asset-row"><div class="a-name"><div class="a-icon" style="background:rgba(34,197,94,.15);color:var(--green)">H</div>HIVE</div><div class="a-amount">${hivBal.toFixed(2)}</div><div class="a-value">$${hiveValue.toFixed(2)}</div></div>
+                                                <div class="asset-row"><div class="a-name"><div class="a-icon" style="background:rgba(234,179,8,.15);color:var(--yellow)">$</div>hiveUSD</div><div class="a-amount">${usdBal.toFixed(2)}</div><div class="a-value">$${usdValue.toFixed(2)}</div></div>
+                                                <div class="asset-row"><div class="a-name"><div class="a-icon" style="background:rgba(139,92,246,.15);color:var(--accent)">S</div>Staked RITUAL</div><div class="a-amount">${staked.toFixed(4)}</div><div class="a-value">$${stakedValue.toFixed(2)}</div></div>
+                    </div>
+                `;
+
+                renderPnLChart(pnlData, isPositive);
+
+            } catch(e) {
+                container.innerHTML = '<div style="color:var(--red);text-align:center;padding:4rem">Error: ' + e.message + '</div>';
+            }
+        }
+
+        function togglePortfolioChart(){
+            chartCollapsed = !chartCollapsed;
+            const body = document.querySelector('.chart-body');
+            const arrow = document.querySelector('.chart-toggle .arr');
+            const tabs = document.querySelector('.c-tabs');
+            if(body) body.classList.toggle('hidden');
+            if(arrow) arrow.classList.toggle('collapsed');
+            if(tabs) tabs.style.display = chartCollapsed ? 'none' : '';
+        }
+
+        function generatePnLData(currentValue){
+            // Simulate 90 days of data trending toward current value
+            const days = 90;
+            const data = [];
+            const startValue = currentValue * (0.7 + Math.random() * 0.3);
+            for(let i = 0; i < days; i++){
+                const progress = i / (days - 1);
+                const trend = startValue + (currentValue - startValue) * progress;
+                const noise = trend * (Math.random() * 0.08 - 0.04);
+                data.push(Math.max(0, trend + noise));
+            }
+            data[days - 1] = currentValue;
+            return data;
+        }
+
+        let chartData90d = null;
+
+        function renderPnLChart(data, isPositive){
+            chartData90d = data;
+            const ctx = document.getElementById('pnlChart');
+            if(!ctx) return;
+
+            if(pnlChart) pnlChart.destroy();
+
+            const labels = data.map((_, i) => {
+                const d = new Date();
+                d.setDate(d.getDate() - (data.length - 1 - i));
+                return d.toLocaleDateString('en', { month: 'short', day: 'numeric' });
+            });
+
+            const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 200);
+            gradient.addColorStop(0, isPositive ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)');
+            gradient.addColorStop(1, 'rgba(0,0,0,0)');
+
+            pnlChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        borderColor: isPositive ? '#22c55e' : '#ef4444',
+                        backgroundColor: gradient,
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 4,
+                        pointHoverBackgroundColor: isPositive ? '#22c55e' : '#ef4444',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { intersect: false, mode: 'index' },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(10,10,10,0.9)',
+                            titleColor: '#888',
+                            bodyColor: '#fff',
+                            bodyFont: { family: 'JetBrains Mono', weight: '600', size: 13 },
+                            titleFont: { family: 'Inter', size: 11 },
+                            padding: 12,
+                            borderColor: 'rgba(255,255,255,0.1)',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: (ctx) => '$' + ctx.parsed.y.toFixed(2)
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255,255,255,0.03)' },
+                            ticks: { color: '#555', font: { size: 10 }, maxTicksLimit: 7 }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255,255,255,0.03)' },
+                            ticks: { color: '#555', font: { family: 'JetBrains Mono', size: 10 }, callback: v => '$' + v.toFixed(0) }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateChart(range){
+            document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if(!chartData90d) return;
+            const slice = range === '7d' ? 7 : range === '30d' ? 30 : 90;
+            const data = chartData90d.slice(-slice);
+            const isPositive = data[data.length - 1] >= data[0];
+            renderPnLChart(data, isPositive);
+        }
+
+
+        // ═══ PORTFOLIO MODALS ═══
+
+        function getAvailableTokens(){
+            return [
+                { symbol: 'RITUAL', name: 'Ritual Chain', address: 'native', icon: 'R', color: 'var(--accent)' },
+                { symbol: 'HIVE', name: 'Hive Token', address: hive.contracts?.hiveToken?.target || '', icon: 'H', color: 'var(--green)' },
+                { symbol: 'hiveUSD', name: 'Hive USD', address: hive.contracts?.hiveUSD?.target || '', icon: '$', color: 'var(--yellow)' },
+            ];
+        }
+
+        function showSendModal(){
+            const tokens = getAvailableTokens();
+            const modal = document.createElement('div');
+            modal.id = 'send-modal';
+            modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:9999';
+            modal.innerHTML = `
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:2rem;width:420px;max-width:90vw">
+                    <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:1.5rem">Send</h3>
+                    <label style="font-size:.75rem;color:var(--text-dim);display:block;margin-bottom:.35rem">To Username</label>
+                    <div style="display:flex;align-items:center;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.65rem .85rem;margin-bottom:1rem">
+                        <span style="color:var(--accent);font-weight:600;margin-right:.35rem">@</span>
+                        <input id="send-username" type="text" placeholder="username" style="background:transparent;border:none;outline:none;color:var(--text);font-size:.85rem;width:100%;font-family:var(--font-mono)">
+                    </div>
+                    <label style="font-size:.75rem;color:var(--text-dim);display:block;margin-bottom:.35rem">Amount</label>
+                    <div style="display:flex;align-items:center;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.65rem .85rem;margin-bottom:1rem">
+                        <input id="send-amount" type="number" placeholder="0.00" step="any" min="0" style="background:transparent;border:none;outline:none;color:var(--text);font-size:.85rem;width:100%;font-family:var(--font-mono)">
+                    </div>
+                    <label style="font-size:.75rem;color:var(--text-dim);display:block;margin-bottom:.35rem">Token</label>
+                    <div id="send-token-select" style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:1.5rem">
+                        ${tokens.map((t,i) => `
+                            <div class="send-token-opt" data-idx="${i}" onclick="selectSendToken(${i})" style="display:flex;align-items:center;gap:.6rem;padding:.6rem .85rem;background:var(--bg);border:1px solid ${i===0 ? 'var(--accent)' : 'var(--border)'};border-radius:8px;cursor:pointer;transition:all .15s">
+                                <div style="width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;background:rgba(255,255,255,.05);color:${t.color}">${t.icon}</div>
+                                <div><div style="font-size:.8rem;font-weight:600">${t.symbol}</div><div style="font-size:.65rem;color:var(--text-dim)">${t.name}</div></div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="display:flex;gap:.75rem">
+                        <button onclick="closeSendModal()" style="flex:1;padding:.7rem;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-weight:600;cursor:pointer;font-size:.8rem">Cancel</button>
+                        <button onclick="executeSend()" style="flex:1;padding:.7rem;border-radius:8px;border:none;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;font-size:.8rem">Send</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.addEventListener('click', e => { if(e.target === modal) closeSendModal(); });
+        }
+
+        let selectedSendToken = 0;
+        function selectSendToken(idx){
+            selectedSendToken = idx;
+            document.querySelectorAll('.send-token-opt').forEach((el,i) => {
+                el.style.borderColor = i === idx ? 'var(--accent)' : 'var(--border)';
+            });
+        }
+
+        function closeSendModal(){
+            const m = document.getElementById('send-modal');
+            if(m) m.remove();
+        }
+
+        async function executeSend(){
+            const username = document.getElementById('send-username')?.value?.trim();
+            const amount = document.getElementById('send-amount')?.value;
+            const tokens = getAvailableTokens();
+            const token = tokens[selectedSendToken];
+
+            if(!username){ alert('Enter a username'); return; }
+            if(!amount || parseFloat(amount) <= 0){ alert('Enter a valid amount'); return; }
+
+            try {
+                const signer = await hive.provider.getSigner();
+                const value = ethers.parseEther(amount);
+
+                if(token.address === 'native'){
+                    alert('RITUAL transfers require a wallet address. Use Withdraw instead.');
+                    return;
+                }
+
+                const btn = document.querySelector('#send-modal button:last-child');
+                if(btn){ btn.textContent = 'Signing...'; btn.disabled = true; }
+
+                const contract = new ethers.Contract(token.address, ['function transfer(address to, uint256 amount) returns (bool)'], signer);
+                const tx = await contract.transfer(username, value);
+
+                if(btn){ btn.textContent = 'Confirming...'; }
+                await tx.wait();
+
+                closeSendModal();
+                loadPortfolioPage();
+                showNotif('Sent ' + amount + ' ' + token.symbol + ' to @' + username);
+            } catch(e) {
+                alert('Transaction failed: ' + (e.reason || e.message));
+                const btn = document.querySelector('#send-modal button:last-child');
+                if(btn){ btn.textContent = 'Send'; btn.disabled = false; }
+            }
+        }
+
+        function showDepositModal(){
+            if(!connectedAddress){ alert('Connect wallet first'); return; }
+            const modal = document.createElement('div');
+            modal.id = 'deposit-modal';
+            modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:9999';
+            modal.innerHTML = `
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:2rem;width:400px;max-width:90vw;text-align:center">
+                    <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:1.5rem">Deposit</h3>
+                    <div id="deposit-qr" style="background:#fff;border-radius:12px;padding:1rem;display:inline-block;margin-bottom:1.25rem"></div>
+                    <div style="font-size:.75rem;color:var(--text-dim);margin-bottom:.5rem">Your Address</div>
+                    <div style="display:flex;align-items:center;gap:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.65rem .85rem;margin-bottom:1.5rem">
+                        <div id="deposit-addr" style="font-family:var(--font-mono);font-size:.75rem;color:var(--text);word-break:break-all;flex:1;text-align:left">${connectedAddress}</div>
+                        <button onclick="copyDepositAddr()" style="background:transparent;border:none;cursor:pointer;padding:.25rem" title="Copy">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        </button>
+                    </div>
+                    <div style="font-size:.7rem;color:var(--text-dim);margin-bottom:1.25rem">Send only RITUAL, HIVE, or hiveUSD on Ritual Chain (ID 1979)</div>
+                    <button onclick="closeDepositModal()" style="width:100%;padding:.7rem;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-weight:600;cursor:pointer;font-size:.8rem">Close</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.addEventListener('click', e => { if(e.target === modal) closeDepositModal(); });
+            generateDepositQR(connectedAddress);
+        }
+
+        function generateDepositQR(address){
+            const el = document.getElementById('deposit-qr');
+            if(!el) return;
+            try {
+                const url = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(address) + '&bgcolor=ffffff&color=000000&margin=0';
+                el.innerHTML = '<img src="' + url + '" width="200" height="200" style="display:block;border-radius:8px">';
+            } catch(e) {
+                el.innerHTML = '<div style="width:200px;height:200px;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:var(--text-dim)">QR unavailable</div>';
+            }
+        }
+
+        function copyDepositAddr(){
+            if(connectedAddress){
+                navigator.clipboard.writeText(connectedAddress).then(() => {
+                    showNotif('Address copied');
+                });
+            }
+        }
+
+        function closeDepositModal(){
+            const m = document.getElementById('deposit-modal');
+            if(m) m.remove();
+        }
+
+        function showWithdrawModal(){
+            const tokens = getAvailableTokens();
+            const modal = document.createElement('div');
+            modal.id = 'withdraw-modal';
+            modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:9999';
+            modal.innerHTML = `
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:2rem;width:420px;max-width:90vw">
+                    <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:1.5rem">Withdraw</h3>
+                    <label style="font-size:.75rem;color:var(--text-dim);display:block;margin-bottom:.35rem">To Address</label>
+                    <div style="display:flex;align-items:center;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.65rem .85rem;margin-bottom:1rem">
+                        <input id="withdraw-addr" type="text" placeholder="0x..." style="background:transparent;border:none;outline:none;color:var(--text);font-size:.8rem;width:100%;font-family:var(--font-mono)">
+                    </div>
+                    <label style="font-size:.75rem;color:var(--text-dim);display:block;margin-bottom:.35rem">Amount</label>
+                    <div style="display:flex;align-items:center;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.65rem .85rem;margin-bottom:1rem">
+                        <input id="withdraw-amount" type="number" placeholder="0.00" step="any" min="0" style="background:transparent;border:none;outline:none;color:var(--text);font-size:.85rem;width:100%;font-family:var(--font-mono)">
+                    </div>
+                    <label style="font-size:.75rem;color:var(--text-dim);display:block;margin-bottom:.35rem">Token</label>
+                    <div id="withdraw-token-select" style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:1.5rem">
+                        ${tokens.map((t,i) => `
+                            <div class="withdraw-token-opt" data-idx="${i}" onclick="selectWithdrawToken(${i})" style="display:flex;align-items:center;gap:.6rem;padding:.6rem .85rem;background:var(--bg);border:1px solid ${i===0 ? 'var(--accent)' : 'var(--border)'};border-radius:8px;cursor:pointer;transition:all .15s">
+                                <div style="width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;background:rgba(255,255,255,.05);color:${t.color}">${t.icon}</div>
+                                <div><div style="font-size:.8rem;font-weight:600">${t.symbol}</div><div style="font-size:.65rem;color:var(--text-dim)">${t.name}</div></div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="display:flex;gap:.75rem">
+                        <button onclick="closeWithdrawModal()" style="flex:1;padding:.7rem;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-weight:600;cursor:pointer;font-size:.8rem">Cancel</button>
+                        <button onclick="executeWithdraw()" style="flex:1;padding:.7rem;border-radius:8px;border:none;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;font-size:.8rem">Withdraw</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.addEventListener('click', e => { if(e.target === modal) closeWithdrawModal(); });
+        }
+
+        let selectedWithdrawToken = 0;
+        function selectWithdrawToken(idx){
+            selectedWithdrawToken = idx;
+            document.querySelectorAll('.withdraw-token-opt').forEach((el,i) => {
+                el.style.borderColor = i === idx ? 'var(--accent)' : 'var(--border)';
+            });
+        }
+
+        function closeWithdrawModal(){
+            const m = document.getElementById('withdraw-modal');
+            if(m) m.remove();
+        }
+
+        async function executeWithdraw(){
+            const addr = document.getElementById('withdraw-addr')?.value?.trim();
+            const amount = document.getElementById('withdraw-amount')?.value;
+            const tokens = getAvailableTokens();
+            const token = tokens[selectedWithdrawToken];
+
+            if(!addr || !addr.startsWith('0x')){ alert('Enter a valid wallet address'); return; }
+            if(!amount || parseFloat(amount) <= 0){ alert('Enter a valid amount'); return; }
+
+            try {
+                const signer = await hive.provider.getSigner();
+                const value = ethers.parseEther(amount);
+
+                const btn = document.querySelector('#withdraw-modal button:last-child');
+                if(btn){ btn.textContent = 'Signing...'; btn.disabled = true; }
+
+                if(token.address === 'native'){
+                    const tx = await signer.sendTransaction({ to: addr, value });
+                    if(btn){ btn.textContent = 'Confirming...'; }
+                    await tx.wait();
+                } else {
+                    const contract = new ethers.Contract(token.address, ['function transfer(address to, uint256 amount) returns (bool)'], signer);
+                    const tx = await contract.transfer(addr, value);
+                    if(btn){ btn.textContent = 'Confirming...'; }
+                    await tx.wait();
+                }
+
+                closeWithdrawModal();
+                loadPortfolioPage();
+                showNotif('Withdrew ' + amount + ' ' + token.symbol + ' to ' + addr.slice(0,6) + '...' + addr.slice(-4));
+            } catch(e) {
+                alert('Transaction failed: ' + (e.reason || e.message));
+                const btn = document.querySelector('#withdraw-modal button:last-child');
+                if(btn){ btn.textContent = 'Withdraw'; btn.disabled = false; }
+            }
+        }
+
+        function showNotif(msg){
+            const n = document.createElement('div');
+            n.style.cssText = 'position:fixed;top:1.5rem;right:1.5rem;background:var(--green);color:#000;padding:.75rem 1.25rem;border-radius:8px;font-size:.8rem;font-weight:600;z-index:99999;animation:fadeIn .2s';
+            n.textContent = msg;
+            document.body.appendChild(n);
+            setTimeout(() => n.remove(), 3000);
+        }
+
+
+        // ═══ INIT ═══
+        async function init(){
+            if(typeof window.ethereum !== 'undefined'){
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    if(accounts.length > 0){
+                        connectedAddress = accounts[0];
+                        hiveReady = await hive.init();
+                        updateWalletUI();
+                        loadDashboardData();
+                    } else {
+                        // No wallet connected → redirect to landing
+                        // window.location.href = 'index.html';
+                        // return;
+                    }
+                } catch(e){
+                    // window.location.href = 'index.html';
+                    // return;
+                }
+            } else {
+                // No wallet provider → redirect to landing
+                // window.location.href = 'index.html';
+                // return;
+            }
+
+            // Listen for account changes
+            if(window.ethereum){
+                window.ethereum.on('accountsChanged', (accounts) => {
+                    if(accounts.length > 0){
+                        connectedAddress = accounts[0];
+                        hive.address = connectedAddress;
+                        updateWalletUI();
+                        loadDashboardData();
+                    } else {
+                        connectedAddress = null;
+                        document.getElementById('walletAddr').textContent = 'Connect Wallet';
+                        document.getElementById('walletDot').style.background = 'var(--text-muted)';
+                    }
+                });
+                window.ethereum.on('chainChanged', () => location.reload());
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

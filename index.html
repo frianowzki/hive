@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hive — Compliant AI Launchpad on Ritual Testnet</title>
+    <title>Hive — Compliant AI Launchpad on Ritual Chain</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -176,6 +176,72 @@
             .mini-footer{padding:.4rem 1.5rem}
             .mini-footer-links{display:none}
         }
+
+        /* ═══ MODALS ═══ */
+        .modal-overlay{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+        .modal-overlay.open{opacity:1;pointer-events:all}
+        .modal{position:relative;width:420px;max-width:90vw;max-height:85vh;overflow-y:auto;background:#0a0a0a;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:2rem;transform:scale(.95);transition:transform .3s}
+        .modal-overlay.open .modal{transform:scale(1)}
+        .modal-frosted{background:rgba(10,10,10,.55);backdrop-filter:blur(24px) saturate(1.6);-webkit-backdrop-filter:blur(24px) saturate(1.6);border:1px solid rgba(255,255,255,.1);box-shadow:0 8px 32px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.04)}
+        .modal-close{position:absolute;top:1rem;right:1rem;width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:var(--text-dim);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-size:1rem;line-height:1}
+        .modal-close:hover{border-color:rgba(255,255,255,.15);color:var(--text)}
+        .modal-title{font-family:var(--font-display);font-size:1.35rem;font-weight:800;letter-spacing:-.02em;margin-bottom:.4rem}
+        .modal-sub{font-size:.8rem;color:var(--text-dim);margin-bottom:1.5rem;line-height:1.5}
+        .modal-divider{height:1px;background:var(--border);margin:1.25rem 0}
+
+        /* Role Selection */
+        .role-options{display:flex;flex-direction:column;gap:.6rem}
+        .role-card{display:flex;align-items:center;gap:1rem;padding:1rem 1.25rem;background:rgba(15,15,15,.9);border:1px solid rgba(255,255,255,.06);border-radius:12px;cursor:pointer;transition:all .3s}
+        .role-card:hover{border-color:var(--accent);background:var(--accent-glow)}
+        .role-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;overflow:hidden}
+        .role-icon.user{background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.12)}
+        .role-icon.user::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(139,92,246,.15),transparent 70%)}
+        .role-icon.retail{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.12)}
+        .role-icon.retail::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(34,197,94,.15),transparent 70%)}
+        .role-icon svg{width:24px;height:24px;position:relative;z-index:1}
+        .role-info{flex:1}
+        .role-name{font-family:var(--font-display);font-size:.95rem;font-weight:700;margin-bottom:.15rem}
+        .role-desc{font-size:.7rem;color:var(--text-dim);line-height:1.4}
+        .role-badge{font-size:.55rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;padding:.2rem .5rem;border-radius:4px;flex-shrink:0}
+        .role-badge.no-kyc{background:rgba(139,92,246,.1);color:var(--accent-light);border:1px solid rgba(139,92,246,.15)}
+        .role-badge.kyb{background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.15)}
+
+        /* Wallet Connect */
+        .wallet-section-label{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--text-muted);margin-bottom:.6rem}
+        .wallet-options{display:flex;flex-direction:column;gap:.4rem}
+        .wallet-btn{display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;background:rgba(15,15,15,.9);border:1px solid rgba(255,255,255,.06);border-radius:10px;cursor:pointer;transition:all .3s;font-family:var(--font);font-size:.8rem;font-weight:500;color:var(--text)}
+        .wallet-btn:hover{border-color:var(--accent);background:var(--accent-glow)}
+        .wallet-btn img,.wallet-btn svg{width:28px;height:28px;flex-shrink:0;border-radius:6px;object-fit:contain}
+        .wallet-btn-name{flex:1;text-align:left}
+        .wallet-btn-tag{font-size:.55rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);padding:.15rem .4rem;background:rgba(255,255,255,.04);border-radius:3px}
+        .modal-back{display:flex;align-items:center;gap:.3rem;font-size:.7rem;color:var(--text-dim);cursor:pointer;margin-bottom:1rem;transition:color .2s;background:none;border:none;font-family:var(--font)}
+        .modal-back:hover{color:var(--text)}
+        .modal-back svg{width:14px;height:14px}
+
+        /* Sign Modal */
+        .sign-icon-wrap{display:flex;align-items:center;justify-content:center;width:80px;height:80px;border-radius:20px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.12);margin:1.5rem auto;position:relative;overflow:hidden}
+        .sign-icon-wrap::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(139,92,246,.15),transparent 70%)}
+        .sign-icon-wrap svg{position:relative;z-index:1;color:var(--accent)}
+        .sign-status{display:flex;align-items:center;justify-content:center;gap:.5rem;font-size:.75rem;color:var(--text-dim);margin-bottom:1.5rem;min-height:24px}
+        .sign-status.success{color:var(--green)}
+        .sign-status.error{color:#ef4444}
+        .sign-spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.1);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
+
+        /* Network Modal */
+        .network-info{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:1rem;margin-bottom:1.5rem}
+        .network-row{display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,.04)}
+        .network-row:last-child{border-bottom:none}
+        .network-label{font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em}
+        .network-value{font-size:.75rem;color:var(--text);font-family:var(--font-mono)}
+        .network-rpc{font-size:.75rem;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+        /* Buttons */
+        .btn-primary{display:flex;align-items:center;justify-content:center;gap:.5rem;width:100%;padding:.85rem;background:var(--accent);color:white;border:none;border-radius:10px;font-family:var(--font);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s}
+        .btn-primary:hover{background:var(--accent-light);transform:translateY(-1px)}
+        .btn-primary:active{transform:translateY(0)}
+        .btn-secondary{display:flex;align-items:center;justify-content:center;gap:.5rem;width:100%;padding:.85rem;background:transparent;color:var(--text-dim);border:1px solid rgba(255,255,255,.08);border-radius:10px;font-family:var(--font);font-size:.75rem;font-weight:500;cursor:pointer;transition:all .2s;margin-top:.5rem}
+        .btn-secondary:hover{border-color:rgba(255,255,255,.15);color:var(--text)}
     </style>
 </head>
 <body>
@@ -189,6 +255,189 @@
             <li><a data-page="4">Contact</a></li>
         </ul>
     </nav>
+
+
+    <!-- MODAL: Role Selection -->
+    <div class="modal-overlay" id="roleModal">
+        <div class="modal modal-frosted">
+            <button class="modal-close" onclick="closeModal('roleModal')">&times;</button>
+            <div class="modal-title">Open Hive</div>
+            <div class="modal-sub">Choose how you want to access the platform.</div>
+            <div class="role-options">
+                <div class="role-card" onclick="selectRole('user')">
+                    <div class="role-icon user">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </div>
+                    <div class="role-info">
+                        <div class="role-name">Login as a User</div>
+                        <div class="role-desc">Access launches, stake, and participate in governance.</div>
+                    </div>
+                </div>
+                <div class="role-card" onclick="selectRole('retail')">
+                    <div class="role-icon retail">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                    </div>
+                    <div class="role-info">
+                        <div class="role-name">Login as a Retail</div>
+                        <div class="role-desc">Institutional access with higher allocation limits.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Wallet Connect -->
+    <div class="modal-overlay" id="walletModal">
+        <div class="modal modal-frosted">
+            <button class="modal-close" onclick="closeModal('walletModal')">&times;</button>
+            <button class="modal-back" onclick="backToRole()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                Back
+            </button>
+            <div class="modal-title" id="walletModalTitle">Connect Wallet</div>
+            <div class="modal-sub" id="walletModalSub">Connect your wallet or sign in with a social account.</div>
+
+            <div class="wallet-section-label">Social Login</div>
+            <div class="wallet-options" style="margin-bottom:1rem">
+                <button class="wallet-btn" onclick="connectSocial('google')">
+                    <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                    <span class="wallet-btn-name">Continue with Google</span>
+                </button>
+                <button class="wallet-btn" onclick="connectSocial('twitter')">
+                    <svg viewBox="0 0 24 24" fill="#fff"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    <span class="wallet-btn-name">Continue with X</span>
+                </button>
+                <button class="wallet-btn" onclick="connectSocial('discord')">
+                    <svg viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+                    <span class="wallet-btn-name">Continue with Discord</span>
+                </button>
+                <button class="wallet-btn" onclick="connectSocial('email')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                    <span class="wallet-btn-name">Continue with Email</span>
+                </button>
+            </div>
+
+            <div class="wallet-section-label">Wallet</div>
+            <div class="wallet-options">
+                <button class="wallet-btn" onclick="connectWallet('metamask')">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" alt="MetaMask">
+                    <span class="wallet-btn-name">MetaMask</span>
+                    <span class="wallet-btn-tag">Popular</span>
+                </button>
+                <button class="wallet-btn" onclick="connectWallet('rabby')">
+                    <img src="https://assets.rabby.io/rabby-assets/rabby.png" alt="Rabby">
+                    <span class="wallet-btn-name">Rabby Wallet</span>
+                </button>
+                <button class="wallet-btn" onclick="connectWallet('okx')">
+                    <img src="https://static.okx.com/cdn/assets/imgs/247/58E63FEA4F534DC0.png" alt="OKX">
+                    <span class="wallet-btn-name">OKX Wallet</span>
+                </button>
+                <button class="wallet-btn" onclick="connectWallet('coinbase')">
+                    <img src="https://images.ctfassets.net/q5ulk4qp683w/2JG4pdf2lVeWsNePwBDQBx/eab29cc82a4d0e5f8dd46e12f82658c6/coinbase-icon2.svg" alt="Coinbase">
+                    <span class="wallet-btn-name">Coinbase Wallet</span>
+                </button>
+                <button class="wallet-btn" onclick="connectWallet('walletconnect')">
+                    <img src="https://altcoinsbox.com/wp-content/uploads/2023/04/wallet-connect-logo.png" alt="WalletConnect">
+                    <span class="wallet-btn-name">WalletConnect</span>
+                </button>
+                <button class="wallet-btn" onclick="connectWallet('trust')">
+                    <img src="https://trustwallet.com/assets/images/media/assets/TWT.png" alt="Trust Wallet">
+                    <span class="wallet-btn-name">Trust Wallet</span>
+                </button>
+                <button class="wallet-btn" onclick="connectWallet('phantom')">
+                    <img src="https://phantom.app/img/phantom-logo.svg" alt="Phantom">
+                    <span class="wallet-btn-name">Phantom</span>
+                </button>
+                <button class="wallet-btn" onclick="connectWallet('safe')">
+                    <img src="https://safe.global/favicon.ico" alt="Safe">
+                    <span class="wallet-btn-name">Safe</span>
+                </button>
+                <button class="wallet-btn" onclick="connectWallet('frame')">
+                    <img src="https://frame.sh/favicon.ico" alt="Frame">
+                    <span class="wallet-btn-name">Frame</span>
+                </button>
+                <button class="wallet-btn" onclick="connectWallet('tokenpocket')">
+                    <img src="https://www.tokenpocket.pro/favicon.ico" alt="TokenPocket">
+                    <span class="wallet-btn-name">TokenPocket</span>
+                </button>
+            </div>
+
+            <div class="modal-divider"></div>
+            <div style="font-size:.65rem;color:var(--text-muted);line-height:1.5;text-align:center">By connecting, you agree to Hive's Terms of Service and Privacy Policy.</div>
+        </div>
+    </div>
+
+    <!-- MODAL: Sign Wallet -->
+    <div class="modal-overlay" id="signModal">
+        <div class="modal modal-frosted">
+            <button class="modal-close" onclick="closeModal('signModal')">&times;</button>
+            <div class="modal-title">Sign to Verify</div>
+            <div class="modal-sub">Sign a message to verify your wallet ownership. This is free and does not send any transaction.</div>
+            
+            <div class="sign-icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
+                    <path d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z"/>
+                </svg>
+            </div>
+
+            <div class="sign-status" id="signStatus">
+                <div class="sign-spinner"></div>
+                <span>Waiting for signature...</span>
+            </div>
+
+            <button class="btn-primary" id="signBtn" onclick="requestSign()">
+                Sign Message
+            </button>
+            
+            <div class="modal-divider"></div>
+            <div style="font-size:.65rem;color:var(--text-muted);line-height:1.5;text-align:center">Your wallet will ask you to sign a message. No gas fees required.</div>
+        </div>
+    </div>
+
+    <!-- MODAL: Add Network -->
+    <div class="modal-overlay" id="networkModal">
+        <div class="modal modal-frosted">
+            <button class="modal-close" onclick="closeModal('networkModal')">&times;</button>
+            <div class="modal-title">Add Ritual Chain</div>
+            <div class="modal-sub">Your wallet doesn't have Ritual Chain configured. Add it to continue.</div>
+            
+            <div class="network-info">
+                <div class="network-row">
+                    <span class="network-label">Network Name</span>
+                    <span class="network-value">Ritual Chain</span>
+                </div>
+                <div class="network-row">
+                    <span class="network-label">Chain ID</span>
+                    <span class="network-value">1979</span>
+                </div>
+                <div class="network-row">
+                    <span class="network-label">Currency Symbol</span>
+                    <span class="network-value">RITUAL</span>
+                </div>
+                <div class="network-row">
+                    <span class="network-label">RPC URL</span>
+                    <span class="network-value network-rpc">https://rpc.ritualfoundation.org</span>
+                </div>
+                <div class="network-row">
+                    <span class="network-label">Explorer</span>
+                    <span class="network-value">https://explorer.ritualfoundation.org</span>
+                </div>
+                <div class="network-row">
+                    <span class="network-label">Faucet</span>
+                    <span class="network-value">https://faucet.ritualfoundation.org</span>
+                </div>
+            </div>
+
+            <button class="btn-primary" id="addNetworkBtn" onclick="addRitualNetwork()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                    <path d="M12 4.5v15m7.5-7.5h-15"/>
+                </svg>
+                Add to Wallet
+            </button>
+
+            <button class="btn-secondary" onclick="skipNetwork()">Skip for now</button>
+        </div>
+    </div>
 
     <div class="page-dots" id="pageDots">
         <div class="dot active" data-page="0"></div>
@@ -207,7 +456,7 @@
             <div class="page-inner">
                 <div class="hero-content">
                     <h1 class="fi">The <span class="g">compliant AI launchpad</span> for forward-thinking DeFi.</h1>
-                    <p class="hero-desc fi d1">Fully on-chain, zk-proofed AI launchpad built on Ritual Testnet.<br>AI market makers, federated learning, autonomous agents,<br>and DAO governance — all with KYC/KYB compliance.</p>
+                    <p class="hero-desc fi d1">Fully on-chain, zk-proofed AI launchpad built on Ritual Chain.<br>AI market makers, federated learning, autonomous agents,<br>and DAO governance — all with KYC/KYB compliance.</p>
                     <div class="hero-actions fi d2">
                         <a href="#contact" class="btn btn-p cool-btn" id="ctaBtn" onclick="coolClick(this);return false">Open Hive<svg class="btn-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
                     </div>
@@ -391,9 +640,9 @@
                 <div class="about-grid">
                     <div class="about-text fi d1">
                         <h3>Building the future of compliant DeFi</h3>
-                        <p>Hive is a fully on-chain AI launchpad built on Ritual Testnet. We combine zero-knowledge proofs, artificial intelligence, and decentralized governance to create a compliant, privacy-preserving DeFi ecosystem.</p>
+                        <p>Hive is a fully on-chain AI launchpad built on Ritual Chain. We combine zero-knowledge proofs, artificial intelligence, and decentralized governance to create a compliant, privacy-preserving DeFi ecosystem.</p>
                         <p>Our architecture features 29 smart contracts, all fully interconnected and tested with 300 passing tests. Every component is designed for security, scalability, and compliance.</p>
-                        <p>We leverage Ritual Testnet's native precompiles — LLM inference, HTTP requests, DKMS key management, ECIES encryption, and Passkey authentication.</p>
+                        <p>We leverage Ritual Chain's native precompiles — LLM inference, HTTP requests, DKMS key management, ECIES encryption, and Passkey authentication.</p>
                         <div class="about-feats">
                             <div class="about-feat"><i>●</i> 29 Contracts Deployed</div>
                             <div class="about-feat"><i>●</i> 300 Tests Passing</div>
@@ -408,7 +657,7 @@
                             <div>
                                 <div class="team-role">Builder</div>
                                 <h4 class="team-name">Frian</h4>
-                                <p class="team-bio">Full-stack Web3 builder. DeFi architect. Leading Hive's smart contract development, AI integration, and Ritual Testnet optimization.</p>
+                                <p class="team-bio">Full-stack Web3 builder. DeFi architect. Leading Hive's smart contract development, AI integration, and Ritual Chain optimization.</p>
                             </div>
                         </div>
                         </div>
@@ -422,7 +671,7 @@
             <div class="bg-grid"></div>
             <div class="bg-glow" style="top:50%;left:50%;transform:translate(-50%,-50%);background:var(--accent);opacity:.12"></div>
             <div class="page-inner">
-                <p class="contact-sub fi">Interested in building on Hive? Want to integrate with our AI launchpad? Or just want to chat about Ritual Testnet? Reach out.</p>
+                <p class="contact-sub fi">Interested in building on Hive? Want to integrate with our AI launchpad? Or just want to chat about Ritual Chain? Reach out.</p>
                 <div class="contact-actions fi d1">
                     <a href="https://github.com/frianowzki/hive" target="_blank" class="btn btn-p">View on GitHub<svg class="btn-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg></a>
                     <a href="mailto:friokurniawan@gmail.com" class="btn btn-o">Email Us</a>
@@ -430,7 +679,7 @@
                 <div class="contact-info fi d2">
                     <div class="contact-info-item">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                        <span>Ritual Testnet</span>
+                        <span>Ritual Chain</span>
                     </div>
                     <div class="contact-info-item">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
@@ -446,7 +695,7 @@
     </div>
 
     <div class="mini-footer">
-        <p>© 2026 Hive. Built on <a href="https://ritual.net" target="_blank">Ritual Testnet</a>.</p>
+        <p>© 2026 Hive. Built on <a href="https://ritual.net" target="_blank">Ritual Chain</a>.</p>
         <div class="mini-footer-links">
             <a href="https://github.com/frianowzki/hive" target="_blank">GitHub</a>
             <a href="https://x.com/widyakrnwn" target="_blank">X</a>
@@ -455,7 +704,7 @@
     </div>
 
     <script>
-        let currentPage=0;const totalPages=5;let autoScroll=true;let autoScrollTimer=null;const autoScrollDuration=8000;let dotsTimeout;
+        let currentPage=0;const totalPages=4;let autoScroll=true;let autoScrollTimer=null;const autoScrollDuration=8000;let dotsTimeout;
 
         function goToPage(index){
             if(index===currentPage||index<0||index>=totalPages)return;
@@ -644,8 +893,186 @@
                     else p.remove();
                 })(performance.now());
             }
-            setTimeout(()=>goToPage(4),800);
+            setTimeout(()=>goToPage(3),800);
         }
+
+
+        // ═══ MODALS ═══
+        let selectedRole = null;
+
+        function openRoleModal(){
+            document.getElementById('roleModal').classList.add('open');
+            document.body.style.overflow='hidden';
+            autoScroll = false;
+        }
+
+        function openModal(id){
+            document.getElementById(id).classList.add('open');
+            document.body.style.overflow='hidden';
+        }
+
+        function closeModal(id){
+            document.getElementById(id).classList.remove('open');
+            document.body.style.overflow='';
+        }
+
+        function selectRole(role){
+            selectedRole = role;
+            closeModal('roleModal');
+            setTimeout(()=>{
+                const title = document.getElementById('walletModalTitle');
+                const sub = document.getElementById('walletModalSub');
+                if(role === 'user'){
+                    title.textContent = 'Connect Wallet';
+                    sub.textContent = 'Connect your wallet or sign in with a social account.';
+                } else {
+                    title.textContent = 'Institutional Access';
+                    sub.textContent = 'Connect your institutional wallet for retail access.';
+                }
+                openModal('walletModal');
+            }, 200);
+        }
+
+        function backToRole(){
+            closeModal('walletModal');
+            setTimeout(()=>openRoleModal(), 200);
+        }
+
+        function connectSocial(provider){
+            console.log('[Hive] Social login:', provider, 'Role:', selectedRole);
+            // TODO: Integrate Privy SDK
+            closeModal('walletModal');
+        }
+
+        // ═══ RITUAL CHAIN CONFIG ═══
+        const RITUAL_CHAIN_ID = 1979;
+        const RITUAL_NETWORK = {
+            chainId: '0x' + RITUAL_CHAIN_ID.toString(16),
+            chainName: 'Ritual Chain',
+            nativeCurrency: { name: 'RITUAL', symbol: 'RITUAL', decimals: 18 },
+            rpcUrls: ['https://rpc.ritualfoundation.org'],
+            blockExplorerUrls: ['https://explorer.ritualfoundation.org']
+        };
+
+        let connectedAddress = null;
+        let connectedProvider = null;
+
+        async function connectWallet(wallet){
+            console.log('[Hive] Wallet connect:', wallet, 'Role:', selectedRole);
+            if(typeof window.ethereum === 'undefined'){
+                alert('Please install a wallet extension (MetaMask, Rabby, etc.) to continue.');
+                return;
+            }
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                if(accounts.length === 0){ alert('No accounts found. Please unlock your wallet.'); return; }
+                connectedAddress = accounts[0];
+                connectedProvider = window.ethereum;
+                console.log('[Hive] Connected:', connectedAddress);
+                closeModal('walletModal');
+                setTimeout(() => { openModal('signModal'); }, 200);
+            } catch(err) {
+                console.error('[Hive] Connection error:', err);
+                if(err.code === 4001) console.log('[Hive] User rejected connection');
+                else alert('Failed to connect wallet: ' + err.message);
+            }
+        }
+
+        async function requestSign(){
+            if(!connectedAddress || !connectedProvider){ alert('No wallet connected.'); return; }
+            const signBtn = document.getElementById('signBtn');
+            const signStatus = document.getElementById('signStatus');
+            signBtn.disabled = true;
+            signBtn.textContent = 'Signing...';
+            signStatus.innerHTML = '<div class="sign-spinner"></div><span>Waiting for signature...</span>';
+            signStatus.className = 'sign-status';
+            try {
+                const message = 'Welcome to Hive!\n\nSign this message to verify your wallet ownership.\n\nAddress: ' + connectedAddress + '\nTimestamp: ' + Date.now() + '\nNetwork: Ritual Chain';
+                const signature = await connectedProvider.request({ method: 'personal_sign', params: [message, connectedAddress] });
+                console.log('[Hive] Signature:', signature);
+                signStatus.innerHTML = '✓ Signature verified successfully!';
+                signStatus.className = 'sign-status success';
+                signBtn.textContent = 'Continue';
+                signBtn.onclick = () => { closeModal('signModal'); checkAndAddNetwork(); };
+            } catch(err) {
+                console.error('[Hive] Sign error:', err);
+                signStatus.innerHTML = '✗ Signature failed or rejected';
+                signStatus.className = 'sign-status error';
+                signBtn.disabled = false;
+                signBtn.textContent = 'Try Again';
+                if(err.code === 4001) signStatus.innerHTML = '✗ Signature rejected by user';
+            }
+        }
+
+        async function checkAndAddNetwork(){
+            if(!connectedProvider) return;
+            try {
+                const chainId = await connectedProvider.request({ method: 'eth_chainId' });
+                const currentChainId = parseInt(chainId, 16);
+                console.log('[Hive] Current chain:', currentChainId);
+                if(currentChainId !== RITUAL_CHAIN_ID) setTimeout(() => { openModal('networkModal'); }, 200);
+                else showConnectedState();
+            } catch(err) {
+                console.error('[Hive] Network check error:', err);
+                setTimeout(() => { openModal('networkModal'); }, 200);
+            }
+        }
+
+        async function addRitualNetwork(){
+            if(!connectedProvider) return;
+            const addBtn = document.getElementById('addNetworkBtn');
+            addBtn.disabled = true;
+            addBtn.innerHTML = '<div class="sign-spinner"></div> Adding...';
+            try {
+                await connectedProvider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: RITUAL_NETWORK.chainId }] });
+                closeModal('networkModal');
+                showConnectedState();
+            } catch(err) {
+                if(err.code === 4902){
+                    try {
+                        await connectedProvider.request({ method: 'wallet_addEthereumChain', params: [RITUAL_NETWORK] });
+                        closeModal('networkModal');
+                        showConnectedState();
+                    } catch(addErr) {
+                        alert('Failed to add network: ' + addErr.message);
+                        addBtn.disabled = false; addBtn.innerHTML = 'Try Again';
+                    }
+                } else if(err.code === 4001){ addBtn.disabled = false; addBtn.innerHTML = 'Try Again'; }
+                else { alert('Failed to switch network: ' + err.message); addBtn.disabled = false; addBtn.innerHTML = 'Try Again'; }
+            }
+        }
+
+        function skipNetwork(){ closeModal('networkModal'); showConnectedState(); }
+
+        function showConnectedState(){
+            const ctaBtn = document.getElementById('ctaBtn');
+            if(ctaBtn && connectedAddress){
+                const shortAddr = connectedAddress.slice(0,6) + '...' + connectedAddress.slice(-4);
+                ctaBtn.innerHTML = '<span style="display:flex;align-items:center;gap:.5rem"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>' + shortAddr + '</span>';
+                ctaBtn.onclick = () => console.log('[Hive] Connected as:', connectedAddress);
+            }
+            console.log('[Hive] Connection complete!', { address: connectedAddress, role: selectedRole, network: 'Ritual Chain' });
+        }
+
+        if(typeof window.ethereum !== 'undefined'){
+            window.ethereum.on('accountsChanged', (accounts) => {
+                if(accounts.length === 0){ connectedAddress = null; location.reload(); }
+                else { connectedAddress = accounts[0]; showConnectedState(); }
+            });
+            window.ethereum.on('chainChanged', () => location.reload());
+        }
+
+        // Close modal on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(overlay=>{
+            overlay.addEventListener('click',e=>{ if(e.target===overlay) closeModal(overlay.id); });
+        });
+
+        // Close modal on Escape
+        document.addEventListener('keydown',e=>{
+            if(e.key==='Escape'){
+                document.querySelectorAll('.modal-overlay.open').forEach(m=>closeModal(m.id));
+            }
+        });
 
     </script>
 </body>
