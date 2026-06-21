@@ -2010,7 +2010,7 @@
                             <div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px">
                                 <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Protocol Fee</div>
                                 <div style="font-size:1.2rem;font-weight:800;color:var(--text-dim)" id="postFee">—</div>
-                                <div style="font-size:.6rem;color:var(--text-muted);margin-top:.3rem">2% to Hive treasury</div>
+                                <div style="font-size:.6rem;color:var(--text-muted);margin-top:.3rem">1% to Hive treasury</div>
                             </div>
                             <div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px">
                                 <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">To Deployer</div>
@@ -2027,7 +2027,7 @@
                                     <div style="font-size:.7rem;color:var(--text-dim)">Choose when to unlock tokens and open trading</div>
                                 </div>
                                 <div style="display:flex;align-items:center;gap:.5rem">
-                                    <span style="font-size:.65rem;color:var(--text-muted)">Lock after sale</span>
+                                        <span style="font-size:.65rem;color:var(--text-muted)">Lock after sale</span>
                                     <label style="position:relative;display:inline-block;width:44px;height:24px">
                                         <input type="checkbox" id="tokenLockToggle" checked style="opacity:0;width:0;height:0" onchange="updatePostSale()">
                                         <span style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:var(--accent);border-radius:12px;transition:.2s"></span>
@@ -2431,15 +2431,15 @@
             // Post-sale numbers (assume 100k hiveUSD as example)
             const exampleRaised = 100000;
             const liqAmount = (exampleRaised * liqPct / 100).toFixed(0);
-            const feeAmount = (exampleRaised * 0.02).toFixed(0);
+            const feeAmount = (exampleRaised * 0.01).toFixed(0);
             const deployerAmount = (exampleRaised - liqAmount - feeAmount).toFixed(0);
 
             const liqEl = document.getElementById('postLiq');
             if(liqEl) liqEl.textContent = liqPct + '%';
             const feeEl = document.getElementById('postFee');
-            if(feeEl) feeEl.textContent = '2%';
+            if(feeEl) feeEl.textContent = '1%';
             const deployerEl = document.getElementById('postDeployer');
-            if(deployerEl) deployerEl.textContent = (100 - liqPct - 2) + '%';
+            if(deployerEl) deployerEl.textContent = (100 - liqPct - 1) + '%';
         }
 
         let selectedVestingType = 'none';
