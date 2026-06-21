@@ -578,6 +578,20 @@
             </div>
         </div>
 
+        <!-- PAGE: Launch -->
+        <div class="content page-content" id="page-launch" style="display:none">
+            <div id="launch-content">
+                <div style="color:var(--text-muted);text-align:center;padding:4rem">Loading...</div>
+            </div>
+        </div>
+
+        <!-- PAGE: AI Market Maker -->
+        <div class="content page-content" id="page-maker" style="display:none">
+            <div id="maker-content">
+                <div style="color:var(--text-muted);text-align:center;padding:4rem">Loading...</div>
+            </div>
+        </div>
+
         <!-- PAGE: Generic placeholder for other pages -->
         <div class="content page-content" id="page-generic" style="display:none">
             <div class="content-header">
@@ -621,6 +635,7 @@
         // ═══ STATE ═══
         let connectedAddress = null;
         let hiveReady = false;
+        let userRole = localStorage.getItem('hive_role') || 'user'; // 'user' or 'retail'
 
         // ═══ PAGE SWITCHING ═══
         function switchPage(page){
@@ -655,6 +670,12 @@
             } else if(page === 'faucet'){
                 document.getElementById('page-faucet').style.display = '';
                 loadFaucetPage();
+            } else if(page === 'launch'){
+                document.getElementById('page-launch').style.display = '';
+                loadLaunchPage();
+            } else if(page === 'maker'){
+                document.getElementById('page-maker').style.display = '';
+                loadMakerPage();
             } else if(page === 'profile'){
                 document.getElementById('page-profile').style.display = '';
                 loadProfilePage();
@@ -1738,6 +1759,789 @@
                 });
                 window.ethereum.on('chainChanged', () => location.reload());
             }
+        }
+
+        // ═══ RETAIL GATE ═══
+        function showRetailGate(pageName){
+            return `
+                <div style="text-align:center;padding:6rem 2rem;max-width:480px;margin:0 auto">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" width="56" height="56" style="margin-bottom:1.5rem;opacity:.6">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    <div style="font-size:1.2rem;font-weight:700;margin-bottom:.5rem">Retail Access Required</div>
+                    <div style="color:var(--text-dim);font-size:.85rem;line-height:1.7;margin-bottom:2rem">
+                        ${pageName} is exclusively available for verified retail and institutional users. 
+                        Complete KYB (Know Your Business) verification to unlock this feature.
+                    </div>
+                    <div style="display:flex;gap:.75rem;justify-content:center">
+                        <button onclick="window.location.href='index.html'" style="padding:.75rem 1.5rem;border-radius:8px;background:var(--accent);border:none;color:#fff;font-weight:600;cursor:pointer;font-size:.8rem">
+                            Switch to Retail Account
+                        </button>
+                        <button onclick="switchPage('dashboard')" style="padding:.75rem 1.5rem;border-radius:8px;background:transparent;border:1px solid var(--border);color:var(--text-dim);font-weight:600;cursor:pointer;font-size:.8rem">
+                            Back to Dashboard
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ═══ TOKEN LAUNCH PAGE ═══
+        let launchTab = 'create'; // 'create' | 'active' | 'my'
+
+        function loadLaunchPage(){
+            const container = document.getElementById('launch-content');
+            
+            if(!connectedAddress){
+                container.innerHTML = `
+                    <div style="text-align:center;padding:4rem 2rem">
+                        <div style="font-size:.95rem;font-weight:600;margin-bottom:.5rem">Connect Your Wallet</div>
+                        <div style="color:var(--text-muted);font-size:.8rem;margin-bottom:1.5rem">Connect your wallet to access Token Launch</div>
+                        <button class="action-btn" onclick="connectFromDashboard()" style="margin:0 auto;padding:.75rem 2rem;border-radius:10px;background:var(--accent);border:none;color:#fff;font-weight:600;cursor:pointer">Connect Wallet</button>
+                    </div>
+                `;
+                return;
+            }
+
+            if(userRole !== 'retail'){
+                container.innerHTML = showRetailGate('Token Launch');
+                return;
+            }
+
+            container.innerHTML = `
+                <style>
+                    .launch-tabs{display:flex;gap:.25rem;margin-bottom:2rem;border-bottom:1px solid var(--border);padding-bottom:.75rem}
+                    .launch-tab{padding:.5rem 1rem;font-size:.75rem;font-weight:600;cursor:pointer;border-radius:6px 6px 0 0;transition:all .15s;color:var(--text-dim);border-bottom:2px solid transparent}
+                    .launch-tab:hover{color:var(--text)}
+                    .launch-tab.active{color:var(--accent-light);border-bottom-color:var(--accent)}
+                    .launch-form{max-width:640px}
+                    .form-group{margin-bottom:1.25rem}
+                    .form-label{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin-bottom:.4rem;display:block}
+                    .form-input{width:100%;padding:.65rem .85rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.8rem;font-family:var(--font);outline:none;transition:border-color .15s}
+                    .form-input:focus{border-color:var(--accent)}
+                    .form-input::placeholder{color:var(--text-muted)}
+                    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+                    .form-hint{font-size:.65rem;color:var(--text-muted);margin-top:.3rem}
+                    .phase-card{padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:.75rem;cursor:pointer;transition:all .15s}
+                    .phase-card:hover{border-color:rgba(255,255,255,.1)}
+                    .phase-card.selected{border-color:var(--accent);background:rgba(139,92,246,.05)}
+                    .phase-card .phase-name{font-size:.85rem;font-weight:600;margin-bottom:.25rem}
+                    .phase-card .phase-desc{font-size:.7rem;color:var(--text-dim)}
+                    .phase-card .phase-badge{display:inline-block;font-size:.55rem;font-weight:600;padding:.15rem .4rem;border-radius:3px;margin-left:.5rem}
+                    .badge-kyc{background:rgba(34,197,94,.15);color:var(--green)}
+                    .badge-kycb{background:rgba(139,92,246,.15);color:var(--accent-light)}
+                    .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:2rem}
+                    .stat-card{padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px}
+                    .stat-card .stat-label{font-size:.6rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem}
+                    .stat-card .stat-value{font-size:1.3rem;font-weight:800;font-family:var(--font-display)}
+                    .stat-card .stat-sub{font-size:.6rem;color:var(--text-muted);margin-top:.2rem}
+                    .sale-list{display:flex;flex-direction:column;gap:.75rem}
+                    .sale-item{display:flex;align-items:center;gap:1rem;padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;cursor:pointer;transition:all .15s}
+                    .sale-item:hover{border-color:rgba(255,255,255,.1);background:var(--bg-card-hover)}
+                    .sale-logo{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;flex-shrink:0}
+                    .sale-info{flex:1;min-width:0}
+                    .sale-name{font-size:.9rem;font-weight:700;margin-bottom:.15rem}
+                    .sale-meta{font-size:.7rem;color:var(--text-dim)}
+                    .sale-progress{width:120px;flex-shrink:0}
+                    .progress-bar{height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin-bottom:.35rem}
+                    .progress-fill{height:100%;border-radius:3px;background:var(--accent);transition:width .3s}
+                    .progress-text{font-size:.65rem;color:var(--text-dim);text-align:right}
+                    .btn-launch{padding:.85rem 2rem;border-radius:10px;background:var(--accent);border:none;color:#fff;font-weight:700;cursor:pointer;font-size:.85rem;transition:all .15s;box-shadow:0 4px 16px rgba(139,92,246,.25)}
+                    .btn-launch:hover{background:var(--accent-dark);transform:translateY(-1px)}
+                    .btn-launch:disabled{opacity:.4;cursor:not-allowed;transform:none}
+                    .allocation-bar{display:flex;gap:.25rem;height:24px;border-radius:6px;overflow:hidden;margin:.75rem 0}
+                    .alloc-seg{display:flex;align-items:center;justify-content:center;font-size:.55rem;font-weight:600;color:#fff;min-width:30px}
+                </style>
+
+                <div class="launch-tabs">
+                    <div class="launch-tab active" onclick="switchLaunchTab('create')">Create Sale</div>
+                    <div class="launch-tab" onclick="switchLaunchTab('active')">Active Sales</div>
+                    <div class="launch-tab" onclick="switchLaunchTab('my')">My Launches</div>
+                </div>
+
+                <div id="launch-tab-content"></div>
+            `;
+
+            renderLaunchTab('create');
+        }
+
+        function switchLaunchTab(tab){
+            launchTab = tab;
+            document.querySelectorAll('.launch-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.launch-tab[onclick="switchLaunchTab('${tab}')"]`).classList.add('active');
+            renderLaunchTab(tab);
+        }
+
+        function renderLaunchTab(tab){
+            const container = document.getElementById('launch-tab-content');
+            if(!container) return;
+
+            if(tab === 'create'){
+                container.innerHTML = `
+                    <div class="launch-form">
+                        <div style="font-size:1.1rem;font-weight:700;margin-bottom:.25rem">Create Token Sale</div>
+                        <div style="color:var(--text-dim);font-size:.8rem;margin-bottom:2rem">Deploy your token and configure the sale parameters. Hive smart contract will handle distribution.</div>
+
+                        <!-- Token Config -->
+                        <div style="font-size:.75rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:1rem">Token Configuration</div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Token Logo</label>
+                            <div style="display:flex;align-items:center;gap:1rem">
+                                <div id="tokenLogoPreview" style="width:56px;height:56px;border-radius:14px;background:var(--bg-card);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);font-size:1.5rem" onclick="document.getElementById('tokenLogoInput').click()">+</div>
+                                <div>
+                                    <div style="font-size:.75rem;color:var(--text-dim)">Upload token logo (PNG, SVG)</div>
+                                    <div style="font-size:.65rem;color:var(--text-muted)">Recommended: 256x256px</div>
+                                </div>
+                                <input type="file" id="tokenLogoInput" accept="image/*" style="display:none" onchange="previewTokenLogo(this)">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Token Name</label>
+                                <input class="form-input" id="launch-token-name" placeholder="e.g. Hive Token">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Symbol</label>
+                                <input class="form-input" id="launch-token-symbol" placeholder="e.g. HIVE" style="text-transform:uppercase">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Total Supply</label>
+                                <input class="form-input" id="launch-supply" type="number" placeholder="1000000000">
+                                <div class="form-hint">Fixed supply after deployment</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Sale Price (per token)</label>
+                                <input class="form-input" id="launch-price" type="number" placeholder="0.01" step="0.0001">
+                                <div class="form-hint">Price in RITUAL</div>
+                            </div>
+                        </div>
+
+                        <!-- Project Info -->
+                        <div style="font-size:.75rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin:2rem 0 1rem">Project Information</div>
+
+                        <div class="form-group">
+                            <label class="form-label">Project Name</label>
+                            <input class="form-input" id="launch-project-name" placeholder="e.g. Hive Protocol">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Project Link <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
+                            <input class="form-input" id="launch-project-link" placeholder="https://">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Twitter / X <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
+                                <input class="form-input" id="launch-twitter" placeholder="@handle">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Discord <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
+                                <input class="form-input" id="launch-discord" placeholder="discord.gg/...">
+                            </div>
+                        </div>
+
+                        <!-- Allocation -->
+                        <div style="font-size:.75rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin:2rem 0 1rem">Token Allocation</div>
+                        <div style="color:var(--text-dim);font-size:.8rem;margin-bottom:1rem">
+                            Set what percentage of total supply goes to the sale. The allocated tokens will be held by the Hive smart contract and distributed to participants.
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Sale Allocation (%)</label>
+                            <div style="display:flex;align-items:center;gap:1rem">
+                                <input class="form-input" id="launch-allocation" type="number" min="1" max="90" value="30" style="width:100px" oninput="updateAllocationPreview()">
+                                <span style="font-size:.8rem;color:var(--text-dim)">%</span>
+                                <div style="font-size:.75rem;color:var(--text-muted)" id="allocPreview">300,000,000 tokens for sale</div>
+                            </div>
+                        </div>
+
+                        <div class="allocation-bar" id="allocBar">
+                            <div class="alloc-seg" style="flex:30;background:var(--accent)">Sale 30%</div>
+                            <div class="alloc-seg" style="flex:20;background:var(--green)">Team 20%</div>
+                            <div class="alloc-seg" style="flex:15;background:rgba(234,179,8,.6)">Liquidity 15%</div>
+                            <div class="alloc-seg" style="flex:35;background:rgba(255,255,255,.08)">Reserve 35%</div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Team Allocation (%)</label>
+                                <input class="form-input" id="launch-team-alloc" type="number" min="0" max="50" value="20" oninput="updateAllocationPreview()">
+                                <div class="form-hint">Vested over 12 months</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Liquidity Allocation (%)</label>
+                                <input class="form-input" id="launch-liq-alloc" type="number" min="0" max="50" value="15" oninput="updateAllocationPreview()">
+                                <div class="form-hint">Auto-added to DEX pool</div>
+                            </div>
+                        </div>
+
+                        <!-- Vesting -->
+                        <div style="font-size:.75rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin:2rem 0 1rem">Vesting Schedule</div>
+                        <div style="color:var(--text-dim);font-size:.8rem;margin-bottom:1rem">
+                            Configure how tokens unlock for sale participants. This protects against immediate dumps and aligns long-term incentives.
+                        </div>
+
+                        <div id="vestingOptions">
+                            <div class="phase-card selected" onclick="selectVesting(this, 'none')">
+                                <div class="phase-name">No Vesting</div>
+                                <div class="phase-desc">Tokens distributed immediately at sale end. Simplest but highest dump risk.</div>
+                            </div>
+                            <div class="phase-card" onclick="selectVesting(this, 'linear')">
+                                <div class="phase-name">Linear Unlock</div>
+                                <div class="phase-desc">Tokens unlock gradually over a set period. e.g. 100% over 6 months = ~16.7% per month.</div>
+                            </div>
+                            <div class="phase-card" onclick="selectVesting(this, 'cliff')">
+                                <div class="phase-name">Cliff + Linear</div>
+                                <div class="phase-desc">Initial cliff period (no tokens), then linear unlock. e.g. 3 month cliff, then 12 month linear.</div>
+                            </div>
+                            <div class="phase-card" onclick="selectVesting(this, 'custom')">
+                                <div class="phase-name">Custom Schedule</div>
+                                <div class="phase-desc">Define multiple unlock events with custom percentages. Maximum flexibility for complex tokenomics.</div>
+                            </div>
+                        </div>
+
+                        <div id="vestingConfig" style="margin-top:1.5rem;padding:1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">
+                            <div style="font-size:.8rem;font-weight:600;margin-bottom:1rem">Vesting Configuration</div>
+                            <div style="color:var(--text-dim);font-size:.8rem;margin-bottom:1rem">No vesting — tokens distributed immediately.</div>
+                        </div>
+
+                        <!-- HCA Auction -->
+                        <div style="font-size:.75rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin:2rem 0 1rem">Hive Clearing Auction (HCA)</div>
+                        <div style="color:var(--text-dim);font-size:.8rem;margin-bottom:1.5rem">
+                            All tokens are guaranteed to sell. Price is determined by demand. Tokens are distributed evenly per block — no soft/hard cap needed.
+                        </div>
+
+                        <!-- HCA Visual Explanation -->
+                        <div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;margin-bottom:1.5rem">
+                            <div style="font-size:.8rem;font-weight:600;margin-bottom:1rem">How HCA Works</div>
+                            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem">
+                                <div style="text-align:center">
+                                    <div style="width:40px;height:40px;border-radius:10px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;margin:0 auto .5rem;font-size:1.1rem">📦</div>
+                                    <div style="font-size:.7rem;font-weight:600;margin-bottom:.2rem">1. Allocate</div>
+                                    <div style="font-size:.6rem;color:var(--text-muted)">Tokens allocated to auction pool</div>
+                                </div>
+                                <div style="text-align:center">
+                                    <div style="width:40px;height:40px;border-radius:10px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;margin:0 auto .5rem;font-size:1.1rem">📊</div>
+                                    <div style="font-size:.7rem;font-weight:600;margin-bottom:.2rem">2. Per Block</div>
+                                    <div style="font-size:.6rem;color:var(--text-muted)">Tokens split evenly across blocks</div>
+                                </div>
+                                <div style="text-align:center">
+                                    <div style="width:40px;height:40px;border-radius:10px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;margin:0 auto .5rem;font-size:1.1rem">💰</div>
+                                    <div style="font-size:.7rem;font-weight:600;margin-bottom:.2rem">3. Contribute</div>
+                                    <div style="font-size:.6rem;color:var(--text-muted)">Users contribute RITUAL per block</div>
+                                </div>
+                                <div style="text-align:center">
+                                    <div style="width:40px;height:40px;border-radius:10px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;margin:0 auto .5rem;font-size:1.1rem">✅</div>
+                                    <div style="font-size:.7rem;font-weight:600;margin-bottom:.2rem">4. Clear</div>
+                                    <div style="font-size:.6rem;color:var(--text-muted)">Price clears at demand level</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Auction Blocks</label>
+                                <input class="form-input" id="hca-blocks" type="number" value="1000" min="100" max="10000">
+                                <div class="form-hint">Token distribution period in blocks</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Starting Price (RITUAL)</label>
+                                <input class="form-input" id="hca-start-price" type="number" placeholder="0.01" step="0.001">
+                                <div class="form-hint">Minimum price floor</div>
+                            </div>
+                        </div>
+
+                        <div style="padding:1rem;background:var(--bg);border-radius:8px;margin-top:1rem">
+                            <div style="font-size:.7rem;color:var(--text-dim);margin-bottom:.5rem">Per-Block Preview</div>
+                            <div style="display:flex;justify-content:space-between;font-size:.75rem">
+                                <span>Tokens/block: <strong id="hca-per-block">100,000</strong></span>
+                                <span>Est. blocks: <strong id="hca-est-blocks">1,000</strong></span>
+                                <span>All sold: <strong style="color:var(--green)">✓ Guaranteed</strong></span>
+                            </div>
+                        </div>
+
+                        <!-- Tiered Pricing -->
+                        <div style="font-size:.75rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin:2rem 0 1rem">Tiered Pricing</div>
+                        <div style="color:var(--text-dim);font-size:.8rem;margin-bottom:1rem">
+                            Price increases per tier. Earlier participants get better pricing.
+                        </div>
+
+                        <div id="pricingTiers">
+                            <div style="display:grid;grid-template-columns:auto 1fr 1fr 1fr auto;gap:.75rem;align-items:center;margin-bottom:.75rem;padding:.75rem;background:var(--bg-card);border:1px solid var(--border);border-radius:8px">
+                                <div style="width:28px;height:28px;border-radius:6px;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:#fff">1</div>
+                                <div>
+                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Tier Name</div>
+                                    <input class="form-input" value="Genesis" style="padding:.4rem .6rem;font-size:.75rem">
+                                </div>
+                                <div>
+                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Price (RITUAL)</div>
+                                    <input class="form-input" type="number" value="0.005" step="0.001" style="padding:.4rem .6rem;font-size:.75rem">
+                                </div>
+                                <div>
+                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Block Range</div>
+                                    <input class="form-input" value="0-250" style="padding:.4rem .6rem;font-size:.75rem">
+                                </div>
+                                <div style="font-size:.6rem;color:var(--green)">Lowest</div>
+                            </div>
+                            <div style="display:grid;grid-template-columns:auto 1fr 1fr 1fr auto;gap:.75rem;align-items:center;margin-bottom:.75rem;padding:.75rem;background:var(--bg-card);border:1px solid var(--border);border-radius:8px">
+                                <div style="width:28px;height:28px;border-radius:6px;background:rgba(139,92,246,.4);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:#fff">2</div>
+                                <div>
+                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Tier Name</div>
+                                    <input class="form-input" value="Early" style="padding:.4rem .6rem;font-size:.75rem">
+                                </div>
+                                <div>
+                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Price (RITUAL)</div>
+                                    <input class="form-input" type="number" value="0.008" step="0.001" style="padding:.4rem .6rem;font-size:.75rem">
+                                </div>
+                                <div>
+                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Block Range</div>
+                                    <input class="form-input" value="251-600" style="padding:.4rem .6rem;font-size:.75rem">
+                                </div>
+                                <div style="font-size:.6rem;color:var(--accent-light)">Mid</div>
+                            </div>
+                            <div style="display:grid;grid-template-columns:auto 1fr 1fr 1fr auto;gap:.75rem;align-items:center;margin-bottom:.75rem;padding:.75rem;background:var(--bg-card);border:1px solid var(--border);border-radius:8px">
+                                <div style="width:28px;height:28px;border-radius:6px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:#fff">3</div>
+                                <div>
+                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Tier Name</div>
+                                    <input class="form-input" value="Public" style="padding:.4rem .6rem;font-size:.75rem">
+                                </div>
+                                <div>
+                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Price (RITUAL)</div>
+                                    <input class="form-input" type="number" value="0.01" step="0.001" style="padding:.4rem .6rem;font-size:.75rem">
+                                </div>
+                                <div>
+                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Block Range</div>
+                                    <input class="form-input" value="601-1000" style="padding:.4rem .6rem;font-size:.75rem">
+                                </div>
+                                <div style="font-size:.6rem;color:var(--red)">Highest</div>
+                            </div>
+                        </div>
+                        <button onclick="addPricingTier()" style="padding:.5rem 1rem;border-radius:6px;background:transparent;border:1px dashed var(--border);color:var(--text-dim);cursor:pointer;font-size:.75rem">+ Add Tier</button>
+
+                        <!-- Access Gates -->
+                        <div style="font-size:.75rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin:2rem 0 1rem">Access Gates</div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+                            <div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">
+                                <div style="font-size:.8rem;font-weight:600;margin-bottom:.5rem">Staking Gate</div>
+                                <div style="color:var(--text-dim);font-size:.75rem;margin-bottom:1rem">Minimum RITUAL staked to participate</div>
+                                <div class="form-group" style="margin-bottom:0">
+                                    <label class="form-label">Min. Staked RITUAL</label>
+                                    <input class="form-input" id="gate-stake" type="number" value="0.01" step="0.01" min="0">
+                                    <div class="form-hint">Tier 1: 0.01 RITUAL | Higher tiers need more</div>
+                                </div>
+                                <div style="margin-top:.75rem;display:flex;gap:.5rem;flex-wrap:wrap">
+                                    <span style="font-size:.6rem;padding:.2rem .5rem;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green)">Tier 1: ≥ 0.01</span>
+                                    <span style="font-size:.6rem;padding:.2rem .5rem;border-radius:4px;background:rgba(139,92,246,.1);color:var(--accent-light)">Tier 2: ≥ 1.0</span>
+                                    <span style="font-size:.6rem;padding:.2rem .5rem;border-radius:4px;background:rgba(234,179,8,.1);color:#eab308">Tier 3: ≥ 10.0</span>
+                                </div>
+                            </div>
+                            <div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">
+                                <div style="font-size:.8rem;font-weight:600;margin-bottom:.5rem">Reputation Score</div>
+                                <div style="color:var(--text-dim);font-size:.75rem;margin-bottom:1rem">Priority access for users with higher reputation</div>
+                                <div class="form-group" style="margin-bottom:0">
+                                    <label class="form-label">Min. Reputation Score</label>
+                                    <input class="form-input" id="gate-rep" type="number" value="0" min="0" max="100">
+                                    <div class="form-hint">Score based on: staking history, participation, referrals</div>
+                                </div>
+                                <div style="margin-top:.75rem;padding:.75rem;background:var(--bg);border-radius:8px">
+                                    <div style="font-size:.65rem;color:var(--text-dim);line-height:1.5">
+                                        <strong>Score breakdown:</strong><br>
+                                        • Staking history: +30 pts<br>
+                                        • Auction participation: +25 pts<br>
+                                        • Referral activity: +20 pts<br>
+                                        • Governance votes: +15 pts<br>
+                                        • Account age: +10 pts
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Deploy -->
+                        <div style="margin-top:2.5rem;padding:1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">
+                            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+                                <div>
+                                    <div style="font-size:.85rem;font-weight:600">Deploy Token & Launch HCA</div>
+                                    <div style="font-size:.7rem;color:var(--text-dim);margin-top:.2rem">Deploys token to Ritual Chain and creates the HCA auction contract.</div>
+                                </div>
+                                <button class="btn-launch" onclick="deployTokenLaunch()">
+                                    Deploy & Launch
+                                </button>
+                            </div>
+                            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1rem">
+                                <div style="padding:.75rem;background:var(--bg);border-radius:8px;text-align:center">
+                                    <div style="font-size:.6rem;color:var(--text-muted);margin-bottom:.2rem">Est. Gas</div>
+                                    <div style="font-size:.85rem;font-weight:700">~0.5 RITUAL</div>
+                                </div>
+                                <div style="padding:.75rem;background:var(--bg);border-radius:8px;text-align:center">
+                                    <div style="font-size:.6rem;color:var(--text-muted);margin-bottom:.2rem">Contracts</div>
+                                    <div style="font-size:.85rem;font-weight:700">2 Deploy</div>
+                                </div>
+                                <div style="padding:.75rem;background:var(--bg);border-radius:8px;text-align:center">
+                                    <div style="font-size:.6rem;color:var(--text-muted);margin-bottom:.2rem">Auction Type</div>
+                                    <div style="font-size:.85rem;font-weight:700;color:var(--accent)">HCA</div>
+                                </div>
+                            </div>
+                            <div style="font-size:.65rem;color:var(--text-muted);line-height:1.6">
+                                By deploying, you agree that allocated tokens will be held by the Hive smart contract for distribution via HCA. 
+                                Price is determined by demand — all tokens guaranteed to sell. Team allocation subject to vesting schedule.
+                            </div>
+                        </div>
+                    </div>
+                `;
+                updateAllocationPreview();
+
+            } else if(tab === 'active'){
+                container.innerHTML = `
+                    <div style="font-size:1.1rem;font-weight:700;margin-bottom:.25rem">Active Sales</div>
+                    <div style="color:var(--text-dim);font-size:.8rem;margin-bottom:2rem">Participate in ongoing token sales on Hive.</div>
+
+                    <div class="stat-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Total Raised</div>
+                            <div class="stat-value">$0</div>
+                            <div class="stat-sub">Across all sales</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Active Sales</div>
+                            <div class="stat-value">0</div>
+                            <div class="stat-sub">Currently live</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Participants</div>
+                            <div class="stat-value">0</div>
+                            <div class="stat-sub">Unique wallets</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Avg. ROI</div>
+                            <div class="stat-value">—</div>
+                            <div class="stat-sub">No data yet</div>
+                        </div>
+                    </div>
+
+                    <div class="sale-list">
+                        <div style="text-align:center;padding:3rem;color:var(--text-muted);font-size:.85rem">
+                            No active sales at the moment. Check back soon or create your own launch.
+                        </div>
+                    </div>
+                `;
+
+            } else if(tab === 'my'){
+                container.innerHTML = `
+                    <div style="font-size:1.1rem;font-weight:700;margin-bottom:.25rem">My Launches</div>
+                    <div style="color:var(--text-dim);font-size:.8rem;margin-bottom:2rem">Tokens you've launched and sales you've participated in.</div>
+
+                    <div class="stat-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Tokens Created</div>
+                            <div class="stat-value">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Sales Participated</div>
+                            <div class="stat-value">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Total Invested</div>
+                            <div class="stat-value">$0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Tokens Received</div>
+                            <div class="stat-value">0</div>
+                        </div>
+                    </div>
+
+                    <div style="text-align:center;padding:3rem;color:var(--text-muted);font-size:.85rem">
+                        No launches yet. Create your first token sale to get started.
+                    </div>
+                `;
+            }
+        }
+
+        function previewTokenLogo(input){
+            if(input.files && input.files[0]){
+                const reader = new FileReader();
+                reader.onload = function(e){
+                    const preview = document.getElementById('tokenLogoPreview');
+                    preview.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;border-radius:12px">';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function updateAllocationPreview(){
+            const supply = parseFloat(document.getElementById('launch-supply')?.value) || 1000000000;
+            const salePct = parseFloat(document.getElementById('launch-allocation')?.value) || 30;
+            const teamPct = parseFloat(document.getElementById('launch-team-alloc')?.value) || 20;
+            const liqPct = parseFloat(document.getElementById('launch-liq-alloc')?.value) || 15;
+            const reservePct = Math.max(0, 100 - salePct - teamPct - liqPct);
+
+            const allocPreview = document.getElementById('allocPreview');
+            if(allocPreview) allocPreview.textContent = (supply * salePct / 100).toLocaleString() + ' tokens for sale';
+
+            const allocBar = document.getElementById('allocBar');
+            if(allocBar){
+                allocBar.innerHTML = '';
+                if(salePct > 0) allocBar.innerHTML += '<div class="alloc-seg" style="flex:' + salePct + ';background:var(--accent)">Sale ' + salePct + '%</div>';
+                if(teamPct > 0) allocBar.innerHTML += '<div class="alloc-seg" style="flex:' + teamPct + ';background:var(--green)">Team ' + teamPct + '%</div>';
+                if(liqPct > 0) allocBar.innerHTML += '<div class="alloc-seg" style="flex:' + liqPct + ';background:rgba(234,179,8,.6)">Liq ' + liqPct + '%</div>';
+                if(reservePct > 0) allocBar.innerHTML += '<div class="alloc-seg" style="flex:' + reservePct + ';background:rgba(255,255,255,.08)">Reserve ' + reservePct + '%</div>';
+            }
+        }
+
+        let selectedVestingType = 'none';
+        function selectVesting(el, type){
+            selectedVestingType = type;
+            document.querySelectorAll('#vestingOptions .phase-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            
+            const config = document.getElementById('vestingConfig');
+            if(type === 'none'){
+                config.innerHTML = `
+                    <div style="font-size:.8rem;font-weight:600;margin-bottom:1rem">Vesting Configuration</div>
+                    <div style="color:var(--text-dim);font-size:.8rem">No vesting — tokens distributed immediately at sale end.</div>
+                `;
+            } else if(type === 'linear'){
+                config.innerHTML = `
+                    <div style="font-size:.8rem;font-weight:600;margin-bottom:1rem">Linear Unlock Configuration</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Unlock Duration</label>
+                            <div style="display:flex;gap:.5rem">
+                                <input class="form-input" id="vest-linear-duration" type="number" value="6" min="1" max="48" style="width:80px">
+                                <select class="form-input" id="vest-linear-unit" style="width:auto">
+                                    <option value="months" selected>Months</option>
+                                    <option value="weeks">Weeks</option>
+                                    <option value="days">Days</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">TGE Unlock (%)</label>
+                            <input class="form-input" id="vest-linear-tge" type="number" value="0" min="0" max="50" step="1">
+                            <div class="form-hint">Percentage unlocked at Token Generation Event</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:1rem;padding:1rem;background:var(--bg);border-radius:8px">
+                        <div style="font-size:.7rem;color:var(--text-dim);margin-bottom:.5rem">Preview: <span id="vestLinearPreview">0% TGE → 16.7% per month for 6 months</span></div>
+                        <div style="display:flex;gap:2px;height:20px;border-radius:4px;overflow:hidden" id="vestLinearBar">
+                            <div style="flex:16.7;background:var(--accent);opacity:.7"></div>
+                            <div style="flex:16.7;background:var(--accent);opacity:.75"></div>
+                            <div style="flex:16.7;background:var(--accent);opacity:.8"></div>
+                            <div style="flex:16.7;background:var(--accent);opacity:.85"></div>
+                            <div style="flex:16.7;background:var(--accent);opacity:.9"></div>
+                            <div style="flex:16.7;background:var(--accent);opacity:1"></div>
+                        </div>
+                    </div>
+                `;
+                // Add live preview update
+                const durInput = document.getElementById('vest-linear-duration');
+                const tgeInput = document.getElementById('vest-linear-tge');
+                if(durInput) durInput.oninput = () => updateLinearPreview();
+                if(tgeInput) tgeInput.oninput = () => updateLinearPreview();
+            } else if(type === 'cliff'){
+                config.innerHTML = `
+                    <div style="font-size:.8rem;font-weight:600;margin-bottom:1rem">Cliff + Linear Configuration</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Cliff Period</label>
+                            <div style="display:flex;gap:.5rem">
+                                <input class="form-input" id="vest-cliff-duration" type="number" value="3" min="1" max="24" style="width:80px">
+                                <span style="font-size:.8rem;color:var(--text-dim);display:flex;align-items:center">months</span>
+                            </div>
+                            <div class="form-hint">No tokens unlock during cliff</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Linear Unlock After Cliff</label>
+                            <div style="display:flex;gap:.5rem">
+                                <input class="form-input" id="vest-cliff-linear" type="number" value="12" min="1" max="48" style="width:80px">
+                                <span style="font-size:.8rem;color:var(--text-dim);display:flex;align-items:center">months</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">TGE Unlock (%)</label>
+                            <input class="form-input" id="vest-cliff-tge" type="number" value="10" min="0" max="30" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Cliff Unlock (%)</label>
+                            <input class="form-input" id="vest-cliff-unlock" type="number" value="15" min="0" max="50" step="1">
+                            <div class="form-hint">Released at end of cliff period</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:1rem;padding:1rem;background:var(--bg);border-radius:8px">
+                        <div style="font-size:.7rem;color:var(--text-dim);margin-bottom:.5rem">Preview</div>
+                        <div style="display:flex;gap:2px;height:20px;border-radius:4px;overflow:hidden" id="vestCliffBar">
+                            <div style="flex:10;background:var(--green)" title="TGE"></div>
+                            <div style="flex:15;background:var(--accent);opacity:.5" title="Cliff"></div>
+                            <div style="flex:75;background:var(--accent);opacity:.8" title="Linear"></div>
+                        </div>
+                        <div style="font-size:.6rem;color:var(--text-muted);margin-top:.35rem">10% TGE → 3mo cliff (15%) → 12mo linear (75%)</div>
+                    </div>
+                `;
+            } else if(type === 'custom'){
+                config.innerHTML = `
+                    <div style="font-size:.8rem;font-weight:600;margin-bottom:1rem">Custom Schedule</div>
+                    <div style="color:var(--text-dim);font-size:.8rem;margin-bottom:1rem">Define unlock events. Total must equal 100%.</div>
+                    <div id="customEvents">
+                        <div style="display:flex;gap:.75rem;align-items:center;margin-bottom:.75rem">
+                            <input class="form-input" type="number" placeholder="Month" value="0" style="width:80px" disabled>
+                            <input class="form-input" type="number" placeholder="%" value="10" style="width:80px">
+                            <span style="font-size:.75rem;color:var(--text-dim)">TGE Unlock</span>
+                        </div>
+                        <div style="display:flex;gap:.75rem;align-items:center;margin-bottom:.75rem">
+                            <input class="form-input" type="number" placeholder="Month" value="3" style="width:80px">
+                            <input class="form-input" type="number" placeholder="%" value="20" style="width:80px">
+                            <span style="font-size:.75rem;color:var(--text-dim)">Cliff Unlock</span>
+                        </div>
+                        <div style="display:flex;gap:.75rem;align-items:center;margin-bottom:.75rem">
+                            <input class="form-input" type="number" placeholder="Month" value="6" style="width:80px">
+                            <input class="form-input" type="number" placeholder="%" value="30" style="width:80px">
+                            <span style="font-size:.75rem;color:var(--text-dim)">Month 6</span>
+                        </div>
+                        <div style="display:flex;gap:.75rem;align-items:center;margin-bottom:.75rem">
+                            <input class="form-input" type="number" placeholder="Month" value="12" style="width:80px">
+                            <input class="form-input" type="number" placeholder="%" value="40" style="width:80px">
+                            <span style="font-size:.75rem;color:var(--text-dim)">Month 12</span>
+                        </div>
+                    </div>
+                    <button onclick="addCustomEvent()" style="padding:.5rem 1rem;border-radius:6px;background:transparent;border:1px dashed var(--border);color:var(--text-dim);cursor:pointer;font-size:.75rem;margin-top:.5rem">+ Add Event</button>
+                    <div style="margin-top:1rem;padding:1rem;background:var(--bg);border-radius:8px">
+                        <div style="font-size:.7rem;color:var(--text-dim);margin-bottom:.5rem">Schedule: 10% → 20% → 30% → 40%</div>
+                        <div style="display:flex;gap:2px;height:20px;border-radius:4px;overflow:hidden">
+                            <div style="flex:10;background:var(--green)"></div>
+                            <div style="flex:20;background:var(--accent);opacity:.5"></div>
+                            <div style="flex:30;background:var(--accent);opacity:.7"></div>
+                            <div style="flex:40;background:var(--accent);opacity:.9"></div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function updateLinearPreview(){
+            const dur = parseInt(document.getElementById('vest-linear-duration')?.value) || 6;
+            const tge = parseFloat(document.getElementById('vest-linear-tge')?.value) || 0;
+            const remaining = 100 - tge;
+            const perMonth = (remaining / dur).toFixed(1);
+            const preview = document.getElementById('vestLinearPreview');
+            if(preview){
+                preview.textContent = tge > 0 
+                    ? `${tge}% TGE → ${perMonth}% per month for ${dur} months`
+                    : `0% TGE → ${perMonth}% per month for ${dur} months`;
+            }
+            // Update bar
+            const bar = document.getElementById('vestLinearBar');
+            if(bar){
+                let html = '';
+                if(tge > 0) html += `<div style="flex:${tge};background:var(--green)" title="TGE ${tge}%"></div>`;
+                for(let i=0;i<dur;i++){
+                    const opacity = 0.5 + (0.5 * i / dur);
+                    html += `<div style="flex:${perMonth};background:var(--accent);opacity:${opacity}" title="Month ${i+1}: ${perMonth}%"></div>`;
+                }
+                bar.innerHTML = html;
+            }
+        }
+
+        function addCustomEvent(){
+            const container = document.getElementById('customEvents');
+            if(!container) return;
+            const count = container.children.length;
+            const div = document.createElement('div');
+            div.style.cssText = 'display:flex;gap:.75rem;align-items:center;margin-bottom:.75rem';
+            div.innerHTML = `
+                <input class="form-input" type="number" placeholder="Month" style="width:80px">
+                <input class="form-input" type="number" placeholder="%" style="width:80px">
+                <span style="font-size:.75rem;color:var(--text-dim)">Month ?</span>
+                <button onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:.85rem">×</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function addPricingTier(){
+            const container = document.getElementById('pricingTiers');
+            if(!container) return;
+            const count = container.children.length + 1;
+            const div = document.createElement('div');
+            div.style.cssText = 'display:grid;grid-template-columns:auto 1fr 1fr 1fr auto;gap:.75rem;align-items:center;margin-bottom:.75rem;padding:.75rem;background:var(--bg-card);border:1px solid var(--border);border-radius:8px';
+            div.innerHTML = `
+                <div style="width:28px;height:28px;border-radius:6px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:#fff">${count}</div>
+                <div>
+                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Tier Name</div>
+                    <input class="form-input" placeholder="Tier ${count}" style="padding:.4rem .6rem;font-size:.75rem">
+                </div>
+                <div>
+                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Price (RITUAL)</div>
+                    <input class="form-input" type="number" placeholder="0.015" step="0.001" style="padding:.4rem .6rem;font-size:.75rem">
+                </div>
+                <div>
+                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Block Range</div>
+                    <input class="form-input" placeholder="801-1000" style="padding:.4rem .6rem;font-size:.75rem">
+                </div>
+                <button onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:.85rem">×</button>
+            `;
+            container.appendChild(div);
+        }
+
+        let selectedPhaseType = 'whitelist';
+        function selectPhase(el, type){
+            selectedPhaseType = type;
+            document.querySelectorAll('.phase-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            
+            const config = document.getElementById('phaseConfig');
+            const names = { whitelist: 'Whitelist', otc: 'OTC', public: 'Public Sale' };
+            config.querySelector('div:first-child').textContent = names[type] + ' Phase Configuration';
+        }
+
+        async function deployTokenLaunch(){
+            const name = document.getElementById('launch-token-name')?.value?.trim();
+            const symbol = document.getElementById('launch-token-symbol')?.value?.trim()?.toUpperCase();
+            const supply = document.getElementById('launch-supply')?.value;
+            const price = document.getElementById('launch-price')?.value;
+
+            if(!name || !symbol || !supply || !price){
+                alert('Please fill in all required token fields');
+                return;
+            }
+
+            alert('Token deployment will be available when the HiveTokenFactory contract is deployed. This is a testnet preview.');
+        }
+
+
+        // ═══ AI MARKET MAKER PAGE ═══
+        function loadMakerPage(){
+            const container = document.getElementById('maker-content');
+            
+            if(!connectedAddress){
+                container.innerHTML = `
+                    <div style="text-align:center;padding:4rem 2rem">
+                        <div style="font-size:.95rem;font-weight:600;margin-bottom:.5rem">Connect Your Wallet</div>
+                        <div style="color:var(--text-muted);font-size:.8rem;margin-bottom:1.5rem">Connect your wallet to access AI Market Maker</div>
+                        <button class="action-btn" onclick="connectFromDashboard()" style="margin:0 auto;padding:.75rem 2rem;border-radius:10px;background:var(--accent);border:none;color:#fff;font-weight:600;cursor:pointer">Connect Wallet</button>
+                    </div>
+                `;
+                return;
+            }
+
+            if(userRole !== 'retail'){
+                container.innerHTML = showRetailGate('AI Market Maker');
+                return;
+            }
+
+            container.innerHTML = `
+                <div style="font-size:1.1rem;font-weight:700;margin-bottom:.25rem">AI Market Maker</div>
+                <div style="color:var(--text-dim);font-size:.8rem;margin-bottom:2rem">AI-powered liquidity provision and market making strategies.</div>
+
+                <div style="text-align:center;padding:3rem;color:var(--text-muted);font-size:.85rem">
+                    AI Market Maker is under development. Check back soon.
+                </div>
+            `;
         }
 
         // ═══ PROFILE PAGE ═══
