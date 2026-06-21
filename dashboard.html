@@ -32,39 +32,51 @@
         .sidebar{
             position:fixed;top:0;left:0;bottom:0;z-index:100;
             width:var(--sidebar-collapsed);
-            background:rgba(8,8,8,.95);
+            background:rgba(5,5,5,.98);
             border-right:1px solid var(--border);
             display:flex;flex-direction:column;
-            transition:width .25s cubic-bezier(.4,0,.2,1);
+            transition:width .3s cubic-bezier(.4,0,.2,1),box-shadow .3s;
             overflow:hidden;
         }
         .sidebar:hover,.sidebar.expanded{
             width:var(--sidebar-width);
+            box-shadow:4px 0 24px rgba(139,92,246,.06);
         }
         .sidebar-top{
             display:flex;align-items:center;justify-content:space-between;
             height:56px;padding:0 .75rem;border-bottom:1px solid var(--border);
             flex-shrink:0;
         }
+        .sidebar.expanded .sidebar-top,.sidebar:hover .sidebar-top{padding:0 1rem}
         .sidebar-logo{
             display:flex;align-items:center;gap:.75rem;
+            overflow:hidden;
         }
+        .sidebar.expanded .sidebar-logo,.sidebar:hover .sidebar-logo{gap:0}
         .sidebar-logo .logo-text{
             font-family:var(--font-display);font-size:1.1rem;font-weight:700;
             white-space:nowrap;opacity:0;transition:opacity .2s;
         }
+        .sidebar-logo .logo-icon-img{
+            width:28px;height:28px;flex-shrink:0;
+            transition:all .2s;
+            filter:brightness(0) invert(1);
+        }
+        .sidebar.expanded .logo-icon-img{display:none!important}
+        .sidebar:hover .logo-icon-img{display:none!important}
         .sidebar:hover .logo-text,.sidebar.expanded .logo-text{opacity:1}
         .sidebar-toggle{
             display:flex;align-items:center;justify-content:center;
             width:28px;height:28px;border-radius:6px;
             cursor:pointer;transition:all .15s;
         }
-        .sidebar-toggle:hover{background:var(--bg-card-hover)}
+        .sidebar-toggle:hover{background:rgba(139,92,246,.1)}
         .toggle-arrow{
             font-size:1rem;color:var(--text-dim);transition:transform .2s;
             display:block;line-height:1;
         }
         .sidebar.expanded .toggle-arrow{transform:rotate(180deg)}
+        .sidebar:hover .toggle-arrow{color:var(--accent-light)}
 
         .sidebar-nav{flex:1;overflow-y:auto;overflow-x:hidden;padding:.5rem 0}
         .sidebar-nav::-webkit-scrollbar{width:3px}
@@ -82,20 +94,25 @@
             display:flex;align-items:center;gap:.75rem;
             padding:.55rem 1rem;cursor:pointer;transition:all .15s;
             border-left:2px solid transparent;position:relative;
+            border-radius:0;
         }
-        .nav-item:hover{background:var(--bg-card-hover)}
+        .nav-item:hover{background:rgba(139,92,246,.05)}
         .nav-item.active{
             border-left-color:var(--accent);background:var(--accent-glow);
+            box-shadow:inset 0 0 20px rgba(139,92,246,.05);
         }
         .nav-item .nav-icon{
             width:24px;height:24px;display:flex;align-items:center;justify-content:center;
-            flex-shrink:0;color:var(--text-dim);transition:color .15s;
+            flex-shrink:0;color:var(--text-dim);transition:all .2s;
         }
-        .nav-item:hover .nav-icon,.nav-item.active .nav-icon{color:var(--accent-light)}
+        .nav-item:hover .nav-icon,.nav-item.active .nav-icon{
+            color:var(--accent-light);
+            filter:drop-shadow(0 0 4px rgba(139,92,246,.3));
+        }
         .nav-item .nav-icon svg{width:18px;height:18px}
         .nav-item .nav-label{
             font-size:.75rem;font-weight:500;white-space:nowrap;
-            opacity:0;transition:opacity .2s;
+            opacity:0;transition:opacity .25s;
         }
         .sidebar:hover .nav-label,.sidebar.expanded .nav-label{opacity:1}
 
@@ -103,29 +120,9 @@
             margin-left:auto;font-size:.55rem;font-weight:600;
             padding:.1rem .35rem;border-radius:3px;
             background:var(--accent-glow);color:var(--accent-light);
-            opacity:0;transition:opacity .2s;
+            opacity:0;transition:opacity .25s;
         }
         .sidebar:hover .nav-badge,.sidebar.expanded .nav-badge{opacity:1}
-
-        /* Sidebar footer */
-        .sidebar-footer{
-            border-top:1px solid var(--border);padding:.5rem;flex-shrink:0;
-        }
-        .sidebar-user{
-            display:flex;align-items:center;gap:.6rem;
-            padding:.5rem;border-radius:8px;cursor:pointer;transition:background .15s;
-        }
-        .sidebar-user:hover{background:var(--bg-card-hover)}
-        .sidebar-user .user-avatar{
-            width:32px;height:32px;border-radius:8px;
-            background:linear-gradient(135deg,var(--accent),var(--accent-dark));
-            display:flex;align-items:center;justify-content:center;
-            flex-shrink:0;font-size:.7rem;font-weight:700;
-        }
-        .sidebar-user .user-info{overflow:hidden;opacity:0;transition:opacity .2s}
-        .sidebar:hover .user-info,.sidebar.expanded .user-info{opacity:1}
-        .sidebar-user .user-name{font-size:.75rem;font-weight:600;white-space:nowrap}
-        .sidebar-user .user-role{font-size:.6rem;color:var(--text-dim);white-space:nowrap}
 
         /* ═══ MAIN CONTENT ═══ */
         .main{
@@ -289,6 +286,7 @@
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-top">
             <div class="sidebar-logo">
+                <img src="logo_hive.png" alt="Hive" class="logo-icon-img">
                 <span class="logo-text">Hive</span>
             </div>
             <div class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar">
@@ -393,12 +391,11 @@
             </div>
         </div>
 
-        <div class="sidebar-footer">
-            <div class="sidebar-user">
-                <div class="user-avatar" id="userAvatar">?</div>
-                <div class="user-info">
-                    <div class="user-name" id="userName">Not Connected</div>
-                    <div class="user-role" id="userRole">Connect wallet</div>
+            <!-- Profile -->
+            <div class="nav-section" style="margin-top:auto;border-top:1px solid var(--border);padding-top:.5rem">
+                <div class="nav-item" data-page="profile" onclick="switchPage('profile')">
+                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+                    <span class="nav-label">Profile</span>
                 </div>
             </div>
         </div>
@@ -574,6 +571,13 @@
             </div>
         </div>
 
+        <!-- PAGE: Profile -->
+        <div class="content page-content" id="page-profile" style="display:none">
+            <div id="profile-content">
+                <div style="color:var(--text-muted);text-align:center;padding:4rem">Connect wallet to view profile</div>
+            </div>
+        </div>
+
         <!-- PAGE: Generic placeholder for other pages -->
         <div class="content page-content" id="page-generic" style="display:none">
             <div class="content-header">
@@ -611,6 +615,7 @@
             points: { title:'Points', breadcrumb:'Hive / System / Points' },
             referral: { title:'Referral', breadcrumb:'Hive / System / Referral' },
             faucet: { title:'', breadcrumb:'' },
+            profile: { title:'Profile', breadcrumb:'Hive / Profile' },
         };
 
         // ═══ STATE ═══
@@ -650,6 +655,9 @@
             } else if(page === 'faucet'){
                 document.getElementById('page-faucet').style.display = '';
                 loadFaucetPage();
+            } else if(page === 'profile'){
+                document.getElementById('page-profile').style.display = '';
+                loadProfilePage();
             } else {
                 document.getElementById('page-generic').style.display = '';
                 document.getElementById('generic-title').textContent = config.title;
@@ -1730,6 +1738,68 @@
                 });
                 window.ethereum.on('chainChanged', () => location.reload());
             }
+        }
+
+        // ═══ PROFILE PAGE ═══
+        async function loadProfilePage(){
+            const container = document.getElementById('profile-content');
+            if(!connectedAddress){
+                container.innerHTML = `
+                    <div style="text-align:center;padding:4rem 2rem">
+                        <div style="font-size:.95rem;font-weight:600;margin-bottom:.5rem">Connect Your Wallet</div>
+                        <div style="color:var(--text-muted);font-size:.8rem;margin-bottom:1.5rem">Connect your wallet to view your profile</div>
+                        <button class="action-btn" onclick="connectFromDashboard()" style="margin:0 auto;padding:.75rem 2rem;border-radius:10px;background:var(--accent);border:none;color:#fff;font-weight:600;cursor:pointer">
+                            Connect Wallet
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                const shortAddr = connectedAddress.slice(0,6) + '...' + connectedAddress.slice(-4);
+                
+                container.innerHTML = `
+                    <div style="padding:2rem 0">
+                        <div style="display:flex;align-items:center;gap:1.5rem;margin-bottom:2rem">
+                            <div style="width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--accent-dark));display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:#fff">
+                                ${connectedAddress.slice(2,4).toUpperCase()}
+                            </div>
+                            <div>
+                                <div style="font-size:1.2rem;font-weight:700;margin-bottom:.25rem">${shortAddr}</div>
+                                <div style="color:var(--text-dim);font-size:.8rem">Ritual Chain</div>
+                            </div>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin-bottom:2rem">
+                            <div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">
+                                <div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">Address</div>
+                                <div style="font-family:var(--font-mono);font-size:.8rem;word-break:break-all">${connectedAddress}</div>
+                            </div>
+                            <div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">
+                                <div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">Network</div>
+                                <div style="font-size:.85rem;font-weight:600">Ritual Chain (1979)</div>
+                            </div>
+                        </div>
+
+                        <div style="padding:1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">
+                            <div style="font-size:.8rem;font-weight:600;margin-bottom:1rem">Account Actions</div>
+                            <div style="display:flex;gap:.75rem">
+                                <button onclick="copyAddress()" style="flex:1;padding:.75rem;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-weight:600;cursor:pointer;font-size:.8rem">Copy Address</button>
+                                <button onclick="disconnectWallet()" style="flex:1;padding:.75rem;border-radius:8px;border:1px solid var(--red);background:transparent;color:var(--red);font-weight:600;cursor:pointer;font-size:.8rem">Disconnect</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch(e) {
+                container.innerHTML = '<div style="color:var(--red);text-align:center;padding:2rem">Error loading profile</div>';
+            }
+        }
+
+        function disconnectWallet(){
+            connectedAddress = null;
+            hiveReady = false;
+            window.location.href = 'index.html';
         }
 
         init();
