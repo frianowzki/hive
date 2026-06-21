@@ -1940,56 +1940,128 @@
 
                         <!-- Allocation -->
                         <div style="font-size:.75rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin:2rem 0 1rem">Token Allocation</div>
-                        <div style="color:var(--text-dim);font-size:.8rem;margin-bottom:1rem">
-                            Set what percentage of total supply goes to the sale. The allocated tokens will be held by the Hive smart contract and distributed to participants.
+                        <div style="color:var(--text-dim);font-size:.8rem;margin-bottom:1.5rem">
+                            Define allocation categories and their vesting. Each category's tokens will be locked per its vesting schedule. Hive Victory handles all locking & distribution.
                         </div>
 
-                        <div class="form-group">
-                            <label class="form-label">Sale Allocation (%)</label>
-                            <div style="display:flex;align-items:center;gap:1rem">
-                                <input class="form-input" id="launch-allocation" type="number" min="1" max="90" value="30" style="width:100px" oninput="updateAllocationPreview()">
-                                <span style="font-size:.8rem;color:var(--text-dim)">%</span>
-                                <div style="font-size:.75rem;color:var(--text-muted)" id="allocPreview">300,000,000 tokens for sale</div>
+                        <div id="allocationRows">
+                            <!-- Sale -->
+                            <div class="alloc-row" style="display:grid;grid-template-columns:120px 70px 1fr;gap:.75rem;align-items:start;margin-bottom:1rem;padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px" data-color="var(--accent)">
+                                <div>
+                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Category</div>
+                                    <input class="form-input alloc-name" value="Sale" style="padding:.4rem .6rem;font-size:.75rem;font-weight:600">
+                                </div>
+                                <div>
+                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">%</div>
+                                    <input class="form-input alloc-pct" type="number" value="30" min="0" max="100" style="padding:.4rem .6rem;font-size:.75rem" oninput="updateAllocDiagram()">
+                                </div>
+                                <div>
+                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Vesting</div>
+                                    <select class="form-input alloc-vest" onchange="updateAllocDiagram()" style="padding:.4rem .6rem;font-size:.75rem;cursor:pointer">
+                                        <option value="none" selected>No Vesting</option>
+                                        <option value="linear">Linear Unlock</option>
+                                        <option value="cliff">Cliff + Linear</option>
+                                    </select>
+                                    <div class="alloc-vest-detail" style="margin-top:.5rem;display:none"></div>
+                                </div>
+                            </div>
+                            <!-- Team -->
+                            <div class="alloc-row" style="display:grid;grid-template-columns:120px 70px 1fr;gap:.75rem;align-items:start;margin-bottom:1rem;padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px" data-color="var(--green)">
+                                <div>
+                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Category</div>
+                                    <input class="form-input alloc-name" value="Team" style="padding:.4rem .6rem;font-size:.75rem;font-weight:600">
+                                </div>
+                                <div>
+                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">%</div>
+                                    <input class="form-input alloc-pct" type="number" value="20" min="0" max="100" style="padding:.4rem .6rem;font-size:.75rem" oninput="updateAllocDiagram()">
+                                </div>
+                                <div>
+                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Vesting</div>
+                                    <select class="form-input alloc-vest" onchange="onAllocVestChange(this);updateAllocDiagram()" style="padding:.4rem .6rem;font-size:.75rem;cursor:pointer">
+                                        <option value="none">No Vesting</option>
+                                        <option value="linear">Linear Unlock</option>
+                                        <option value="cliff" selected>Cliff + Linear</option>
+                                    </select>
+                                    <div class="alloc-vest-detail" style="margin-top:.5rem">
+                                        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+                                            <div style="display:flex;align-items:center;gap:.3rem">
+                                                <span style="font-size:.6rem;color:var(--text-muted)">Cliff</span>
+                                                <input class="form-input alloc-cliff" type="number" value="6" min="1" max="48" style="width:50px;padding:.3rem .4rem;font-size:.7rem">
+                                                <span style="font-size:.6rem;color:var(--text-muted)">mo</span>
+                                            </div>
+                                            <div style="display:flex;align-items:center;gap:.3rem">
+                                                <span style="font-size:.6rem;color:var(--text-muted)">Linear</span>
+                                                <input class="form-input alloc-linear" type="number" value="24" min="1" max="60" style="width:50px;padding:.3rem .4rem;font-size:.7rem">
+                                                <span style="font-size:.6rem;color:var(--text-muted)">mo</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Liquidity -->
+                            <div class="alloc-row" style="display:grid;grid-template-columns:120px 70px 1fr;gap:.75rem;align-items:start;margin-bottom:1rem;padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px" data-color="rgba(234,179,8,.7)">
+                                <div>
+                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Category</div>
+                                    <input class="form-input alloc-name" value="Liquidity" style="padding:.4rem .6rem;font-size:.75rem;font-weight:600">
+                                </div>
+                                <div>
+                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">%</div>
+                                    <input class="form-input alloc-pct" type="number" value="15" min="0" max="100" style="padding:.4rem .6rem;font-size:.75rem" oninput="updateAllocDiagram()">
+                                </div>
+                                <div>
+                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Vesting</div>
+                                    <select class="form-input alloc-vest" onchange="onAllocVestChange(this);updateAllocDiagram()" style="padding:.4rem .6rem;font-size:.75rem;cursor:pointer">
+                                        <option value="none" selected>No Vesting</option>
+                                        <option value="linear">Linear Unlock</option>
+                                        <option value="cliff">Cliff + Linear</option>
+                                    </select>
+                                    <div class="alloc-vest-detail" style="margin-top:.5rem;display:none"></div>
+                                </div>
+                            </div>
+                            <!-- Reserve -->
+                            <div class="alloc-row" style="display:grid;grid-template-columns:120px 70px 1fr;gap:.75rem;align-items:start;margin-bottom:1rem;padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px" data-color="rgba(255,255,255,.25)">
+                                <div>
+                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Category</div>
+                                    <input class="form-input alloc-name" value="Reserve" style="padding:.4rem .6rem;font-size:.75rem;font-weight:600">
+                                </div>
+                                <div>
+                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">%</div>
+                                    <input class="form-input alloc-pct" type="number" value="35" min="0" max="100" style="padding:.4rem .6rem;font-size:.75rem" oninput="updateAllocDiagram()">
+                                </div>
+                                <div>
+                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Vesting</div>
+                                    <select class="form-input alloc-vest" onchange="onAllocVestChange(this);updateAllocDiagram()" style="padding:.4rem .6rem;font-size:.75rem;cursor:pointer">
+                                        <option value="none" selected>No Vesting</option>
+                                        <option value="linear">Linear Unlock</option>
+                                        <option value="cliff">Cliff + Linear</option>
+                                    </select>
+                                    <div class="alloc-vest-detail" style="margin-top:.5rem;display:none"></div>
+                                </div>
                             </div>
                         </div>
+                        <button onclick="addAllocRow()" style="padding:.5rem 1rem;border-radius:6px;background:transparent;border:1px dashed var(--border);color:var(--text-dim);cursor:pointer;font-size:.75rem;margin-bottom:1.5rem">+ Add Category</button>
 
-                        <div class="allocation-bar" id="allocBar">
-                            <div class="alloc-seg" style="flex:30;background:var(--accent)">Sale 30%</div>
-                            <div class="alloc-seg" style="flex:20;background:var(--green)">Team 20%</div>
-                            <div class="alloc-seg" style="flex:15;background:rgba(234,179,8,.6)">Liquidity 15%</div>
-                            <div class="alloc-seg" style="flex:35;background:rgba(255,255,255,.08)">Reserve 35%</div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">Team Allocation (%)</label>
-                                <input class="form-input" id="launch-team-alloc" type="number" min="0" max="50" value="20" oninput="updateAllocationPreview()">
-                                <div class="form-hint">Vested over 12 months</div>
+                        <!-- Allocation Diagram -->
+                        <div style="padding:1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">
+                            <div style="font-size:.8rem;font-weight:600;margin-bottom:1rem">Allocation Diagram</div>
+                            <div style="display:flex;gap:2rem;align-items:flex-start">
+                                <!-- Donut Chart -->
+                                <div style="position:relative;width:180px;height:180px;flex-shrink:0">
+                                    <svg viewBox="0 0 36 36" style="width:100%;height:100%;transform:rotate(-90deg)">
+                                        <circle cx="18" cy="18" r="15.915" fill="none" stroke="var(--bg)" stroke-width="3.5" id="allocDonutBg"/>
+                                        <g id="allocDonutSegments"></g>
+                                    </svg>
+                                    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center">
+                                        <div style="font-size:1.1rem;font-weight:800" id="allocTotalPct">100%</div>
+                                        <div style="font-size:.55rem;color:var(--text-muted)">allocated</div>
+                                    </div>
+                                </div>
+                                <!-- Legend -->
+                                <div style="flex:1" id="allocLegend"></div>
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Liquidity Allocation (%)</label>
-                                <input class="form-input" id="launch-liq-alloc" type="number" min="0" max="50" value="15" oninput="updateAllocationPreview()">
-                                <div class="form-hint">Auto-added to DEX pool</div>
-                            </div>
+                            <!-- Bar -->
+                            <div style="margin-top:1.25rem;border-radius:6px;overflow:hidden;display:flex;height:10px" id="allocBarDiagram"></div>
                         </div>
-
-                        <!-- Vesting -->
-                        <div style="font-size:.75rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin:2rem 0 1rem">Vesting Schedule</div>
-                        <div style="color:var(--text-dim);font-size:.8rem;margin-bottom:1rem">
-                            Configure how tokens unlock for sale participants.
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Vesting Type</label>
-                            <select class="form-input" id="vestingSelect" onchange="onVestingChange(this.value)" style="cursor:pointer">
-                                <option value="none">No Vesting — Immediate distribution</option>
-                                <option value="linear">Linear Unlock — Gradual release over time</option>
-                                <option value="cliff">Cliff + Linear — Lock period, then gradual</option>
-                                <option value="custom">Custom Schedule — Define unlock events</option>
-                            </select>
-                        </div>
-
-                        <div id="vestingConfig" style="margin-top:1rem;padding:1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;display:none"></div>
 
                         <!-- HCA Auction -->
                         <div style="font-size:.75rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin:2rem 0 1rem">Hive Clearing Auction (HCA)</div>
@@ -2093,7 +2165,8 @@
                             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1rem">
                                 <div style="padding:.75rem;background:var(--bg);border-radius:8px;text-align:center">
                                     <div style="font-size:.6rem;color:var(--text-muted);margin-bottom:.2rem">Est. Gas</div>
-                                    <div style="font-size:.85rem;font-weight:700">~0.5 RITUAL</div>
+                                    <div style="font-size:.85rem;font-weight:700;color:var(--text-dim)">Varies</div>
+                                    <div style="font-size:.55rem;color:var(--text-muted)">by network load</div>
                                 </div>
                                 <div style="padding:.75rem;background:var(--bg);border-radius:8px;text-align:center">
                                     <div style="font-size:.6rem;color:var(--text-muted);margin-bottom:.2rem">Contracts</div>
@@ -2111,7 +2184,7 @@
                         </div>
                     </div>
                 `;
-                updateAllocationPreview();
+                updateAllocDiagram();
 
             } else if(tab === 'active'){
                 container.innerHTML = `
@@ -2191,22 +2264,149 @@
         }
 
         function updateAllocationPreview(){
-            const supply = parseFloat(document.getElementById('launch-supply')?.value) || 1000000000;
-            const salePct = parseFloat(document.getElementById('launch-allocation')?.value) || 30;
-            const teamPct = parseFloat(document.getElementById('launch-team-alloc')?.value) || 20;
-            const liqPct = parseFloat(document.getElementById('launch-liq-alloc')?.value) || 15;
-            const reservePct = Math.max(0, 100 - salePct - teamPct - liqPct);
+            // Legacy - now handled by updateAllocDiagram
+            updateAllocDiagram();
+        }
 
-            const allocPreview = document.getElementById('allocPreview');
-            if(allocPreview) allocPreview.textContent = (supply * salePct / 100).toLocaleString() + ' tokens for sale';
+        // ═══ ALLOCATION DIAGRAM ═══
+        const allocColors = ['#8b5cf6','#22c55e','#eab308','#6366f1','#ec4899','#14b8a6','#f97316','#64748b'];
+        
+        function onAllocVestChange(sel){
+            const detail = sel.parentElement.querySelector('.alloc-vest-detail');
+            if(!detail) return;
+            if(sel.value === 'none'){
+                detail.style.display = 'none';
+                detail.innerHTML = '';
+            } else if(sel.value === 'linear'){
+                detail.style.display = 'block';
+                detail.innerHTML = `
+                    <div style="display:flex;align-items:center;gap:.3rem">
+                        <span style="font-size:.6rem;color:var(--text-muted)">Unlock</span>
+                        <input class="form-input alloc-linear" type="number" value="12" min="1" max="60" style="width:50px;padding:.3rem .4rem;font-size:.7rem">
+                        <span style="font-size:.6rem;color:var(--text-muted)">months</span>
+                    </div>
+                `;
+            } else if(sel.value === 'cliff'){
+                detail.style.display = 'block';
+                detail.innerHTML = `
+                    <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+                        <div style="display:flex;align-items:center;gap:.3rem">
+                            <span style="font-size:.6rem;color:var(--text-muted)">Cliff</span>
+                            <input class="form-input alloc-cliff" type="number" value="6" min="1" max="48" style="width:50px;padding:.3rem .4rem;font-size:.7rem">
+                            <span style="font-size:.6rem;color:var(--text-muted)">mo</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:.3rem">
+                            <span style="font-size:.6rem;color:var(--text-muted)">Linear</span>
+                            <input class="form-input alloc-linear" type="number" value="12" min="1" max="60" style="width:50px;padding:.3rem .4rem;font-size:.7rem">
+                            <span style="font-size:.6rem;color:var(--text-muted)">mo</span>
+                        </div>
+                    </div>
+                `;
+            }
+        }
 
-            const allocBar = document.getElementById('allocBar');
-            if(allocBar){
-                allocBar.innerHTML = '';
-                if(salePct > 0) allocBar.innerHTML += '<div class="alloc-seg" style="flex:' + salePct + ';background:var(--accent)">Sale ' + salePct + '%</div>';
-                if(teamPct > 0) allocBar.innerHTML += '<div class="alloc-seg" style="flex:' + teamPct + ';background:var(--green)">Team ' + teamPct + '%</div>';
-                if(liqPct > 0) allocBar.innerHTML += '<div class="alloc-seg" style="flex:' + liqPct + ';background:rgba(234,179,8,.6)">Liq ' + liqPct + '%</div>';
-                if(reservePct > 0) allocBar.innerHTML += '<div class="alloc-seg" style="flex:' + reservePct + ';background:rgba(255,255,255,.08)">Reserve ' + reservePct + '%</div>';
+        function addAllocRow(){
+            const container = document.getElementById('allocationRows');
+            if(!container) return;
+            const count = container.children.length;
+            const color = allocColors[count % allocColors.length];
+            const div = document.createElement('div');
+            div.className = 'alloc-row';
+            div.style.cssText = 'display:grid;grid-template-columns:120px 70px 1fr;gap:.75rem;align-items:start;margin-bottom:1rem;padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px';
+            div.setAttribute('data-color', color);
+            div.innerHTML = `
+                <div>
+                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Category</div>
+                    <input class="form-input alloc-name" placeholder="Community" style="padding:.4rem .6rem;font-size:.75rem;font-weight:600">
+                </div>
+                <div>
+                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">%</div>
+                    <input class="form-input alloc-pct" type="number" value="0" min="0" max="100" style="padding:.4rem .6rem;font-size:.75rem" oninput="updateAllocDiagram()">
+                </div>
+                <div>
+                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Vesting</div>
+                    <div style="display:flex;gap:.5rem;align-items:start">
+                        <select class="form-input alloc-vest" onchange="onAllocVestChange(this);updateAllocDiagram()" style="padding:.4rem .6rem;font-size:.75rem;cursor:pointer;flex:1">
+                            <option value="none" selected>No Vesting</option>
+                            <option value="linear">Linear Unlock</option>
+                            <option value="cliff">Cliff + Linear</option>
+                        </select>
+                        <button onclick="this.closest('.alloc-row').remove();updateAllocDiagram()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:.85rem;padding:.4rem">×</button>
+                    </div>
+                    <div class="alloc-vest-detail" style="margin-top:.5rem;display:none"></div>
+                </div>
+            `;
+            container.appendChild(div);
+            updateAllocDiagram();
+        }
+
+        function updateAllocDiagram(){
+            const rows = document.querySelectorAll('.alloc-row');
+            const data = [];
+            let total = 0;
+            rows.forEach((row, i) => {
+                const name = row.querySelector('.alloc-name')?.value || 'Unknown';
+                const pct = parseFloat(row.querySelector('.alloc-pct')?.value) || 0;
+                const vest = row.querySelector('.alloc-vest')?.value || 'none';
+                const color = row.getAttribute('data-color') || allocColors[i % allocColors.length];
+                let vestLabel = 'No vesting';
+                if(vest === 'linear'){
+                    const mo = row.querySelector('.alloc-linear')?.value || '12';
+                    vestLabel = `Linear ${mo}mo`;
+                } else if(vest === 'cliff'){
+                    const cliff = row.querySelector('.alloc-cliff')?.value || '6';
+                    const lin = row.querySelector('.alloc-linear')?.value || '12';
+                    vestLabel = `Cliff ${cliff}mo → Linear ${lin}mo`;
+                }
+                if(pct > 0) data.push({ name, pct, color, vestLabel });
+                total += pct;
+            });
+
+            // Update total percentage
+            const totalEl = document.getElementById('allocTotalPct');
+            if(totalEl) totalEl.textContent = total + '%';
+
+            // Update donut chart
+            const segments = document.getElementById('allocDonutSegments');
+            if(segments){
+                let offset = 0;
+                let svg = '';
+                data.forEach(d => {
+                    const dash = (d.pct / 100) * 100;
+                    svg += `<circle cx="18" cy="18" r="15.915" fill="none" stroke="${d.color}" stroke-width="3.5" stroke-dasharray="${dash} ${100 - dash}" stroke-dashoffset="-${offset}" opacity=".85"/>`;
+                    offset += dash;
+                });
+                segments.innerHTML = svg;
+            }
+
+            // Update legend
+            const legend = document.getElementById('allocLegend');
+            if(legend){
+                let html = '';
+                data.forEach(d => {
+                    const supply = parseFloat(document.getElementById('launch-supply')?.value) || 1000000000;
+                    const tokens = (supply * d.pct / 100).toLocaleString();
+                    html += `
+                        <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.6rem">
+                            <div style="width:10px;height:10px;border-radius:3px;background:${d.color};flex-shrink:0"></div>
+                            <div style="flex:1;min-width:0">
+                                <div style="font-size:.75rem;font-weight:600">${d.name} <span style="color:var(--text-muted);font-weight:400">${d.pct}%</span></div>
+                                <div style="font-size:.6rem;color:var(--text-muted)">${tokens} tokens · ${d.vestLabel}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                legend.innerHTML = html;
+            }
+
+            // Update bar
+            const bar = document.getElementById('allocBarDiagram');
+            if(bar){
+                let html = '';
+                data.forEach(d => {
+                    html += `<div style="flex:${d.pct};background:${d.color};opacity:.8" title="${d.name} ${d.pct}%"></div>`;
+                });
+                bar.innerHTML = html;
             }
         }
 
