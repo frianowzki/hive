@@ -2013,7 +2013,7 @@
                         <!-- HCA Auction -->
                         <div style="font-size:.75rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin:2rem 0 1rem">Hive Clearing Auction (HCA)</div>
                         <div style="color:var(--text-dim);font-size:.8rem;margin-bottom:1.5rem">
-                            All tokens are guaranteed to sell. Price is determined by demand. Tokens are distributed evenly per block — no soft/hard cap needed.
+                            All tokens guaranteed to sell. <strong>Dynamic price discovery</strong> — clearing price determined by demand. Contributions in <strong style="color:var(--green)">hiveUSD</strong>. Tokens distributed evenly per block.
                         </div>
 
                         <!-- HCA Visual Explanation -->
@@ -2031,14 +2031,39 @@
                                     <div style="font-size:.6rem;color:var(--text-muted)">Tokens split evenly across blocks</div>
                                 </div>
                                 <div style="text-align:center">
-                                    <div style="width:40px;height:40px;border-radius:10px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;margin:0 auto .5rem;font-size:1.1rem">💰</div>
+                                    <div style="width:40px;height:40px;border-radius:10px;background:rgba(34,197,94,.1);display:flex;align-items:center;justify-content:center;margin:0 auto .5rem;font-size:1.1rem">💵</div>
                                     <div style="font-size:.7rem;font-weight:600;margin-bottom:.2rem">3. Contribute</div>
-                                    <div style="font-size:.6rem;color:var(--text-muted)">Users contribute RITUAL per block</div>
+                                    <div style="font-size:.6rem;color:var(--text-muted)">Users bid hiveUSD per block</div>
                                 </div>
                                 <div style="text-align:center">
-                                    <div style="width:40px;height:40px;border-radius:10px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;margin:0 auto .5rem;font-size:1.1rem">✅</div>
+                                    <div style="width:40px;height:40px;border-radius:10px;background:rgba(34,197,94,.1);display:flex;align-items:center;justify-content:center;margin:0 auto .5rem;font-size:1.1rem">✅</div>
                                     <div style="font-size:.7rem;font-weight:600;margin-bottom:.2rem">4. Clear</div>
-                                    <div style="font-size:.6rem;color:var(--text-muted)">Price clears at demand level</div>
+                                    <div style="font-size:.6rem;color:var(--text-muted)">Clearing price in hiveUSD</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Price Discovery -->
+                        <div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;margin-bottom:1.5rem">
+                            <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:1rem">
+                                <div style="font-size:.8rem;font-weight:600">Dynamic Price Discovery</div>
+                                <span style="font-size:.55rem;padding:.15rem .4rem;border-radius:3px;background:rgba(34,197,94,.15);color:var(--green)">LIVE</span>
+                            </div>
+                            <div style="color:var(--text-dim);font-size:.75rem;margin-bottom:1rem;line-height:1.6">
+                                Price is NOT fixed. Each block, participants contribute hiveUSD. The <strong>clearing price</strong> = total hiveUSD contributed ÷ tokens available in that block. Higher demand = higher price. All tokens always sell.
+                            </div>
+                            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem">
+                                <div style="padding:.75rem;background:var(--bg);border-radius:8px;text-align:center">
+                                    <div style="font-size:.55rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:.2rem">Currency</div>
+                                    <div style="font-size:.85rem;font-weight:700;color:var(--green)">hiveUSD</div>
+                                </div>
+                                <div style="padding:.75rem;background:var(--bg);border-radius:8px;text-align:center">
+                                    <div style="font-size:.55rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:.2rem">Price Type</div>
+                                    <div style="font-size:.85rem;font-weight:700;color:var(--accent)">Dynamic</div>
+                                </div>
+                                <div style="padding:.75rem;background:var(--bg);border-radius:8px;text-align:center">
+                                    <div style="font-size:.55rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:.2rem">Guaranteed</div>
+                                    <div style="font-size:.85rem;font-weight:700;color:var(--green)">100% Sold</div>
                                 </div>
                             </div>
                         </div>
@@ -2050,9 +2075,9 @@
                                 <div class="form-hint">Token distribution period in blocks</div>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Starting Price (RITUAL)</label>
+                                <label class="form-label">Reserve Price (hiveUSD)</label>
                                 <input class="form-input" id="hca-start-price" type="number" placeholder="0.01" step="0.001">
-                                <div class="form-hint">Minimum price floor</div>
+                                <div class="form-hint">Minimum price floor (optional)</div>
                             </div>
                         </div>
 
@@ -2060,15 +2085,15 @@
                             <div style="font-size:.7rem;color:var(--text-dim);margin-bottom:.5rem">Per-Block Preview</div>
                             <div style="display:flex;justify-content:space-between;font-size:.75rem">
                                 <span>Tokens/block: <strong id="hca-per-block">100,000</strong></span>
-                                <span>Est. blocks: <strong id="hca-est-blocks">1,000</strong></span>
+                                <span>Clearing: <strong style="color:var(--green)">hiveUSD</strong></span>
                                 <span>All sold: <strong style="color:var(--green)">✓ Guaranteed</strong></span>
                             </div>
                         </div>
 
                         <!-- Tiered Pricing -->
-                        <div style="font-size:.75rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin:2rem 0 1rem">Tiered Pricing</div>
+                        <div style="font-size:.75rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin:2rem 0 1rem">Tiered Pricing (hiveUSD)</div>
                         <div style="color:var(--text-dim);font-size:.8rem;margin-bottom:1rem">
-                            Price increases per tier. Earlier participants get better pricing.
+                            Price increases per tier in hiveUSD. Earlier participants get better pricing.
                         </div>
 
                         <div id="pricingTiers">
@@ -2079,7 +2104,7 @@
                                     <input class="form-input" value="Genesis" style="padding:.4rem .6rem;font-size:.75rem">
                                 </div>
                                 <div>
-                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Price (RITUAL)</div>
+                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Price (hiveUSD)</div>
                                     <input class="form-input" type="number" value="0.005" step="0.001" style="padding:.4rem .6rem;font-size:.75rem">
                                 </div>
                                 <div>
@@ -2095,7 +2120,7 @@
                                     <input class="form-input" value="Early" style="padding:.4rem .6rem;font-size:.75rem">
                                 </div>
                                 <div>
-                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Price (RITUAL)</div>
+                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Price (hiveUSD)</div>
                                     <input class="form-input" type="number" value="0.008" step="0.001" style="padding:.4rem .6rem;font-size:.75rem">
                                 </div>
                                 <div>
@@ -2111,7 +2136,7 @@
                                     <input class="form-input" value="Public" style="padding:.4rem .6rem;font-size:.75rem">
                                 </div>
                                 <div>
-                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Price (RITUAL)</div>
+                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Price (hiveUSD)</div>
                                     <input class="form-input" type="number" value="0.01" step="0.001" style="padding:.4rem .6rem;font-size:.75rem">
                                 </div>
                                 <div>
@@ -2183,13 +2208,13 @@
                                     <div style="font-size:.85rem;font-weight:700">2 Deploy</div>
                                 </div>
                                 <div style="padding:.75rem;background:var(--bg);border-radius:8px;text-align:center">
-                                    <div style="font-size:.6rem;color:var(--text-muted);margin-bottom:.2rem">Auction Type</div>
-                                    <div style="font-size:.85rem;font-weight:700;color:var(--accent)">HCA</div>
+                                    <div style="font-size:.6rem;color:var(--text-muted);margin-bottom:.2rem">Clearing Currency</div>
+                                    <div style="font-size:.85rem;font-weight:700;color:var(--green)">hiveUSD</div>
                                 </div>
                             </div>
                             <div style="font-size:.65rem;color:var(--text-muted);line-height:1.6">
                                 By deploying, you agree that allocated tokens will be held by the Hive smart contract for distribution via HCA. 
-                                Price is determined by demand — all tokens guaranteed to sell. Team allocation subject to vesting schedule.
+                                Clearing price in hiveUSD — dynamic price discovery. All tokens guaranteed to sell. Team allocation subject to vesting schedule.
                             </div>
                         </div>
                     </div>
@@ -2476,7 +2501,7 @@
                     <input class="form-input" placeholder="Tier ${count}" style="padding:.4rem .6rem;font-size:.75rem">
                 </div>
                 <div>
-                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Price (RITUAL)</div>
+                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Price (hiveUSD)</div>
                     <input class="form-input" type="number" placeholder="0.015" step="0.001" style="padding:.4rem .6rem;font-size:.75rem">
                 </div>
                 <div>
