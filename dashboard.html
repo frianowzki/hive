@@ -1908,17 +1908,10 @@
                             </div>
                         </div>
 
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">Total Supply</label>
-                                <input class="form-input" id="launch-supply" type="number" placeholder="1000000000">
-                                <div class="form-hint">Fixed supply after deployment</div>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Sale Price (per token)</label>
-                                <input class="form-input" id="launch-price" type="number" placeholder="0.01" step="0.0001">
-                                <div class="form-hint">Price in RITUAL</div>
-                            </div>
+                        <div class="form-group">
+                            <label class="form-label">Total Supply</label>
+                            <input class="form-input" id="launch-supply" type="number" placeholder="1000000000">
+                            <div class="form-hint">Fixed supply after deployment</div>
                         </div>
 
                         <!-- Project Info -->
@@ -1983,32 +1976,20 @@
                         <!-- Vesting -->
                         <div style="font-size:.75rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin:2rem 0 1rem">Vesting Schedule</div>
                         <div style="color:var(--text-dim);font-size:.8rem;margin-bottom:1rem">
-                            Configure how tokens unlock for sale participants. This protects against immediate dumps and aligns long-term incentives.
+                            Configure how tokens unlock for sale participants.
                         </div>
 
-                        <div id="vestingOptions">
-                            <div class="phase-card selected" onclick="selectVesting(this, 'none')">
-                                <div class="phase-name">No Vesting</div>
-                                <div class="phase-desc">Tokens distributed immediately at sale end. Simplest but highest dump risk.</div>
-                            </div>
-                            <div class="phase-card" onclick="selectVesting(this, 'linear')">
-                                <div class="phase-name">Linear Unlock</div>
-                                <div class="phase-desc">Tokens unlock gradually over a set period. e.g. 100% over 6 months = ~16.7% per month.</div>
-                            </div>
-                            <div class="phase-card" onclick="selectVesting(this, 'cliff')">
-                                <div class="phase-name">Cliff + Linear</div>
-                                <div class="phase-desc">Initial cliff period (no tokens), then linear unlock. e.g. 3 month cliff, then 12 month linear.</div>
-                            </div>
-                            <div class="phase-card" onclick="selectVesting(this, 'custom')">
-                                <div class="phase-name">Custom Schedule</div>
-                                <div class="phase-desc">Define multiple unlock events with custom percentages. Maximum flexibility for complex tokenomics.</div>
-                            </div>
+                        <div class="form-group">
+                            <label class="form-label">Vesting Type</label>
+                            <select class="form-input" id="vestingSelect" onchange="onVestingChange(this.value)" style="cursor:pointer">
+                                <option value="none">No Vesting — Immediate distribution</option>
+                                <option value="linear">Linear Unlock — Gradual release over time</option>
+                                <option value="cliff">Cliff + Linear — Lock period, then gradual</option>
+                                <option value="custom">Custom Schedule — Define unlock events</option>
+                            </select>
                         </div>
 
-                        <div id="vestingConfig" style="margin-top:1.5rem;padding:1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">
-                            <div style="font-size:.8rem;font-weight:600;margin-bottom:1rem">Vesting Configuration</div>
-                            <div style="color:var(--text-dim);font-size:.8rem;margin-bottom:1rem">No vesting — tokens distributed immediately.</div>
-                        </div>
+                        <div id="vestingConfig" style="margin-top:1rem;padding:1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;display:none"></div>
 
                         <!-- HCA Auction -->
                         <div style="font-size:.75rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin:2rem 0 1rem">Hive Clearing Auction (HCA)</div>
@@ -2021,24 +2002,32 @@
                             <div style="font-size:.8rem;font-weight:600;margin-bottom:1rem">How HCA Works</div>
                             <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem">
                                 <div style="text-align:center">
-                                    <div style="width:40px;height:40px;border-radius:10px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;margin:0 auto .5rem;font-size:1.1rem">📦</div>
+                                    <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;margin:0 auto .5rem">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                                    </div>
                                     <div style="font-size:.7rem;font-weight:600;margin-bottom:.2rem">1. Allocate</div>
-                                    <div style="font-size:.6rem;color:var(--text-muted)">Tokens allocated to auction pool</div>
+                                    <div style="font-size:.6rem;color:var(--text-muted)">Tokens to auction pool</div>
                                 </div>
                                 <div style="text-align:center">
-                                    <div style="width:40px;height:40px;border-radius:10px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;margin:0 auto .5rem;font-size:1.1rem">📊</div>
+                                    <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;margin:0 auto .5rem">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+                                    </div>
                                     <div style="font-size:.7rem;font-weight:600;margin-bottom:.2rem">2. Per Block</div>
-                                    <div style="font-size:.6rem;color:var(--text-muted)">Tokens split evenly across blocks</div>
+                                    <div style="font-size:.6rem;color:var(--text-muted)">Split evenly across blocks</div>
                                 </div>
                                 <div style="text-align:center">
-                                    <div style="width:40px;height:40px;border-radius:10px;background:rgba(34,197,94,.1);display:flex;align-items:center;justify-content:center;margin:0 auto .5rem;font-size:1.1rem">💵</div>
+                                    <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;margin:0 auto .5rem">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                                    </div>
                                     <div style="font-size:.7rem;font-weight:600;margin-bottom:.2rem">3. Contribute</div>
-                                    <div style="font-size:.6rem;color:var(--text-muted)">Users bid hiveUSD per block</div>
+                                    <div style="font-size:.6rem;color:var(--text-muted)">Bid hiveUSD per block</div>
                                 </div>
                                 <div style="text-align:center">
-                                    <div style="width:40px;height:40px;border-radius:10px;background:rgba(34,197,94,.1);display:flex;align-items:center;justify-content:center;margin:0 auto .5rem;font-size:1.1rem">✅</div>
+                                    <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;margin:0 auto .5rem">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                    </div>
                                     <div style="font-size:.7rem;font-weight:600;margin-bottom:.2rem">4. Clear</div>
-                                    <div style="font-size:.6rem;color:var(--text-muted)">Clearing price in hiveUSD</div>
+                                    <div style="font-size:.6rem;color:var(--text-muted)">Price in hiveUSD</div>
                                 </div>
                             </div>
                         </div>
@@ -2087,103 +2076,6 @@
                                 <span>Tokens/block: <strong id="hca-per-block">100,000</strong></span>
                                 <span>Clearing: <strong style="color:var(--green)">hiveUSD</strong></span>
                                 <span>All sold: <strong style="color:var(--green)">✓ Guaranteed</strong></span>
-                            </div>
-                        </div>
-
-                        <!-- Tiered Pricing -->
-                        <div style="font-size:.75rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin:2rem 0 1rem">Tiered Pricing (hiveUSD)</div>
-                        <div style="color:var(--text-dim);font-size:.8rem;margin-bottom:1rem">
-                            Price increases per tier in hiveUSD. Earlier participants get better pricing.
-                        </div>
-
-                        <div id="pricingTiers">
-                            <div style="display:grid;grid-template-columns:auto 1fr 1fr 1fr auto;gap:.75rem;align-items:center;margin-bottom:.75rem;padding:.75rem;background:var(--bg-card);border:1px solid var(--border);border-radius:8px">
-                                <div style="width:28px;height:28px;border-radius:6px;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:#fff">1</div>
-                                <div>
-                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Tier Name</div>
-                                    <input class="form-input" value="Genesis" style="padding:.4rem .6rem;font-size:.75rem">
-                                </div>
-                                <div>
-                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Price (hiveUSD)</div>
-                                    <input class="form-input" type="number" value="0.005" step="0.001" style="padding:.4rem .6rem;font-size:.75rem">
-                                </div>
-                                <div>
-                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Block Range</div>
-                                    <input class="form-input" value="0-250" style="padding:.4rem .6rem;font-size:.75rem">
-                                </div>
-                                <div style="font-size:.6rem;color:var(--green)">Lowest</div>
-                            </div>
-                            <div style="display:grid;grid-template-columns:auto 1fr 1fr 1fr auto;gap:.75rem;align-items:center;margin-bottom:.75rem;padding:.75rem;background:var(--bg-card);border:1px solid var(--border);border-radius:8px">
-                                <div style="width:28px;height:28px;border-radius:6px;background:rgba(139,92,246,.4);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:#fff">2</div>
-                                <div>
-                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Tier Name</div>
-                                    <input class="form-input" value="Early" style="padding:.4rem .6rem;font-size:.75rem">
-                                </div>
-                                <div>
-                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Price (hiveUSD)</div>
-                                    <input class="form-input" type="number" value="0.008" step="0.001" style="padding:.4rem .6rem;font-size:.75rem">
-                                </div>
-                                <div>
-                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Block Range</div>
-                                    <input class="form-input" value="251-600" style="padding:.4rem .6rem;font-size:.75rem">
-                                </div>
-                                <div style="font-size:.6rem;color:var(--accent-light)">Mid</div>
-                            </div>
-                            <div style="display:grid;grid-template-columns:auto 1fr 1fr 1fr auto;gap:.75rem;align-items:center;margin-bottom:.75rem;padding:.75rem;background:var(--bg-card);border:1px solid var(--border);border-radius:8px">
-                                <div style="width:28px;height:28px;border-radius:6px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:#fff">3</div>
-                                <div>
-                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Tier Name</div>
-                                    <input class="form-input" value="Public" style="padding:.4rem .6rem;font-size:.75rem">
-                                </div>
-                                <div>
-                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Price (hiveUSD)</div>
-                                    <input class="form-input" type="number" value="0.01" step="0.001" style="padding:.4rem .6rem;font-size:.75rem">
-                                </div>
-                                <div>
-                                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Block Range</div>
-                                    <input class="form-input" value="601-1000" style="padding:.4rem .6rem;font-size:.75rem">
-                                </div>
-                                <div style="font-size:.6rem;color:var(--red)">Highest</div>
-                            </div>
-                        </div>
-                        <button onclick="addPricingTier()" style="padding:.5rem 1rem;border-radius:6px;background:transparent;border:1px dashed var(--border);color:var(--text-dim);cursor:pointer;font-size:.75rem">+ Add Tier</button>
-
-                        <!-- Access Gates -->
-                        <div style="font-size:.75rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin:2rem 0 1rem">Access Gates</div>
-
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
-                            <div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">
-                                <div style="font-size:.8rem;font-weight:600;margin-bottom:.5rem">Staking Gate</div>
-                                <div style="color:var(--text-dim);font-size:.75rem;margin-bottom:1rem">Minimum RITUAL staked to participate</div>
-                                <div class="form-group" style="margin-bottom:0">
-                                    <label class="form-label">Min. Staked RITUAL</label>
-                                    <input class="form-input" id="gate-stake" type="number" value="0.01" step="0.01" min="0">
-                                    <div class="form-hint">Tier 1: 0.01 RITUAL | Higher tiers need more</div>
-                                </div>
-                                <div style="margin-top:.75rem;display:flex;gap:.5rem;flex-wrap:wrap">
-                                    <span style="font-size:.6rem;padding:.2rem .5rem;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green)">Tier 1: ≥ 0.01</span>
-                                    <span style="font-size:.6rem;padding:.2rem .5rem;border-radius:4px;background:rgba(139,92,246,.1);color:var(--accent-light)">Tier 2: ≥ 1.0</span>
-                                    <span style="font-size:.6rem;padding:.2rem .5rem;border-radius:4px;background:rgba(234,179,8,.1);color:#eab308">Tier 3: ≥ 10.0</span>
-                                </div>
-                            </div>
-                            <div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">
-                                <div style="font-size:.8rem;font-weight:600;margin-bottom:.5rem">Reputation Score</div>
-                                <div style="color:var(--text-dim);font-size:.75rem;margin-bottom:1rem">Priority access for users with higher reputation</div>
-                                <div class="form-group" style="margin-bottom:0">
-                                    <label class="form-label">Min. Reputation Score</label>
-                                    <input class="form-input" id="gate-rep" type="number" value="0" min="0" max="100">
-                                    <div class="form-hint">Score based on: staking history, participation, referrals</div>
-                                </div>
-                                <div style="margin-top:.75rem;padding:.75rem;background:var(--bg);border-radius:8px">
-                                    <div style="font-size:.65rem;color:var(--text-dim);line-height:1.5">
-                                        <strong>Score breakdown:</strong><br>
-                                        • Staking history: +30 pts<br>
-                                        • Auction participation: +25 pts<br>
-                                        • Referral activity: +20 pts<br>
-                                        • Governance votes: +15 pts<br>
-                                        • Account age: +10 pts
-                                    </div>
-                                </div>
                             </div>
                         </div>
 
@@ -2319,23 +2211,23 @@
         }
 
         let selectedVestingType = 'none';
-        function selectVesting(el, type){
+        function onVestingChange(type){
             selectedVestingType = type;
-            document.querySelectorAll('#vestingOptions .phase-card').forEach(c => c.classList.remove('selected'));
-            el.classList.add('selected');
-            
             const config = document.getElementById('vestingConfig');
+            if(!config) return;
+
             if(type === 'none'){
+                config.style.display = 'none';
+                return;
+            }
+            config.style.display = 'block';
+
+            if(type === 'linear'){
                 config.innerHTML = `
-                    <div style="font-size:.8rem;font-weight:600;margin-bottom:1rem">Vesting Configuration</div>
-                    <div style="color:var(--text-dim);font-size:.8rem">No vesting — tokens distributed immediately at sale end.</div>
-                `;
-            } else if(type === 'linear'){
-                config.innerHTML = `
-                    <div style="font-size:.8rem;font-weight:600;margin-bottom:1rem">Linear Unlock Configuration</div>
+                    <div style="font-size:.8rem;font-weight:600;margin-bottom:1rem">Linear Unlock</div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label class="form-label">Unlock Duration</label>
+                            <label class="form-label">Duration</label>
                             <div style="display:flex;gap:.5rem">
                                 <input class="form-input" id="vest-linear-duration" type="number" value="6" min="1" max="48" style="width:80px">
                                 <select class="form-input" id="vest-linear-unit" style="width:auto">
@@ -2348,11 +2240,11 @@
                         <div class="form-group">
                             <label class="form-label">TGE Unlock (%)</label>
                             <input class="form-input" id="vest-linear-tge" type="number" value="0" min="0" max="50" step="1">
-                            <div class="form-hint">Percentage unlocked at Token Generation Event</div>
+                            <div class="form-hint">Unlocked at launch</div>
                         </div>
                     </div>
                     <div style="margin-top:1rem;padding:1rem;background:var(--bg);border-radius:8px">
-                        <div style="font-size:.7rem;color:var(--text-dim);margin-bottom:.5rem">Preview: <span id="vestLinearPreview">0% TGE → 16.7% per month for 6 months</span></div>
+                        <div style="font-size:.7rem;color:var(--text-dim);margin-bottom:.5rem">Preview: <span id="vestLinearPreview">0% TGE → 16.7% / month × 6</span></div>
                         <div style="display:flex;gap:2px;height:20px;border-radius:4px;overflow:hidden" id="vestLinearBar">
                             <div style="flex:16.7;background:var(--accent);opacity:.7"></div>
                             <div style="flex:16.7;background:var(--accent);opacity:.75"></div>
@@ -2363,14 +2255,11 @@
                         </div>
                     </div>
                 `;
-                // Add live preview update
-                const durInput = document.getElementById('vest-linear-duration');
-                const tgeInput = document.getElementById('vest-linear-tge');
-                if(durInput) durInput.oninput = () => updateLinearPreview();
-                if(tgeInput) tgeInput.oninput = () => updateLinearPreview();
+                document.getElementById('vest-linear-duration').oninput = updateLinearPreview;
+                document.getElementById('vest-linear-tge').oninput = updateLinearPreview;
             } else if(type === 'cliff'){
                 config.innerHTML = `
-                    <div style="font-size:.8rem;font-weight:600;margin-bottom:1rem">Cliff + Linear Configuration</div>
+                    <div style="font-size:.8rem;font-weight:600;margin-bottom:1rem">Cliff + Linear</div>
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">Cliff Period</label>
@@ -2381,7 +2270,7 @@
                             <div class="form-hint">No tokens unlock during cliff</div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Linear Unlock After Cliff</label>
+                            <label class="form-label">Linear After Cliff</label>
                             <div style="display:flex;gap:.5rem">
                                 <input class="form-input" id="vest-cliff-linear" type="number" value="12" min="1" max="48" style="width:80px">
                                 <span style="font-size:.8rem;color:var(--text-dim);display:flex;align-items:center">months</span>
@@ -2396,15 +2285,14 @@
                         <div class="form-group">
                             <label class="form-label">Cliff Unlock (%)</label>
                             <input class="form-input" id="vest-cliff-unlock" type="number" value="15" min="0" max="50" step="1">
-                            <div class="form-hint">Released at end of cliff period</div>
+                            <div class="form-hint">Released at end of cliff</div>
                         </div>
                     </div>
                     <div style="margin-top:1rem;padding:1rem;background:var(--bg);border-radius:8px">
-                        <div style="font-size:.7rem;color:var(--text-dim);margin-bottom:.5rem">Preview</div>
-                        <div style="display:flex;gap:2px;height:20px;border-radius:4px;overflow:hidden" id="vestCliffBar">
-                            <div style="flex:10;background:var(--green)" title="TGE"></div>
-                            <div style="flex:15;background:var(--accent);opacity:.5" title="Cliff"></div>
-                            <div style="flex:75;background:var(--accent);opacity:.8" title="Linear"></div>
+                        <div style="display:flex;gap:2px;height:20px;border-radius:4px;overflow:hidden">
+                            <div style="flex:10;background:var(--green)" title="TGE 10%"></div>
+                            <div style="flex:15;background:var(--accent);opacity:.5" title="Cliff 15%"></div>
+                            <div style="flex:75;background:var(--accent);opacity:.8" title="Linear 75%"></div>
                         </div>
                         <div style="font-size:.6rem;color:var(--text-muted);margin-top:.35rem">10% TGE → 3mo cliff (15%) → 12mo linear (75%)</div>
                     </div>
@@ -2412,38 +2300,42 @@
             } else if(type === 'custom'){
                 config.innerHTML = `
                     <div style="font-size:.8rem;font-weight:600;margin-bottom:1rem">Custom Schedule</div>
-                    <div style="color:var(--text-dim);font-size:.8rem;margin-bottom:1rem">Define unlock events. Total must equal 100%.</div>
+                    <div style="color:var(--text-dim);font-size:.75rem;margin-bottom:1rem">Define unlock events. Total must equal 100%.</div>
                     <div id="customEvents">
-                        <div style="display:flex;gap:.75rem;align-items:center;margin-bottom:.75rem">
-                            <input class="form-input" type="number" placeholder="Month" value="0" style="width:80px" disabled>
-                            <input class="form-input" type="number" placeholder="%" value="10" style="width:80px">
-                            <span style="font-size:.75rem;color:var(--text-dim)">TGE Unlock</span>
+                        <div style="display:grid;grid-template-columns:80px 80px 1fr auto;gap:.75rem;align-items:center;margin-bottom:.5rem">
+                            <input class="form-input" type="number" placeholder="Month" value="0" style="padding:.4rem .6rem;font-size:.75rem" disabled>
+                            <input class="form-input" type="number" placeholder="%" value="10" style="padding:.4rem .6rem;font-size:.75rem">
+                            <span style="font-size:.7rem;color:var(--text-dim)">TGE Unlock</span>
+                            <span style="width:20px"></span>
                         </div>
-                        <div style="display:flex;gap:.75rem;align-items:center;margin-bottom:.75rem">
-                            <input class="form-input" type="number" placeholder="Month" value="3" style="width:80px">
-                            <input class="form-input" type="number" placeholder="%" value="20" style="width:80px">
-                            <span style="font-size:.75rem;color:var(--text-dim)">Cliff Unlock</span>
+                        <div style="display:grid;grid-template-columns:80px 80px 1fr auto;gap:.75rem;align-items:center;margin-bottom:.5rem">
+                            <input class="form-input" type="number" placeholder="Month" value="3" style="padding:.4rem .6rem;font-size:.75rem">
+                            <input class="form-input" type="number" placeholder="%" value="20" style="padding:.4rem .6rem;font-size:.75rem">
+                            <span style="font-size:.7rem;color:var(--text-dim)">Cliff Unlock</span>
+                            <button onclick="this.closest('div[style]').remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:.85rem;padding:0">×</button>
                         </div>
-                        <div style="display:flex;gap:.75rem;align-items:center;margin-bottom:.75rem">
-                            <input class="form-input" type="number" placeholder="Month" value="6" style="width:80px">
-                            <input class="form-input" type="number" placeholder="%" value="30" style="width:80px">
-                            <span style="font-size:.75rem;color:var(--text-dim)">Month 6</span>
+                        <div style="display:grid;grid-template-columns:80px 80px 1fr auto;gap:.75rem;align-items:center;margin-bottom:.5rem">
+                            <input class="form-input" type="number" placeholder="Month" value="6" style="padding:.4rem .6rem;font-size:.75rem">
+                            <input class="form-input" type="number" placeholder="%" value="30" style="padding:.4rem .6rem;font-size:.75rem">
+                            <span style="font-size:.7rem;color:var(--text-dim)">Month 6</span>
+                            <button onclick="this.closest('div[style]').remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:.85rem;padding:0">×</button>
                         </div>
-                        <div style="display:flex;gap:.75rem;align-items:center;margin-bottom:.75rem">
-                            <input class="form-input" type="number" placeholder="Month" value="12" style="width:80px">
-                            <input class="form-input" type="number" placeholder="%" value="40" style="width:80px">
-                            <span style="font-size:.75rem;color:var(--text-dim)">Month 12</span>
+                        <div style="display:grid;grid-template-columns:80px 80px 1fr auto;gap:.75rem;align-items:center;margin-bottom:.5rem">
+                            <input class="form-input" type="number" placeholder="Month" value="12" style="padding:.4rem .6rem;font-size:.75rem">
+                            <input class="form-input" type="number" placeholder="%" value="40" style="padding:.4rem .6rem;font-size:.75rem">
+                            <span style="font-size:.7rem;color:var(--text-dim)">Month 12</span>
+                            <button onclick="this.closest('div[style]').remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:.85rem;padding:0">×</button>
                         </div>
                     </div>
-                    <button onclick="addCustomEvent()" style="padding:.5rem 1rem;border-radius:6px;background:transparent;border:1px dashed var(--border);color:var(--text-dim);cursor:pointer;font-size:.75rem;margin-top:.5rem">+ Add Event</button>
+                    <button onclick="addCustomEvent()" style="margin-top:.5rem;padding:.5rem 1rem;border-radius:6px;background:transparent;border:1px dashed var(--border);color:var(--text-dim);cursor:pointer;font-size:.75rem">+ Add Event</button>
                     <div style="margin-top:1rem;padding:1rem;background:var(--bg);border-radius:8px">
-                        <div style="font-size:.7rem;color:var(--text-dim);margin-bottom:.5rem">Schedule: 10% → 20% → 30% → 40%</div>
                         <div style="display:flex;gap:2px;height:20px;border-radius:4px;overflow:hidden">
                             <div style="flex:10;background:var(--green)"></div>
                             <div style="flex:20;background:var(--accent);opacity:.5"></div>
                             <div style="flex:30;background:var(--accent);opacity:.7"></div>
                             <div style="flex:40;background:var(--accent);opacity:.9"></div>
                         </div>
+                        <div style="font-size:.6rem;color:var(--text-muted);margin-top:.35rem">10% → 20% → 30% → 40%</div>
                     </div>
                 `;
             }
@@ -2528,9 +2420,8 @@
             const name = document.getElementById('launch-token-name')?.value?.trim();
             const symbol = document.getElementById('launch-token-symbol')?.value?.trim()?.toUpperCase();
             const supply = document.getElementById('launch-supply')?.value;
-            const price = document.getElementById('launch-price')?.value;
 
-            if(!name || !symbol || !supply || !price){
+            if(!name || !symbol || !supply){
                 alert('Please fill in all required token fields');
                 return;
             }
