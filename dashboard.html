@@ -2241,7 +2241,7 @@
                             <span id="buy-blocks" style="font-size:.75rem;font-weight:700">0 blocks</span>
                         </div>
                         <div style="display:flex;justify-content:space-between;margin-bottom:.35rem">
-                            <span style="font-size:.65rem;color:var(--text-dim)">Protocol Fee (1%)</span>
+                            <span style="font-size:.65rem;color:var(--text-dim)">Protocol Fee (0.1%)</span>
                             <span id="buy-fee" style="font-size:.75rem;font-weight:700">$0.00 hiveUSD</span>
                         </div>
                         <div style="height:1px;background:var(--border);margin:.5rem 0"></div>
@@ -2277,9 +2277,10 @@
             const maxAmount = maxBlocks * blockPriceUSD;
             if(val > maxAmount) val = maxAmount;
             buyAmount = val;
-            const blocks = Math.floor(val / blockPriceUSD);
-            const fee = val * 0.01;
-            const total = val + fee;
+            const fee = val * 0.001;
+            const investable = val - fee;
+            const blocks = Math.floor(investable / blockPriceUSD);
+            const total = val;
             document.getElementById('buy-blocks').textContent = blocks.toLocaleString() + ' blocks';
             document.getElementById('buy-fee').textContent = '$' + fee.toFixed(2) + ' hiveUSD';
             document.getElementById('buy-total').textContent = '$' + total.toFixed(2) + ' hiveUSD';
@@ -2300,8 +2301,10 @@
         async function executeBuyAuction(index){
             const s = mockAuctions.active[index];
             const stepArea = document.getElementById('buy-step-area');
-            const total = buyAmount * 1.01;
-            const blocks = Math.floor(buyAmount / blockPriceUSD);
+            const fee = buyAmount * 0.001;
+            const investable = buyAmount - fee;
+            const total = buyAmount;
+            const blocks = Math.floor(investable / blockPriceUSD);
 
             if(!connectedAddress || !hive.signer){
                 alert('Connect your wallet first');
