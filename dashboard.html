@@ -561,7 +561,7 @@
                             </div>
                             <div style="flex:1">
                                 <div style="font-size:.7rem;font-weight:600">HIVE Live Now</div>
-                                <div style="font-size:.55rem;color:var(--text-dim)">842K/1M hiveUSD · 2h left</div>
+                                <div style="font-size:.55rem;color:var(--text-dim)">101/120 blocks · 2h left</div>
                             </div>
                         </div>
                         <div style="display:flex;align-items:center;gap:.65rem;padding:.5rem;background:var(--bg);border-radius:6px;border-left:2px solid var(--yellow)">
@@ -571,7 +571,7 @@
                             </div>
                             <div style="flex:1">
                                 <div style="font-size:.7rem;font-weight:600">AetherFi Launch</div>
-                                <div style="font-size:.55rem;color:var(--text-dim)">Target: 2M hiveUSD · 200 blocks</div>
+                                <div style="font-size:.55rem;color:var(--text-dim)">200 blocks</div>
                             </div>
                         </div>
                         <div style="display:flex;align-items:center;gap:.65rem;padding:.5rem;background:var(--bg);border-radius:6px;border-left:2px solid var(--text-dim)">
@@ -581,7 +581,7 @@
                             </div>
                             <div style="flex:1">
                                 <div style="font-size:.7rem;font-weight:600">VaultGuard Launch</div>
-                                <div style="font-size:.55rem;color:var(--text-dim)">Target: 800K hiveUSD · 80 blocks</div>
+                                <div style="font-size:.55rem;color:var(--text-dim)">80 blocks</div>
                             </div>
                         </div>
                     </div>
@@ -1917,17 +1917,17 @@
 
         const mockAuctions = {
           active: [
-            { name:'Hive Token', symbol:'HIVE', logo:'H', color:'#8b5cf6', raised:842500, target:1000000, currency:'hiveUSD', participants:1247, endsIn:'2h 14m', blocks:120, soldBlocks:101, price:'Dynamic' },
-            { name:'RitualDEX', symbol:'RDEX', logo:'R', color:'#22c55e', raised:523000, target:750000, currency:'hiveUSD', participants:834, endsIn:'5h 42m', blocks:90, soldBlocks:62, price:'Dynamic' },
-            { name:'ClearNode', symbol:'CNODE', logo:'C', color:'#3b82f6', raised:189000, target:500000, currency:'hiveUSD', participants:412, endsIn:'11h 08m', blocks:60, soldBlocks:22, price:'Dynamic' },
+            { name:'Hive Token', symbol:'HIVE', logo:'H', color:'#8b5cf6', endsIn:'2h 14m', blocks:120, soldBlocks:101 },
+            { name:'RitualDEX', symbol:'RDEX', logo:'R', color:'#22c55e', endsIn:'5h 42m', blocks:90, soldBlocks:62 },
+            { name:'ClearNode', symbol:'CNODE', logo:'C', color:'#3b82f6', endsIn:'11h 08m', blocks:60, soldBlocks:22 },
           ],
           upcoming: [
-            { name:'AetherFi', symbol:'AETH', logo:'A', color:'#f59e0b', target:2000000, currency:'hiveUSD', startsIn:'2d 6h', blocks:200, price:'Dynamic', whitelist:true },
-            { name:'VaultGuard', symbol:'VGUARD', logo:'V', color:'#ef4444', target:800000, currency:'hiveUSD', startsIn:'4d 12h', blocks:80, price:'Dynamic', whitelist:false },
+            { name:'AetherFi', symbol:'AETH', logo:'A', color:'#f59e0b', startsIn:'2d 6h', blocks:200 },
+            { name:'VaultGuard', symbol:'VGUARD', logo:'V', color:'#ef4444', startsIn:'4d 12h', blocks:80 },
           ],
           completed: [
-            { name:'PulseDAO', symbol:'PULSE', logo:'P', color:'#ec4899', raised:1200000, target:1200000, currency:'hiveUSD', participants:2103, ended:'3d ago', blocks:150, finalPrice:'0.008 hiveUSD', sold:'100%' },
-            { name:'NexBridge', symbol:'NEXB', logo:'N', color:'#06b6d4', raised:450000, target:500000, currency:'hiveUSD', participants:678, ended:'1w ago', blocks:60, finalPrice:'0.0075 hiveUSD', sold:'90%' },
+            { name:'PulseDAO', symbol:'PULSE', logo:'P', color:'#ec4899', participants:2103, ended:'3d ago', blocks:150 },
+            { name:'NexBridge', symbol:'NEXB', logo:'N', color:'#06b6d4', participants:678, ended:'1w ago', blocks:60 },
           ]
         };
 
@@ -1966,102 +1966,51 @@
             let cardsHTML = '';
             if(tab === 'active'){
                 cardsHTML = sales.map(s => {
-                    const pct = Math.round((s.raised/s.target)*100);
                     const blockPct = Math.round((s.soldBlocks/s.blocks)*100);
                     return `
-                    <div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;margin-bottom:.75rem;transition:all .15s;cursor:pointer" onmouseenter="this.style.borderColor='rgba(255,255,255,.1)'" onmouseleave="this.style.borderColor='var(--border)'">
-                        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
-                            <div style="width:48px;height:48px;border-radius:12px;background:${s.color}22;color:${s.color};display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;flex-shrink:0">${s.logo}</div>
+                    <div style="padding:.6rem .8rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:.4rem;transition:all .15s;cursor:pointer" onmouseenter="this.style.borderColor='rgba(255,255,255,.1)'" onmouseleave="this.style.borderColor='var(--border)'">
+                        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem">
+                            <div style="width:32px;height:32px;border-radius:8px;background:${s.color}22;color:${s.color};display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0">${s.logo}</div>
                             <div style="flex:1;min-width:0">
-                                <div style="font-size:.9rem;font-weight:700">${s.name} <span style="color:var(--text-dim);font-weight:400;font-size:.75rem">${s.symbol}</span></div>
-                                <div style="font-size:.7rem;color:var(--text-dim)">${s.participants} participants · ${s.blocks} blocks · ${s.endsIn} left</div>
+                                <div style="font-size:.8rem;font-weight:700">${s.name} <span style="color:var(--text-dim);font-weight:400;font-size:.65rem">${s.symbol}</span></div>
+                                <div style="font-size:.6rem;color:var(--text-dim)">${s.endsIn} left · ${s.blocks} blocks</div>
                             </div>
                             <div style="text-align:right">
-                                <div style="background:rgba(34,197,94,.15);color:var(--green);font-size:.55rem;font-weight:600;padding:.15rem .4rem;border-radius:3px;display:inline-block">LIVE</div>
+                                <div style="background:rgba(34,197,94,.15);color:var(--green);font-size:.5rem;font-weight:600;padding:.1rem .35rem;border-radius:3px;display:inline-block">LIVE</div>
                             </div>
                         </div>
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
-                            <div style="font-size:.7rem;color:var(--text-dim)">Raised</div>
-                            <div style="font-size:.7rem;color:var(--text-dim)">${pct}%</div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.25rem">
+                            <div style="font-size:.6rem;color:var(--text-dim)">${s.soldBlocks}/${s.blocks} blocks</div>
+                            <div style="font-size:.6rem;color:var(--text-dim)">${blockPct}%</div>
                         </div>
-                        <div style="height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin-bottom:.5rem">
-                            <div style="height:100%;width:${pct}%;background:${s.color};border-radius:3px;transition:width .3s"></div>
-                        </div>
-                        <div style="display:flex;justify-content:space-between;font-size:.75rem;font-weight:600">
-                            <div>${s.raised.toLocaleString()} ${s.currency}</div>
-                            <div style="color:var(--text-dim)">${s.target.toLocaleString()} ${s.currency}</div>
-                        </div>
-                        <div style="display:flex;gap:.5rem;margin-top:1rem">
-                            <div style="flex:1;padding:.5rem;background:var(--bg);border-radius:6px;text-align:center">
-                                <div style="font-size:.55rem;color:var(--text-dim);text-transform:uppercase">Blocks Sold</div>
-                                <div style="font-size:.8rem;font-weight:700;margin-top:.15rem">${s.soldBlocks}/${s.blocks}</div>
-                            </div>
-                            <div style="flex:1;padding:.5rem;background:var(--bg);border-radius:6px;text-align:center">
-                                <div style="font-size:.55rem;color:var(--text-dim);text-transform:uppercase">Price</div>
-                                <div style="font-size:.8rem;font-weight:700;margin-top:.15rem">${s.price}</div>
-                            </div>
-                            <div style="flex:1;padding:.5rem;background:var(--bg);border-radius:6px;text-align:center">
-                                <div style="font-size:.55rem;color:var(--text-dim);text-transform:uppercase">Currency</div>
-                                <div style="font-size:.8rem;font-weight:700;margin-top:.15rem">${s.currency}</div>
-                            </div>
+                        <div style="height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden">
+                            <div style="height:100%;width:${blockPct}%;background:${s.color};border-radius:2px;transition:width .3s"></div>
                         </div>
                     </div>`;
                 }).join('');
             } else if(tab === 'upcoming'){
                 cardsHTML = sales.map(s => `
-                    <div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;margin-bottom:.75rem;transition:all .15s;cursor:pointer" onmouseenter="this.style.borderColor='rgba(255,255,255,.1)'" onmouseleave="this.style.borderColor='var(--border)'">
-                        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
-                            <div style="width:48px;height:48px;border-radius:12px;background:${s.color}22;color:${s.color};display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;flex-shrink:0">${s.logo}</div>
+                    <div style="padding:.6rem .8rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:.4rem;transition:all .15s;cursor:pointer" onmouseenter="this.style.borderColor='rgba(255,255,255,.1)'" onmouseleave="this.style.borderColor='var(--border)'">
+                        <div style="display:flex;align-items:center;gap:.6rem">
+                            <div style="width:32px;height:32px;border-radius:8px;background:${s.color}22;color:${s.color};display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0">${s.logo}</div>
                             <div style="flex:1;min-width:0">
-                                <div style="font-size:.9rem;font-weight:700">${s.name} <span style="color:var(--text-dim);font-weight:400;font-size:.75rem">${s.symbol}</span></div>
-                                <div style="font-size:.7rem;color:var(--text-dim)">${s.blocks} blocks · Dynamic price</div>
+                                <div style="font-size:.8rem;font-weight:700">${s.name} <span style="color:var(--text-dim);font-weight:400;font-size:.65rem">${s.symbol}</span></div>
+                                <div style="font-size:.6rem;color:var(--text-dim)">${s.blocks} blocks · Starts in ${s.startsIn}</div>
                             </div>
-                            <div style="text-align:right">
-                                <div style="background:rgba(234,179,8,.15);color:var(--yellow);font-size:.55rem;font-weight:600;padding:.15rem .4rem;border-radius:3px;display:inline-block">UPCOMING</div>
-                            </div>
-                        </div>
-                        <div style="display:flex;gap:.5rem;margin-top:.5rem">
-                            <div style="flex:1;padding:.5rem;background:var(--bg);border-radius:6px;text-align:center">
-                                <div style="font-size:.55rem;color:var(--text-dim);text-transform:uppercase">Starts In</div>
-                                <div style="font-size:.8rem;font-weight:700;margin-top:.15rem">${s.startsIn}</div>
-                            </div>
-                            <div style="flex:1;padding:.5rem;background:var(--bg);border-radius:6px;text-align:center">
-                                <div style="font-size:.55rem;color:var(--text-dim);text-transform:uppercase">Target</div>
-                                <div style="font-size:.8rem;font-weight:700;margin-top:.15rem">${s.target.toLocaleString()} ${s.currency}</div>
-                            </div>
-                            <div style="flex:1;padding:.5rem;background:var(--bg);border-radius:6px;text-align:center">
-                                <div style="font-size:.55rem;color:var(--text-dim);text-transform:uppercase">Whitelist</div>
-                                <div style="font-size:.8rem;font-weight:700;margin-top:.15rem;color:${s.whitelist?'var(--green)':'var(--text-dim)'}">${s.whitelist?'Open':'Closed'}</div>
-                            </div>
+                            <div style="background:rgba(234,179,8,.15);color:var(--yellow);font-size:.5rem;font-weight:600;padding:.1rem .35rem;border-radius:3px">UPCOMING</div>
                         </div>
                     </div>
                 `).join('');
             } else {
                 cardsHTML = sales.map(s => `
-                    <div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;margin-bottom:.75rem;transition:all .15s;cursor:pointer" onmouseenter="this.style.borderColor='rgba(255,255,255,.1)'" onmouseleave="this.style.borderColor='var(--border)'">
-                        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
-                            <div style="width:48px;height:48px;border-radius:12px;background:${s.color}22;color:${s.color};display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;flex-shrink:0">${s.logo}</div>
+                    <div style="padding:.6rem .8rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:.4rem;transition:all .15s;cursor:pointer" onmouseenter="this.style.borderColor='rgba(255,255,255,.1)'" onmouseleave="this.style.borderColor='var(--border)'">
+                        <div style="display:flex;align-items:center;gap:.6rem">
+                            <div style="width:32px;height:32px;border-radius:8px;background:${s.color}22;color:${s.color};display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0">${s.logo}</div>
                             <div style="flex:1;min-width:0">
-                                <div style="font-size:.9rem;font-weight:700">${s.name} <span style="color:var(--text-dim);font-weight:400;font-size:.75rem">${s.symbol}</span></div>
-                                <div style="font-size:.7rem;color:var(--text-dim)">${s.participants} participants · Ended ${s.ended}</div>
+                                <div style="font-size:.8rem;font-weight:700">${s.name} <span style="color:var(--text-dim);font-weight:400;font-size:.65rem">${s.symbol}</span></div>
+                                <div style="font-size:.6rem;color:var(--text-dim)">${s.blocks} blocks · ${s.participants} participants · ${s.ended}</div>
                             </div>
-                            <div style="text-align:right">
-                                <div style="background:rgba(136,136,136,.15);color:var(--text-dim);font-size:.55rem;font-weight:600;padding:.15rem .4rem;border-radius:3px;display:inline-block">COMPLETED</div>
-                            </div>
-                        </div>
-                        <div style="display:flex;gap:.5rem;margin-top:.5rem">
-                            <div style="flex:1;padding:.5rem;background:var(--bg);border-radius:6px;text-align:center">
-                                <div style="font-size:.55rem;color:var(--text-dim);text-transform:uppercase">Raised</div>
-                                <div style="font-size:.8rem;font-weight:700;margin-top:.15rem">${s.raised.toLocaleString()} ${s.currency}</div>
-                            </div>
-                            <div style="flex:1;padding:.5rem;background:var(--bg);border-radius:6px;text-align:center">
-                                <div style="font-size:.55rem;color:var(--text-dim);text-transform:uppercase">Final Price</div>
-                                <div style="font-size:.8rem;font-weight:700;margin-top:.15rem">${s.finalPrice}</div>
-                            </div>
-                            <div style="flex:1;padding:.5rem;background:var(--bg);border-radius:6px;text-align:center">
-                                <div style="font-size:.55rem;color:var(--text-dim);text-transform:uppercase">Sold</div>
-                                <div style="font-size:.8rem;font-weight:700;margin-top:.15rem;color:var(--green)">${s.sold}</div>
-                            </div>
+                            <div style="background:rgba(136,136,136,.15);color:var(--text-dim);font-size:.5rem;font-weight:600;padding:.1rem .35rem;border-radius:3px">COMPLETED</div>
                         </div>
                     </div>
                 `).join('');
