@@ -59,7 +59,7 @@ const HIVE = {
 
     // New: hiveUSD + Faucet
     HiveUSD:          '0x60601e48038E32dBCd9A9667c589bf6D39A32fb5',
-    HiveFaucet:       '0x8FCe666BA58154F55ebF6cC63F3965E945130F88',
+    HiveFaucet:       '0x1b02ABf173E02e29cA4eAAc36a3E499B5A396925',
   },
 
   // ═══ MINIMAL ABIs ═══
