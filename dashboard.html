@@ -3499,9 +3499,56 @@
 
 
         // ═══ AI MARKET MAKER PAGE ═══
+        let makerTab = 'market';
+        let simBalance = 10000;
+        let simPositions = [];
+        let simHistory = [];
+
+        const mockOrderBook = {
+            buys: [
+                { price: 0.0482, amount: 15000, total: 723 },
+                { price: 0.0480, amount: 22000, total: 1056 },
+                { price: 0.0478, amount: 8500, total: 406.3 },
+                { price: 0.0475, amount: 31000, total: 1472.5 },
+                { price: 0.0472, amount: 12000, total: 566.4 },
+            ],
+            sells: [
+                { price: 0.0488, amount: 10000, total: 488 },
+                { price: 0.0490, amount: 18000, total: 882 },
+                { price: 0.0493, amount: 7500, total: 369.75 },
+                { price: 0.0495, amount: 25000, total: 1237.5 },
+                { price: 0.0498, amount: 9000, total: 448.2 },
+            ]
+        };
+
+        const mockStrategies = [
+            { id:0, name:'HIVE/hiveUSD LP', target:'Uniswap V3', allocation:42, active:true, apy:18.5, tvl:125000, users:342, risk:'Medium', desc:'Concentrated liquidity on HIVE/hiveUSD pair. AI adjusts range based on volatility.' },
+            { id:1, name:'RITUAL Yield', target:'Lido', allocation:28, active:true, apy:12.2, tvl:89000, users:215, risk:'Low', desc:'Stake RITUAL native token for yield. Auto-compounds rewards.' },
+            { id:2, name:'HCA Sniper', target:'HiveClearing', allocation:20, active:true, apy:45.8, tvl:67000, users:89, risk:'High', desc:'AI-powered participation in new HCA auctions. Buys early blocks at lower bonding curve prices.' },
+            { id:3, name:'Delta Neutral', target:'Multi-DEX', allocation:10, active:false, apy:8.1, tvl:34000, users:56, risk:'Low', desc:'Market-neutral strategy across multiple DEXs. Hedged positions minimize IL.' },
+        ];
+
+        const mockAgents = [
+            { name:'Queen', type:'Orchestrator', status:'online', uptime:'99.7%', decisions:1247, lastAction:'Rebalanced HIVE LP range', lastTime:'2 min ago', pnl:'+12.4%' },
+            { name:'Drone-α', type:'Executor', status:'online', uptime:'99.2%', decisions:3891, lastAction:'Filled buy order @ $0.0482', lastTime:'30s ago', pnl:'+8.7%' },
+            { name:'Drone-β', type:'Executor', status:'online', uptime:'98.8%', decisions:2156, lastAction:'Placed limit sell @ $0.0495', lastTime:'1 min ago', pnl:'+6.2%' },
+            { name:'Scout', type:'Research', status:'idle', uptime:'97.1%', decisions:567, lastAction:'Analyzed CNODE volume spike', lastTime:'15 min ago', pnl:'+3.1%' },
+        ];
+
+        const mockOracleFeeds = [
+            { token:'HIVE', address:HIVE.addr.HiveToken, price:0.0485, confidence:98, source:'CoinGecko', lastUpdate:'12s ago', valid:true },
+            { token:'hiveUSD', address:HIVE.addr.HiveUSD, price:1.0002, confidence:99, source:'CoinGecko', lastUpdate:'12s ago', valid:true },
+            { token:'RITUAL', address:'0x0000...native', price:0.42, confidence:95, source:'CoinGecko', lastUpdate:'45s ago', valid:true },
+        ];
+
+        const mockLPPositions = [
+            { pair:'HIVE/hiveUSD', pool:'Uniswap V3', value:4250, liquidity:87500, range:'$0.042 - $0.055', inRange:true, il:'-1.2%', fees:127.50 },
+            { pair:'hiveUSD/RITUAL', pool:'Uniswap V3', value:1800, liquidity:37200, range:'$0.38 - $0.48', inRange:true, il:'-0.4%', fees:43.20 },
+        ];
+
         function loadMakerPage(){
             const container = document.getElementById('maker-content');
-            
+
             if(!connectedAddress){
                 container.innerHTML = `
                     <div style="text-align:center;padding:4rem 2rem">
@@ -3518,14 +3565,558 @@
                 return;
             }
 
-            container.innerHTML = `
-                <div style="font-size:1.1rem;font-weight:700;margin-bottom:.25rem">AI Market Maker</div>
-                <div style="color:var(--text-dim);font-size:.8rem;margin-bottom:2rem">AI-powered liquidity provision and market making strategies.</div>
+            renderMakerTab(makerTab);
+        }
 
-                <div style="text-align:center;padding:3rem;color:var(--text-muted);font-size:.85rem">
-                    AI Market Maker is under development. Check back soon.
+        function switchMakerTab(tab){
+            makerTab = tab;
+            renderMakerTab(tab);
+        }
+
+        function renderMakerTab(tab){
+            const container = document.getElementById('maker-content');
+
+            const tabHTML = `
+                <div style="display:flex;gap:.25rem;margin-bottom:2rem;border-bottom:1px solid var(--border);padding-bottom:.75rem">
+                    ${['market','strategies','agents','oracle','simulation'].map(t => {
+                        const labels = {market:'Order Book',strategies:'Strategies',agents:'AI Agents',oracle:'Oracle Feeds',simulation:'Simulation'};
+                        const counts = {market:'',strategies:mockStrategies.filter(s=>s.active).length,agents:mockAgents.filter(a=>a.status==='online').length,oracle:mockOracleFeeds.length,simulation:''};
+                        const countHTML = counts[t] ? `<span style="background:${t==='agents'?'var(--green)':t==='strategies'?'var(--accent)':'var(--text-dim)'};color:#000;font-size:.55rem;padding:.1rem .35rem;border-radius:3px;margin-left:.35rem">${counts[t]}</span>` : '';
+                        return `<div class="maker-tab ${tab===t?'active':''}" onclick="switchMakerTab('${t}')" style="padding:.5rem 1rem;font-size:.75rem;font-weight:600;cursor:pointer;border-radius:6px 6px 0 0;transition:all .15s;color:${tab===t?'var(--accent-light)':'var(--text-dim)'};border-bottom:2px solid ${tab===t?'var(--accent)':'transparent'}">${labels[t]}${countHTML}</div>`;
+                    }).join('')}
                 </div>
             `;
+
+            let contentHTML = '';
+
+            if(tab === 'market'){
+                contentHTML = renderMarketTab();
+            } else if(tab === 'strategies'){
+                contentHTML = renderStrategiesTab();
+            } else if(tab === 'agents'){
+                contentHTML = renderAgentsTab();
+            } else if(tab === 'oracle'){
+                contentHTML = renderOracleTab();
+            } else if(tab === 'simulation'){
+                contentHTML = renderSimulationTab();
+            }
+
+            container.innerHTML = `
+                <style>
+                    .maker-tab:hover{color:var(--text) !important}
+                    .order-row{display:flex;justify-content:space-between;padding:.3rem .6rem;font-size:.65rem;font-family:var(--font-mono);border-radius:4px;transition:background .1s}
+                    .order-row:hover{background:rgba(255,255,255,.04)}
+                    .strat-card{padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;transition:all .15s;cursor:pointer}
+                    .strat-card:hover{border-color:rgba(255,255,255,.1);background:rgba(255,255,255,.04)}
+                    .agent-card{padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;transition:all .15s}
+                    .oracle-row{display:flex;align-items:center;gap:1rem;padding:.75rem 1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:.5rem}
+                </style>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+                    <div>
+                        <div style="font-size:1.1rem;font-weight:700">AI Market Maker</div>
+                        <div style="color:var(--text-dim);font-size:.75rem">AI-powered liquidity provision and market making on Ritual Chain</div>
+                    </div>
+                    <div style="display:flex;gap:.5rem;align-items:center">
+                        <div style="padding:.35rem .7rem;background:rgba(34,197,94,.1);border-radius:6px;font-size:.6rem;color:var(--green);font-weight:600">● 3 Agents Online</div>
+                        <div style="padding:.35rem .7rem;background:rgba(139,92,246,.1);border-radius:6px;font-size:.6rem;color:var(--accent-light);font-weight:600">4 Strategies</div>
+                    </div>
+                </div>
+                ${tabHTML}
+                ${contentHTML}
+            `;
+        }
+
+        // ═══ ORDER BOOK TAB ═══
+        function renderMarketTab(){
+            const midPrice = 0.0485;
+            const spread = 0.0006;
+            return `
+                <div style="display:grid;grid-template-columns:1fr 340px;gap:1.25rem">
+                    <!-- Order Book -->
+                    <div>
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+                            <div style="font-size:.85rem;font-weight:700">HIVE/hiveUSD Order Book</div>
+                            <div style="display:flex;gap:.5rem">
+                                <div style="font-size:.6rem;color:var(--text-dim);padding:.25rem .5rem;background:var(--bg);border-radius:4px">Depth: 5 levels</div>
+                                <div style="font-size:.6rem;color:var(--green);padding:.25rem .5rem;background:rgba(34,197,94,.1);border-radius:4px">Live</div>
+                            </div>
+                        </div>
+
+                        <!-- Spread -->
+                        <div style="display:flex;justify-content:space-between;padding:.4rem .6rem;margin-bottom:.25rem;font-size:.55rem;color:var(--text-dim);text-transform:uppercase">
+                            <span>Price (hiveUSD)</span><span>Amount (HIVE)</span><span>Total</span>
+                        </div>
+
+                        <!-- Sells (reversed - highest at top) -->
+                        ${mockOrderBook.sells.slice().reverse().map(o => `
+                            <div class="order-row" style="position:relative;overflow:hidden">
+                                <div style="position:absolute;left:0;top:0;bottom:0;width:${Math.round(o.amount/31000*100)}%;background:rgba(239,68,68,.06)"></div>
+                                <span style="color:var(--red);position:relative">${o.price.toFixed(4)}</span>
+                                <span style="color:var(--text-dim);position:relative">${o.amount.toLocaleString()}</span>
+                                <span style="color:var(--text-dim);position:relative">$${o.total.toLocaleString()}</span>
+                            </div>
+                        `).join('')}
+
+                        <!-- Mid Price -->
+                        <div style="padding:.5rem .6rem;text-align:center;margin:.25rem 0;background:rgba(139,92,246,.06);border-radius:6px">
+                            <span style="font-size:.9rem;font-weight:800;color:var(--accent-light)">$${midPrice.toFixed(4)}</span>
+                            <span style="font-size:.55rem;color:var(--text-dim);margin-left:.5rem">Spread: $${spread.toFixed(4)} (${(spread/midPrice*100).toFixed(2)}%)</span>
+                        </div>
+
+                        <!-- Buys -->
+                        ${mockOrderBook.buys.map(o => `
+                            <div class="order-row" style="position:relative;overflow:hidden">
+                                <div style="position:absolute;left:0;top:0;bottom:0;width:${Math.round(o.amount/31000*100)}%;background:rgba(34,197,94,.06)"></div>
+                                <span style="color:var(--green);position:relative">${o.price.toFixed(4)}</span>
+                                <span style="color:var(--text-dim);position:relative">${o.amount.toLocaleString()}</span>
+                                <span style="color:var(--text-dim);position:relative">$${o.total.toLocaleString()}</span>
+                            </div>
+                        `).join('')}
+
+                        <!-- LP Positions -->
+                        <div style="margin-top:1.5rem">
+                            <div style="font-size:.8rem;font-weight:700;margin-bottom:.75rem">Your LP Positions</div>
+                            ${mockLPPositions.map(p => `
+                                <div style="padding:.75rem 1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:.5rem">
+                                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+                                        <div>
+                                            <div style="font-size:.8rem;font-weight:700">${p.pair}</div>
+                                            <div style="font-size:.55rem;color:var(--text-dim)">${p.pool} · Range: ${p.range}</div>
+                                        </div>
+                                        <div style="text-align:right">
+                                            <div style="font-size:.75rem;font-weight:700">$${p.value.toLocaleString()}</div>
+                                            <div style="font-size:.55rem;color:${p.inRange?'var(--green)':'var(--red)'}">${p.inRange?'● In Range':'● Out of Range'}</div>
+                                        </div>
+                                    </div>
+                                    <div style="display:flex;gap:.5rem">
+                                        <div style="flex:1;padding:.3rem;background:var(--bg);border-radius:6px;text-align:center">
+                                            <div style="font-size:.5rem;color:var(--text-dim)">Liquidity</div>
+                                            <div style="font-size:.65rem;font-weight:700">${p.liquidity.toLocaleString()}</div>
+                                        </div>
+                                        <div style="flex:1;padding:.3rem;background:var(--bg);border-radius:6px;text-align:center">
+                                            <div style="font-size:.5rem;color:var(--text-dim)">IL</div>
+                                            <div style="font-size:.65rem;font-weight:700;color:var(--red)">${p.il}</div>
+                                        </div>
+                                        <div style="flex:1;padding:.3rem;background:var(--bg);border-radius:6px;text-align:center">
+                                            <div style="font-size:.5rem;color:var(--text-dim)">Fees Earned</div>
+                                            <div style="font-size:.65rem;font-weight:700;color:var(--green)">+$${p.fees}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Trade Panel -->
+                    <div>
+                        <div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;position:sticky;top:1rem">
+                            <div style="font-size:.85rem;font-weight:700;margin-bottom:1rem">Place Order</div>
+
+                            <!-- Buy/Sell Toggle -->
+                            <div style="display:flex;gap:0;margin-bottom:1rem;background:var(--bg);border-radius:8px;padding:3px">
+                                <div id="trade-side-buy" onclick="setTradeSide('buy')" style="flex:1;padding:.5rem;text-align:center;font-size:.75rem;font-weight:600;cursor:pointer;border-radius:6px;background:rgba(34,197,94,.15);color:var(--green);transition:all .15s">Buy</div>
+                                <div id="trade-side-sell" onclick="setTradeSide('sell')" style="flex:1;padding:.5rem;text-align:center;font-size:.75rem;font-weight:600;cursor:pointer;border-radius:6px;color:var(--text-dim);transition:all .15s">Sell</div>
+                            </div>
+
+                            <!-- Order Type -->
+                            <div style="margin-bottom:.75rem">
+                                <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Order Type</div>
+                                <select style="width:100%;padding:.6rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.75rem;font-family:var(--font);cursor:pointer">
+                                    <option>Limit</option>
+                                    <option>Market</option>
+                                    <option>Stop-Loss</option>
+                                    <option>Take-Profit</option>
+                                </select>
+                            </div>
+
+                            <!-- Price -->
+                            <div style="margin-bottom:.75rem">
+                                <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Price (hiveUSD)</div>
+                                <input type="number" placeholder="0.0485" value="0.0485" style="width:100%;padding:.6rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.85rem;font-weight:700;font-family:var(--font-mono);box-sizing:border-box">
+                            </div>
+
+                            <!-- Amount -->
+                            <div style="margin-bottom:.75rem">
+                                <div style="display:flex;justify-content:space-between;margin-bottom:.3rem">
+                                    <span style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase">Amount (HIVE)</span>
+                                    <span style="font-size:.55rem;color:var(--accent);cursor:pointer">Max</span>
+                                </div>
+                                <input type="number" placeholder="0.00" style="width:100%;padding:.6rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.85rem;font-weight:700;font-family:var(--font-mono);box-sizing:border-box">
+                            </div>
+
+                            <!-- Total -->
+                            <div style="margin-bottom:1rem">
+                                <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Total (hiveUSD)</div>
+                                <input type="number" placeholder="0.00" style="width:100%;padding:.6rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.85rem;font-weight:700;font-family:var(--font-mono);box-sizing:border-box">
+                            </div>
+
+                            <!-- AI Recommendation -->
+                            <div style="padding:.6rem;background:rgba(139,92,246,.08);border-radius:8px;margin-bottom:1rem">
+                                <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.3rem">
+                                    <span style="font-size:.6rem;color:var(--accent);font-weight:600">🧠 AI Suggestion</span>
+                                </div>
+                                <div style="font-size:.65rem;color:var(--text-dim);line-height:1.5">Buy zone detected. Price near lower Bollinger Band. Consider limit buy at $0.0480 for better entry.</div>
+                            </div>
+
+                            <!-- Submit -->
+                            <button style="width:100%;padding:.75rem;background:var(--green);border:none;border-radius:10px;color:#000;font-weight:700;font-size:.8rem;cursor:pointer;transition:all .15s">Buy HIVE</button>
+
+                            <!-- Balance -->
+                            <div style="margin-top:.75rem;padding:.5rem;background:var(--bg);border-radius:6px;display:flex;justify-content:space-between">
+                                <span style="font-size:.6rem;color:var(--text-dim)">hiveUSD Balance</span>
+                                <span style="font-size:.65rem;font-weight:700">12,450.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ═══ STRATEGIES TAB ═══
+        function renderStrategiesTab(){
+            const riskColors = {Low:'var(--green)',Medium:'var(--yellow)',High:'var(--red)'};
+            return `
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+                    ${mockStrategies.map(s => `
+                        <div class="strat-card">
+                            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+                                <div>
+                                    <div style="font-size:.85rem;font-weight:700">${s.name}</div>
+                                    <div style="font-size:.6rem;color:var(--text-dim)">${s.target} · ${s.users} users</div>
+                                </div>
+                                <div style="text-align:right">
+                                    <div style="font-size:.55rem;padding:.15rem .4rem;border-radius:3px;background:${s.active?'rgba(34,197,94,.15)':'rgba(136,136,136,.15)'};color:${s.active?'var(--green)':'var(--text-dim)'};font-weight:600;display:inline-block">${s.active?'ACTIVE':'PAUSED'}</div>
+                                    <div style="font-size:.5rem;color:${riskColors[s.risk]};margin-top:.2rem">${s.risk} Risk</div>
+                                </div>
+                            </div>
+                            <div style="font-size:.65rem;color:var(--text-dim);line-height:1.5;margin-bottom:.75rem">${s.desc}</div>
+                            <div style="display:flex;gap:.5rem;margin-bottom:.75rem">
+                                <div style="flex:1;padding:.4rem;background:var(--bg);border-radius:6px;text-align:center">
+                                    <div style="font-size:.5rem;color:var(--text-dim)">APY</div>
+                                    <div style="font-size:.75rem;font-weight:700;color:var(--green)">${s.apy}%</div>
+                                </div>
+                                <div style="flex:1;padding:.4rem;background:var(--bg);border-radius:6px;text-align:center">
+                                    <div style="font-size:.5rem;color:var(--text-dim)">TVL</div>
+                                    <div style="font-size:.75rem;font-weight:700">$${(s.tvl/1000).toFixed(0)}K</div>
+                                </div>
+                                <div style="flex:1;padding:.4rem;background:var(--bg);border-radius:6px;text-align:center">
+                                    <div style="font-size:.5rem;color:var(--text-dim)">Allocation</div>
+                                    <div style="font-size:.75rem;font-weight:700">${s.allocation}%</div>
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:.5rem">
+                                <button style="flex:1;padding:.55rem;background:var(--accent);border:none;border-radius:8px;color:#fff;font-weight:600;font-size:.7rem;cursor:pointer">Deposit</button>
+                                <button style="flex:1;padding:.55rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-weight:600;font-size:.7rem;cursor:pointer">Withdraw</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <!-- Allocation Overview -->
+                <div style="margin-top:1.5rem;padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">
+                    <div style="font-size:.8rem;font-weight:700;margin-bottom:.75rem">Portfolio Allocation</div>
+                    <div style="display:flex;height:12px;border-radius:6px;overflow:hidden;margin-bottom:.75rem">
+                        <div style="width:42%;background:var(--accent)" title="HIVE/hiveUSD LP"></div>
+                        <div style="width:28%;background:var(--green)" title="RITUAL Yield"></div>
+                        <div style="width:20%;background:var(--yellow)" title="HCA Sniper"></div>
+                        <div style="width:10%;background:var(--text-dim)" title="Delta Neutral"></div>
+                    </div>
+                    <div style="display:flex;gap:1rem;flex-wrap:wrap">
+                        ${mockStrategies.map(s => `
+                            <div style="display:flex;align-items:center;gap:.4rem">
+                                <div style="width:8px;height:8px;border-radius:2px;background:${['var(--accent)','var(--green)','var(--yellow)','var(--text-dim)'][s.id]}"></div>
+                                <span style="font-size:.6rem;color:var(--text-dim)">${s.name} (${s.allocation}%)</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // ═══ AI AGENTS TAB ═══
+        function renderAgentsTab(){
+            const statusColors = {online:'var(--green)',idle:'var(--yellow)',offline:'var(--red)'};
+            const typeIcons = {Orchestrator:'👑',Executor:'⚡',Research:'🔍'};
+            return `
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.5rem">
+                    ${mockAgents.map(a => `
+                        <div class="agent-card">
+                            <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.75rem">
+                                <div style="width:40px;height:40px;border-radius:10px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;font-size:1.1rem">${typeIcons[a.type]||'🤖'}</div>
+                                <div style="flex:1">
+                                    <div style="font-size:.85rem;font-weight:700">${a.name} <span style="font-size:.6rem;color:var(--text-dim);font-weight:400">${a.type}</span></div>
+                                    <div style="display:flex;align-items:center;gap:.4rem">
+                                        <div style="width:6px;height:6px;border-radius:50%;background:${statusColors[a.status]}"></div>
+                                        <span style="font-size:.55rem;color:${statusColors[a.status]};text-transform:uppercase;font-weight:600">${a.status}</span>
+                                        <span style="font-size:.5rem;color:var(--text-muted)">· Uptime ${a.uptime}</span>
+                                    </div>
+                                </div>
+                                <div style="text-align:right">
+                                    <div style="font-size:.75rem;font-weight:700;color:var(--green)">${a.pnl}</div>
+                                    <div style="font-size:.5rem;color:var(--text-dim)">${a.decisions.toLocaleString()} decisions</div>
+                                </div>
+                            </div>
+                            <div style="padding:.5rem .6rem;background:var(--bg);border-radius:6px">
+                                <div style="font-size:.55rem;color:var(--text-dim);margin-bottom:.15rem">Last Action</div>
+                                <div style="font-size:.65rem;color:var(--text)">${a.lastAction}</div>
+                                <div style="font-size:.5rem;color:var(--text-muted);margin-top:.15rem">${a.lastTime}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <!-- Agent Activity Log -->
+                <div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">
+                    <div style="font-size:.8rem;font-weight:700;margin-bottom:.75rem">Recent Activity</div>
+                    <div style="max-height:200px;overflow-y:auto">
+                        ${[
+                            {time:'2 min ago',agent:'Queen',action:'Rebalanced HIVE LP range to $0.042-$0.055',type:'rebalance'},
+                            {time:'30s ago',agent:'Drone-α',action:'Filled buy order: 5,000 HIVE @ $0.0482',type:'trade'},
+                            {time:'1 min ago',agent:'Drone-β',action:'Placed limit sell: 3,000 HIVE @ $0.0495',type:'trade'},
+                            {time:'5 min ago',agent:'Queen',action:'Adjusted HCA Sniper allocation: 20% → 22%',type:'strategy'},
+                            {time:'15 min ago',agent:'Scout',action:'Detected CNODE volume spike +340%, flagged for review',type:'alert'},
+                            {time:'22 min ago',agent:'Drone-α',action:'Claimed LP fees: $12.40 from HIVE/hiveUSD pool',type:'claim'},
+                        ].map(log => {
+                            const icons = {rebalance:'🔄',trade:'💱',strategy:'📊',alert:'⚠️',claim:'💰'};
+                            return `
+                                <div style="display:flex;align-items:flex-start;gap:.6rem;padding:.5rem 0;border-bottom:1px solid var(--border)">
+                                    <span style="font-size:.8rem">${icons[log.type]||'📌'}</span>
+                                    <div style="flex:1">
+                                        <div style="font-size:.65rem;color:var(--text)">${log.action}</div>
+                                        <div style="font-size:.5rem;color:var(--text-muted);margin-top:.15rem">${log.agent} · ${log.time}</div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // ═══ ORACLE FEEDS TAB ═══
+        function renderOracleTab(){
+            return `
+                <div style="margin-bottom:1.5rem">
+                    ${mockOracleFeeds.map(f => `
+                        <div class="oracle-row">
+                            <div style="width:36px;height:36px;border-radius:8px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:var(--accent)">${f.token.charAt(0)}</div>
+                            <div style="flex:1">
+                                <div style="font-size:.8rem;font-weight:700">${f.token}</div>
+                                <div style="font-size:.55rem;color:var(--text-dim);font-family:var(--font-mono)">${f.address.slice(0,10)}...${f.address.slice(-6)}</div>
+                            </div>
+                            <div style="text-align:right">
+                                <div style="font-size:.85rem;font-weight:700">$${f.price.toFixed(f.price > 10 ? 2 : 4)}</div>
+                                <div style="font-size:.5rem;color:var(--text-dim)">${f.lastUpdate}</div>
+                            </div>
+                            <div style="text-align:center;min-width:60px">
+                                <div style="font-size:.5rem;color:var(--text-dim);text-transform:uppercase">Confidence</div>
+                                <div style="font-size:.75rem;font-weight:700;color:${f.confidence >= 98 ? 'var(--green)' : f.confidence >= 95 ? 'var(--yellow)' : 'var(--red)'}">${f.confidence}%</div>
+                            </div>
+                            <div style="text-align:center;min-width:50px">
+                                <div style="font-size:.5rem;color:var(--text-dim);text-transform:uppercase">Source</div>
+                                <div style="font-size:.6rem;font-weight:600">${f.source}</div>
+                            </div>
+                            <div style="width:8px;height:8px;border-radius:50%;background:${f.valid ? 'var(--green)' : 'var(--red)'}"></div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <!-- Oracle Config -->
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem">
+                    <div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;text-align:center">
+                        <div style="font-size:.55rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Update Frequency</div>
+                        <div style="font-size:1rem;font-weight:700">5 min</div>
+                        <div style="font-size:.5rem;color:var(--text-muted);margin-top:.2rem">via CoinGecko cron</div>
+                    </div>
+                    <div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;text-align:center">
+                        <div style="font-size:.55rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Tracked Tokens</div>
+                        <div style="font-size:1rem;font-weight:700">${mockOracleFeeds.length}</div>
+                        <div style="font-size:.5rem;color:var(--text-muted);margin-top:.2rem">HIVE, hiveUSD, RITUAL</div>
+                    </div>
+                    <div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;text-align:center">
+                        <div style="font-size:.55rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Avg Confidence</div>
+                        <div style="font-size:1rem;font-weight:700;color:var(--green)">${Math.round(mockOracleFeeds.reduce((a,f)=>a+f.confidence,0)/mockOracleFeeds.length)}%</div>
+                        <div style="font-size:.5rem;color:var(--text-muted);margin-top:.2rem">All feeds healthy</div>
+                    </div>
+                </div>
+
+                <!-- Price Chart Placeholder -->
+                <div style="margin-top:1.5rem;padding:1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+                        <div style="font-size:.8rem;font-weight:700">HIVE Price Feed (24h)</div>
+                        <div style="display:flex;gap:.35rem">
+                            ${['1H','4H','24H','7D'].map((t,i) => `
+                                <div style="padding:.25rem .5rem;font-size:.55rem;font-weight:600;cursor:pointer;border-radius:4px;background:${i===2?'rgba(139,92,246,.15)':'transparent'};color:${i===2?'var(--accent-light)':'var(--text-dim)'}">${t}</div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div style="height:180px;display:flex;align-items:flex-end;gap:3px;padding:0 .5rem">
+                        ${[0.0478,0.0480,0.0482,0.0479,0.0481,0.0483,0.0485,0.0484,0.0486,0.0488,0.0485,0.0483,0.0481,0.0484,0.0486,0.0489,0.0487,0.0485,0.0483,0.0486,0.0488,0.0490,0.0487,0.0485].map((p,i) => {
+                            const h = Math.round((p - 0.0475) / 0.002 * 160);
+                            const isUp = i === 0 || p >= [0.0478,0.0480,0.0482,0.0479,0.0481,0.0483,0.0485,0.0484,0.0486,0.0488,0.0485,0.0483,0.0481,0.0484,0.0486,0.0489,0.0487,0.0485,0.0483,0.0486,0.0488,0.0490,0.0487,0.0485][i-1];
+                            return `<div style="flex:1;height:${h}px;background:${isUp?'rgba(34,197,94,.6)':'rgba(239,68,68,.6)'};border-radius:2px 2px 0 0;min-width:8px"></div>`;
+                        }).join('')}
+                    </div>
+                    <div style="display:flex;justify-content:space-between;margin-top:.5rem;padding:0 .5rem">
+                        <span style="font-size:.5rem;color:var(--text-muted)">00:00</span>
+                        <span style="font-size:.5rem;color:var(--text-muted)">06:00</span>
+                        <span style="font-size:.5rem;color:var(--text-muted)">12:00</span>
+                        <span style="font-size:.5rem;color:var(--text-muted)">18:00</span>
+                        <span style="font-size:.5rem;color:var(--text-muted)">Now</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ═══ SIMULATION TAB ═══
+        function renderSimulationTab(){
+            const totalValue = simBalance + simPositions.reduce((a,p) => a + p.currentValue, 0);
+            const totalPnL = totalValue - 10000;
+            const pnlPct = (totalPnL / 10000 * 100);
+            return `
+                <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:1rem;padding:.5rem .75rem;background:rgba(234,179,8,.08);border-radius:8px">
+                    <span style="font-size:.75rem">⚠️</span>
+                    <span style="font-size:.65rem;color:var(--yellow)">Simulation Mode — Paper trading only. No real funds at risk.</span>
+                    <button onclick="resetSimulation()" style="margin-left:auto;padding:.3rem .6rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text-dim);font-size:.55rem;cursor:pointer">Reset</button>
+                </div>
+
+                <!-- Portfolio Summary -->
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:.75rem;margin-bottom:1.5rem">
+                    <div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;text-align:center">
+                        <div style="font-size:.55rem;color:var(--text-dim);text-transform:uppercase">Starting Capital</div>
+                        <div style="font-size:1.1rem;font-weight:800;margin-top:.25rem">$10,000</div>
+                    </div>
+                    <div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;text-align:center">
+                        <div style="font-size:.55rem;color:var(--text-dim);text-transform:uppercase">Total Value</div>
+                        <div style="font-size:1.1rem;font-weight:800;margin-top:.25rem">$${totalValue.toFixed(2)}</div>
+                    </div>
+                    <div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;text-align:center">
+                        <div style="font-size:.55rem;color:var(--text-dim);text-transform:uppercase">PnL</div>
+                        <div style="font-size:1.1rem;font-weight:800;margin-top:.25rem;color:${totalPnL>=0?'var(--green)':'var(--red)'}">${totalPnL>=0?'+':''}$${totalPnL.toFixed(2)}</div>
+                    </div>
+                    <div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;text-align:center">
+                        <div style="font-size:.55rem;color:var(--text-dim);text-transform:uppercase">Return</div>
+                        <div style="font-size:1.1rem;font-weight:800;margin-top:.25rem;color:${pnlPct>=0?'var(--green)':'var(--red)'}">${pnlPct>=0?'+':''}${pnlPct.toFixed(2)}%</div>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+                    <!-- Sim Trade Form -->
+                    <div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">
+                        <div style="font-size:.85rem;font-weight:700;margin-bottom:1rem">Simulate Trade</div>
+                        <div style="margin-bottom:.75rem">
+                            <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Token</div>
+                            <select id="sim-token" style="width:100%;padding:.6rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.75rem;cursor:pointer">
+                                <option value="HIVE">HIVE ($0.0485)</option>
+                                <option value="RITUAL">RITUAL ($0.42)</option>
+                                <option value="hiveUSD">hiveUSD ($1.00)</option>
+                            </select>
+                        </div>
+                        <div style="display:flex;gap:0;margin-bottom:.75rem;background:var(--bg);border-radius:8px;padding:3px">
+                            <div id="sim-side-buy" onclick="setSimSide('buy')" style="flex:1;padding:.4rem;text-align:center;font-size:.7rem;font-weight:600;cursor:pointer;border-radius:6px;background:rgba(34,197,94,.15);color:var(--green)">Buy</div>
+                            <div id="sim-side-sell" onclick="setSimSide('sell')" style="flex:1;padding:.4rem;text-align:center;font-size:.7rem;font-weight:600;cursor:pointer;border-radius:6px;color:var(--text-dim)">Sell</div>
+                        </div>
+                        <div style="margin-bottom:.75rem">
+                            <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Amount (hiveUSD)</div>
+                            <input id="sim-amount" type="number" placeholder="1000" style="width:100%;padding:.6rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.85rem;font-weight:700;font-family:var(--font-mono);box-sizing:border-box">
+                        </div>
+                        <button onclick="executeSimTrade()" style="width:100%;padding:.7rem;background:var(--accent);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:.8rem;cursor:pointer">Execute Sim Trade</button>
+                        <div style="margin-top:.5rem;font-size:.6rem;color:var(--text-dim);text-align:center">Balance: $${simBalance.toFixed(2)} hiveUSD</div>
+                    </div>
+
+                    <!-- Sim Positions -->
+                    <div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">
+                        <div style="font-size:.85rem;font-weight:700;margin-bottom:1rem">Positions</div>
+                        ${simPositions.length === 0 ? `
+                            <div style="text-align:center;padding:2rem;color:var(--text-dim);font-size:.75rem">No positions yet. Execute a sim trade to start.</div>
+                        ` : simPositions.map((p,i) => `
+                            <div style="display:flex;align-items:center;gap:.6rem;padding:.5rem;margin-bottom:.35rem;background:var(--bg);border-radius:6px">
+                                <div style="flex:1">
+                                    <div style="font-size:.7rem;font-weight:700">${p.token} <span style="font-size:.55rem;color:var(--text-dim)">${p.side.toUpperCase()}</span></div>
+                                    <div style="font-size:.55rem;color:var(--text-dim)">${p.amount.toFixed(2)} @ $${p.entryPrice.toFixed(4)}</div>
+                                </div>
+                                <div style="text-align:right">
+                                    <div style="font-size:.7rem;font-weight:700;color:${p.pnl>=0?'var(--green)':'var(--red)'}">${p.pnl>=0?'+':''}$${p.pnl.toFixed(2)}</div>
+                                    <div style="font-size:.5rem;color:${p.pnl>=0?'var(--green)':'var(--red)'}">${p.pnl>=0?'+':''}${p.pnlPct.toFixed(1)}%</div>
+                                </div>
+                                <div onclick="closeSimPosition(${i})" style="cursor:pointer;font-size:.7rem;color:var(--text-muted);padding:.25rem">✕</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- Trade History -->
+                ${simHistory.length > 0 ? `
+                    <div style="margin-top:1.5rem;padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">
+                        <div style="font-size:.8rem;font-weight:700;margin-bottom:.75rem">Trade History</div>
+                        <div style="max-height:150px;overflow-y:auto">
+                            ${simHistory.slice().reverse().map(h => `
+                                <div style="display:flex;align-items:center;gap:.6rem;padding:.4rem 0;border-bottom:1px solid var(--border)">
+                                    <span style="font-size:.55rem;padding:.15rem .35rem;border-radius:3px;background:${h.side==='buy'?'rgba(34,197,94,.15)':'rgba(239,68,68,.15)'};color:${h.side==='buy'?'var(--green)':'var(--red)'};font-weight:600">${h.side.toUpperCase()}</span>
+                                    <span style="font-size:.65rem;font-weight:600">${h.token}</span>
+                                    <span style="font-size:.6rem;color:var(--text-dim)">$${h.amount.toFixed(2)} @ $${h.price.toFixed(4)}</span>
+                                    <span style="font-size:.5rem;color:var(--text-muted);margin-left:auto">${h.time}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        let simSide = 'buy';
+        function setTradeSide(side){
+            document.getElementById('trade-side-buy').style.background = side==='buy' ? 'rgba(34,197,94,.15)' : 'transparent';
+            document.getElementById('trade-side-buy').style.color = side==='buy' ? 'var(--green)' : 'var(--text-dim)';
+            document.getElementById('trade-side-sell').style.background = side==='sell' ? 'rgba(239,68,68,.15)' : 'transparent';
+            document.getElementById('trade-side-sell').style.color = side==='sell' ? 'var(--red)' : 'var(--text-dim)';
+        }
+
+        function setSimSide(side){
+            simSide = side;
+            document.getElementById('sim-side-buy').style.background = side==='buy' ? 'rgba(34,197,94,.15)' : 'transparent';
+            document.getElementById('sim-side-buy').style.color = side==='buy' ? 'var(--green)' : 'var(--text-dim)';
+            document.getElementById('sim-side-sell').style.background = side==='sell' ? 'rgba(239,68,68,.15)' : 'transparent';
+            document.getElementById('sim-side-sell').style.color = side==='sell' ? 'var(--red)' : 'var(--text-dim)';
+        }
+
+        function executeSimTrade(){
+            const token = document.getElementById('sim-token').value;
+            const amount = parseFloat(document.getElementById('sim-amount').value);
+            if(!amount || amount <= 0) return;
+            if(amount > simBalance){ alert('Insufficient balance'); return; }
+
+            const prices = {HIVE:0.0485, RITUAL:0.42, hiveUSD:1.0};
+            const price = prices[token] || 1;
+            const tokenAmount = amount / price;
+
+            simBalance -= amount;
+            simPositions.push({
+                token, side: simSide, amount: tokenAmount, entryPrice: price,
+                currentValue: amount, pnl: 0, pnlPct: 0
+            });
+            simHistory.push({
+                token, side: simSide, amount, price, time: new Date().toLocaleTimeString()
+            });
+
+            renderMakerTab('simulation');
+        }
+
+        function closeSimPosition(idx){
+            const p = simPositions[idx];
+            const prices = {HIVE:0.0485, RITUAL:0.42, hiveUSD:1.0};
+            const currentPrice = prices[p.token] || 1;
+            const value = p.amount * currentPrice;
+            simBalance += value;
+            simPositions.splice(idx, 1);
+            renderMakerTab('simulation');
+        }
+
+        function resetSimulation(){
+            simBalance = 10000;
+            simPositions = [];
+            simHistory = [];
+            renderMakerTab('simulation');
         }
 
         // ═══ PROFILE PAGE ═══
