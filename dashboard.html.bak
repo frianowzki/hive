@@ -322,15 +322,6 @@
                     <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg></div>
                     <span class="nav-label">Auctions</span>
                 </div>
-                <div class="nav-item" data-page="faucet" onclick="switchPage('faucet')">
-                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2c-4 4-6 8-6 12a6 6 0 0 0 12 0c0-4-2-8-6-12z"/></svg></div>
-                    <span class="nav-label">Faucet</span>
-                </div>
-            </div>
-
-            <!-- Retail -->
-            <div class="nav-section">
-                <div class="nav-section-label">Retail</div>
                 <div class="nav-item" data-page="tokenlaunch" onclick="switchPage('tokenlaunch')">
                     <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></div>
                     <span class="nav-label">Token Launch</span>
@@ -339,9 +330,9 @@
                     <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9.5V4a1 1 0 0 1 1-1h4.5"/><path d="M2 14.5V20a1 1 0 0 0 1 1h4.5"/><path d="M22 9.5V4a1 1 0 0 0-1-1h-4.5"/><path d="M22 14.5V20a1 1 0 0 1-1 1h-4.5"/><circle cx="12" cy="12" r="3"/></svg></div>
                     <span class="nav-label">AI Market Maker</span>
                 </div>
-                <div class="nav-item" data-page="lock" onclick="switchPage('lock')">
-                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><line x1="12" y1="16" x2="12" y2="18"/></svg></div>
-                    <span class="nav-label">Lock / Vesting</span>
+                <div class="nav-item" data-page="faucet" onclick="switchPage('faucet')">
+                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2c-4 4-6 8-6 12a6 6 0 0 0 12 0c0-4-2-8-6-12z"/></svg></div>
+                    <span class="nav-label">Faucet</span>
                 </div>
             </div>
 
@@ -374,10 +365,6 @@
                     <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
                     <span class="nav-label">Multi-Sig</span>
                 </div>
-                <div class="nav-item" data-page="treasury" onclick="switchPage('treasury')">
-                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg></div>
-                    <span class="nav-label">Treasury</span>
-                </div>
             </div>
 
             <!-- Identity -->
@@ -403,10 +390,6 @@
                 <div class="nav-item" data-page="referral" onclick="switchPage('referral')">
                     <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
                     <span class="nav-label">Referral</span>
-                </div>
-                <div class="nav-item" data-page="alerts" onclick="switchPage('alerts')">
-                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
-                    <span class="nav-label">Alerts</span>
                 </div>
             </div>
         </div>
@@ -741,34 +724,6 @@
             </div>
         </div>
 
-        <!-- PAGE: Lock / Vesting -->
-        <div class="content page-content" id="page-lock" style="display:none">
-            <div id="lock-content">
-                <div style="color:var(--text-muted);text-align:center;padding:4rem">Loading...</div>
-            </div>
-        </div>
-
-        <!-- PAGE: Treasury -->
-        <div class="content page-content" id="page-treasury" style="display:none">
-            <div id="treasury-content">
-                <div style="color:var(--text-muted);text-align:center;padding:4rem">Loading...</div>
-            </div>
-        </div>
-
-        <!-- PAGE: Alerts -->
-        <div class="content page-content" id="page-alerts" style="display:none">
-            <div id="alerts-content">
-                <div style="color:var(--text-muted);text-align:center;padding:4rem">Loading...</div>
-            </div>
-        </div>
-
-        <!-- PAGE: Referral -->
-        <div class="content page-content" id="page-referral" style="display:none">
-            <div id="referral-content">
-                <div style="color:var(--text-muted);text-align:center;padding:4rem">Loading...</div>
-            </div>
-        </div>
-
         <!-- PAGE: Generic placeholder for other pages -->
         <div class="content page-content" id="page-generic" style="display:none">
             <div class="content-header">
@@ -806,9 +761,6 @@
             oracle: { title:'Oracles', breadcrumb:'Hive / System / Oracles' },
             points: { title:'Points', breadcrumb:'Hive / System / Points' },
             referral: { title:'Referral', breadcrumb:'Hive / System / Referral' },
-            lock: { title:'', breadcrumb:'' },
-            treasury: { title:'Treasury', breadcrumb:'Hive / Governance / Treasury' },
-            alerts: { title:'Alerts', breadcrumb:'Hive / System / Alerts' },
             faucet: { title:'', breadcrumb:'' },
             profile: { title:'Profile', breadcrumb:'Hive / Profile' },
         };
@@ -866,18 +818,6 @@
             } else if(page === 'profile'){
                 document.getElementById('page-profile').style.display = '';
                 loadProfilePage();
-            } else if(page === 'lock'){
-                document.getElementById('page-lock').style.display = '';
-                loadLockPage();
-            } else if(page === 'treasury'){
-                document.getElementById('page-treasury').style.display = '';
-                loadTreasuryPage();
-            } else if(page === 'alerts'){
-                document.getElementById('page-alerts').style.display = '';
-                loadAlertsPage();
-            } else if(page === 'referral'){
-                document.getElementById('page-referral').style.display = '';
-                loadReferralPage();
             } else {
                 document.getElementById('page-generic').style.display = '';
                 document.getElementById('generic-title').textContent = config.title;
@@ -4484,377 +4424,10 @@
             }
         }
 
-        // ═══ LOCK / VESTING PAGE ═══
-        const mockVestingSchedules = [
-            { id:0, beneficiary:'0x63C5...d39C', token:'HIVE', amount:5000000, claimed:1200000, start:Date.now()/1000-90*86400, cliff:90*86400, duration:365*86400, type:'CLIFF_LINEAR', cliffPct:2500, label:'Seed', cancelled:false },
-            { id:1, beneficiary:'0x63C5...d39C', token:'HIVE', amount:2000000, claimed:500000, start:Date.now()/1000-180*86400, cliff:0, duration:365*86400, type:'LINEAR', cliffPct:0, label:'Team', cancelled:false },
-            { id:2, beneficiary:'0x63C5...d39C', token:'hiveUSD', amount:10000000, claimed:2000000, start:Date.now()/1000-60*86400, cliff:30*86400, duration:180*86400, type:'CLIFF_LINEAR', cliffPct:1000, label:'Airdrop', cancelled:false },
-        ];
-
-        function loadLockPage(){
-            const c = document.getElementById('lock-content');
-
-            if(!connectedAddress){
-                c.innerHTML = `
-                    <div style="text-align:center;padding:4rem 2rem">
-                        <div style="font-size:.95rem;font-weight:600;margin-bottom:.5rem">Connect Your Wallet</div>
-                        <div style="color:var(--text-muted);font-size:.8rem;margin-bottom:1.5rem">Connect your wallet to view vesting schedules</div>
-                        <button class="action-btn" onclick="connectFromDashboard()" style="margin:0 auto;padding:.75rem 2rem;border-radius:10px;background:var(--accent);border:none;color:#fff;font-weight:600;cursor:pointer">Connect Wallet</button>
-                    </div>
-                `;
-                return;
-            }
-
-            if(userRole !== 'retail'){
-                c.innerHTML = showRetailGate('Lock / Vesting');
-                return;
-            }
-
-            let html = '';
-
-            html += '<div style="max-width:50%">';
-
-            // Header
-            html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem">';
-            html += '<div><h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:800">Lock / Vesting</h1>';
-            html += '<p style="font-size:.8rem;color:var(--text-dim);margin-top:.25rem">Token vesting schedules with linear, cliff, and custom unlock</p></div>';
-            html += '<button onclick="claimAllVesting()" style="padding:.6rem 1.2rem;border-radius:8px;border:1px solid var(--accent);background:rgba(139,92,246,.1);color:var(--accent-light);font-weight:600;cursor:pointer;font-size:.8rem">Claim All</button>';
-            html += '</div>';
-
-            // Summary stats
-            const totalLocked = mockVestingSchedules.reduce((a,s)=>a+s.amount, 0);
-            const totalClaimed = mockVestingSchedules.reduce((a,s)=>a+s.claimed, 0);
-            const totalPending = totalLocked - totalClaimed;
-
-            html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem">';
-            html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
-            html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem">Total Locked</div>';
-            html += '<div style="font-size:1.3rem;font-weight:700">' + formatNum(totalLocked) + '</div></div>';
-            html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
-            html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem">Claimed</div>';
-            html += '<div style="font-size:1.3rem;font-weight:700;color:var(--green)">' + formatNum(totalClaimed) + '</div></div>';
-            html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
-            html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem">Pending</div>';
-            html += '<div style="font-size:1.3rem;font-weight:700;color:var(--accent-light)">' + formatNum(totalPending) + '</div></div>';
-            html += '</div>';
-
-            // Schedule list
-            html += '<div style="display:flex;flex-direction:column;gap:.75rem">';
-            mockVestingSchedules.forEach(s => {
-                const pct = Math.round((s.claimed / s.amount) * 100);
-                const claimable = Math.max(0, Math.round(s.amount * 0.6) - s.claimed); // Simulated
-                const typeLabel = s.type === 'LINEAR' ? 'Linear' : s.type === 'CLIFF_LINEAR' ? 'Cliff + Linear' : 'Custom';
-                const now = Date.now()/1000;
-                const elapsed = now - s.start;
-                const progressPct = Math.min(100, Math.round((elapsed / s.duration) * 100));
-
-                html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
-                html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">';
-                html += '<div style="display:flex;align-items:center;gap:.75rem">';
-                html += '<div style="width:36px;height:36px;border-radius:8px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:var(--accent-light)">' + s.label.charAt(0) + '</div>';
-                html += '<div><div style="font-weight:600;font-size:.9rem">' + s.label + '</div>';
-                html += '<div style="font-size:.65rem;color:var(--text-dim)">' + s.token + ' · ' + typeLabel + '</div></div></div>';
-                html += '<div style="text-align:right">';
-                if(claimable > 0) html += '<button onclick="claimVesting(' + s.id + ')" style="padding:.35rem .75rem;border-radius:6px;border:1px solid var(--green);background:rgba(34,197,94,.1);color:var(--green);font-weight:600;cursor:pointer;font-size:.7rem">Claim ' + formatNum(claimable) + '</button>';
-                else html += '<span style="font-size:.65rem;color:var(--text-muted)">Nothing to claim</span>';
-                html += '</div></div>';
-
-                // Progress bar
-                html += '<div style="display:flex;align-items:center;gap:1rem;margin-bottom:.5rem">';
-                html += '<div style="flex:1;height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden">';
-                html += '<div style="height:100%;width:' + progressPct + '%;background:var(--accent);border-radius:3px;transition:width .3s"></div></div>';
-                html += '<div style="font-size:.65rem;color:var(--text-dim);min-width:40px;text-align:right">' + progressPct + '%</div></div>';
-
-                // Stats row
-                html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem">';
-                html += '<div><div style="font-size:.55rem;color:var(--text-muted);text-transform:uppercase">Total</div><div style="font-size:.8rem;font-weight:600">' + formatNum(s.amount) + '</div></div>';
-                html += '<div><div style="font-size:.55rem;color:var(--text-muted);text-transform:uppercase">Claimed</div><div style="font-size:.8rem;font-weight:600;color:var(--green)">' + formatNum(s.claimed) + '</div></div>';
-                html += '<div><div style="font-size:.55rem;color:var(--text-muted);text-transform:uppercase">Schedule</div><div style="font-size:.8rem;font-weight:600">' + Math.round(s.duration/86400) + ' days</div></div>';
-                html += '</div>';
-                html += '</div>';
-            });
-            html += '</div>';
-
-            html += '</div>'; // close wrapper
-
-            c.innerHTML = html;
-        }
-
-        function claimVesting(id){ claimVestingOnChain(id); }
-        function claimAllVesting(){ claimAllOnChain(); }
-
-        // ═══ TREASURY PAGE ═══
-        function loadTreasuryPage(){
-            const c = document.getElementById('treasury-content');
-            const balance = 125430;
-            const totalDistributed = 892100;
-            const totalFees = 1017530;
-            const stakerShare = 60;
-            const referrerShare = 25;
-            const reserveShare = 15;
-
-            let html = '';
-
-            // Header
-            html += '<div style="margin-bottom:2rem"><h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:800">HiveDAO Treasury</h1>';
-            html += '<p style="font-size:.8rem;color:var(--text-dim);margin-top:.25rem">Protocol fee collector & distributor</p></div>';
-
-            // Balance card
-            html += '<div style="padding:2rem;background:linear-gradient(135deg,rgba(139,92,246,.08),rgba(139,92,246,.02));border:1px solid rgba(139,92,246,.15);border-radius:16px;margin-bottom:2rem;text-align:center">';
-            html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem">Treasury Balance</div>';
-            html += '<div style="font-size:2.5rem;font-weight:800;font-family:var(--font-display)">$' + formatNum(balance) + '</div>';
-            html += '<div style="font-size:.75rem;color:var(--text-dim);margin-top:.5rem">RITUAL native · Available for distribution</div>';
-            html += '</div>';
-
-            // Stats grid
-            html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem">';
-            html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
-            html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem">Total Collected</div>';
-            html += '<div style="font-size:1.3rem;font-weight:700">$' + formatNum(totalFees) + '</div></div>';
-            html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
-            html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem">Distributed</div>';
-            html += '<div style="font-size:1.3rem;font-weight:700;color:var(--green)">$' + formatNum(totalDistributed) + '</div></div>';
-            html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
-            html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem">Distributions</div>';
-            html += '<div style="font-size:1.3rem;font-weight:700">47</div></div>';
-            html += '</div>';
-
-            // Fee distribution split
-            html += '<div style="padding:1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;margin-bottom:2rem">';
-            html += '<div style="font-size:.85rem;font-weight:600;margin-bottom:1rem">Fee Distribution</div>';
-            html += '<div style="display:flex;gap:.5rem;height:12px;border-radius:6px;overflow:hidden;margin-bottom:1rem">';
-            html += '<div style="flex:' + stakerShare + ';background:var(--accent);border-radius:6px"></div>';
-            html += '<div style="flex:' + referrerShare + ';background:var(--green);border-radius:6px"></div>';
-            html += '<div style="flex:' + reserveShare + ';background:var(--yellow);border-radius:6px"></div>';
-            html += '</div>';
-            html += '<div style="display:flex;gap:2rem">';
-            html += '<div style="display:flex;align-items:center;gap:.5rem"><div style="width:8px;height:8px;border-radius:2px;background:var(--accent)"></div><span style="font-size:.75rem;color:var(--text-dim)">Stakers ' + stakerShare + '%</span></div>';
-            html += '<div style="display:flex;align-items:center;gap:.5rem"><div style="width:8px;height:8px;border-radius:2px;background:var(--green)"></div><span style="font-size:.75rem;color:var(--text-dim)">Referrers ' + referrerShare + '%</span></div>';
-            html += '<div style="display:flex;align-items:center;gap:.5rem"><div style="width:8px;height:8px;border-radius:2px;background:var(--yellow)"></div><span style="font-size:.75rem;color:var(--text-dim)">Reserve ' + reserveShare + '%</span></div>';
-            html += '</div></div>';
-
-            // Distribution history
-            html += '<div style="padding:1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
-            html += '<div style="font-size:.85rem;font-weight:600;margin-bottom:1rem">Recent Distributions</div>';
-            const distros = [
-                { round:47, time:'2h ago', total:12400, stakers:7440, referrers:3100, reserve:1860 },
-                { round:46, time:'1d ago', total:8900, stakers:5340, referrers:2225, reserve:1335 },
-                { round:45, time:'3d ago', total:15200, stakers:9120, referrers:3800, reserve:2280 },
-                { round:44, time:'5d ago', total:6700, stakers:4020, referrers:1675, reserve:1005 },
-            ];
-            distros.forEach(d => {
-                html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:.75rem 0;border-bottom:1px solid var(--border)">';
-                html += '<div><div style="font-size:.8rem;font-weight:600">Round #' + d.round + '</div><div style="font-size:.65rem;color:var(--text-dim)">' + d.time + '</div></div>';
-                html += '<div style="text-align:right"><div style="font-size:.85rem;font-weight:600">' + formatNum(d.total) + ' RITUAL</div>';
-                html += '<div style="font-size:.6rem;color:var(--text-dim)">S:' + formatNum(d.stakers) + ' · R:' + formatNum(d.referrers) + ' · Res:' + formatNum(d.reserve) + '</div></div>';
-                html += '</div>';
-            });
-            html += '</div>';
-
-            c.innerHTML = html;
-        }
-
-        // ═══ ALERTS PAGE ═══
-        function loadAlertsPage(){
-            const c = document.getElementById('alerts-content');
-            let html = '';
-
-            // Header
-            html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem">';
-            html += '<div><h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:800">Alerts</h1>';
-            html += '<p style="font-size:.8rem;color:var(--text-dim);margin-top:.25rem">On-chain event notifications & price alerts</p></div>';
-            html += '<button onclick="markAllRead()" style="padding:.5rem 1rem;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-weight:500;cursor:pointer;font-size:.75rem">Mark All Read</button>';
-            html += '</div>';
-
-            // Subscription status
-            html += '<div style="display:flex;align-items:center;gap:1rem;padding:1rem 1.25rem;background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.15);border-radius:12px;margin-bottom:2rem">';
-            html += '<div style="width:10px;height:10px;border-radius:50%;background:var(--green);animation:pulse 2s infinite"></div>';
-            html += '<div><div style="font-size:.85rem;font-weight:600;color:var(--green)">Subscribed</div>';
-            html += '<div style="font-size:.7rem;color:var(--text-dim)">Webhook: https://alerts.hive.defi/user — 8 event types active</div></div></div>';
-
-            // Event type toggles
-            html += '<div style="padding:1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;margin-bottom:2rem">';
-            html += '<div style="font-size:.85rem;font-weight:600;margin-bottom:1rem">Event Subscriptions</div>';
-            const events = [
-                { name:'Sale Start', desc:'New token sale launched', icon:'🚀', active:true },
-                { name:'Sale End', desc:'Token sale ended', icon:'🏁', active:true },
-                { name:'Price Alert', desc:'Price threshold crossed', icon:'📊', active:true },
-                { name:'Strategy Exec', desc:'AI strategy executed', icon:'🤖', active:true },
-                { name:'Governance Vote', desc:'New governance vote', icon:'🗳️', active:true },
-                { name:'Staking Event', desc:'Staking/unstaking activity', icon:'🔒', active:true },
-                { name:'Referral Bonus', desc:'Referral reward received', icon:'🔗', active:false },
-                { name:'Treasury Dist', desc:'Treasury distribution', icon:'💰', active:true },
-            ];
-            html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem">';
-            events.forEach(e => {
-                html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;background:' + (e.active ? 'rgba(139,92,246,.05)' : 'var(--bg)') + ';border:1px solid ' + (e.active ? 'rgba(139,92,246,.15)' : 'var(--border)') + ';border-radius:8px;cursor:pointer" onclick="toggleEventSub(this)">';
-                html += '<div style="display:flex;align-items:center;gap:.75rem"><span style="font-size:1.1rem">' + e.icon + '</span>';
-                html += '<div><div style="font-size:.8rem;font-weight:600">' + e.name + '</div><div style="font-size:.6rem;color:var(--text-dim)">' + e.desc + '</div></div></div>';
-                html += '<div style="width:36px;height:20px;border-radius:10px;background:' + (e.active ? 'var(--accent)' : 'rgba(255,255,255,.1)') + ';position:relative;cursor:pointer">';
-                html += '<div style="width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:2px;' + (e.active ? 'right:2px' : 'left:2px') + ';transition:all .2s"></div></div>';
-                html += '</div>';
-            });
-            html += '</div></div>';
-
-            // Price alerts
-            html += '<div style="padding:1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;margin-bottom:2rem">';
-            html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">';
-            html += '<div style="font-size:.85rem;font-weight:600">Price Alerts</div>';
-            html += '<button onclick="addPriceAlert()" style="padding:.35rem .75rem;border-radius:6px;border:1px solid var(--accent);background:rgba(139,92,246,.1);color:var(--accent-light);font-weight:600;cursor:pointer;font-size:.7rem">+ Add Alert</button></div>';
-            const alerts = [
-                { token:'HIVE', threshold:0.10, above:true, current:0.085, active:true },
-                { token:'hiveUSD', threshold:1.02, above:true, current:1.001, active:true },
-                { token:'HIVE', threshold:0.05, above:false, current:0.085, active:true },
-            ];
-            alerts.forEach((a,i) => {
-                const triggered = a.above ? a.current >= a.threshold : a.current <= a.threshold;
-                html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:.75rem;border:1px solid var(--border);border-radius:8px;margin-bottom:.5rem">';
-                html += '<div style="display:flex;align-items:center;gap:.75rem">';
-                html += '<div style="width:32px;height:32px;border-radius:6px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:var(--accent-light)">' + a.token.charAt(0) + '</div>';
-                html += '<div><div style="font-size:.8rem;font-weight:600">' + a.token + ' ' + (a.above ? '↑' : '↓') + ' $' + a.threshold.toFixed(3) + '</div>';
-                html += '<div style="font-size:.65rem;color:var(--text-dim)">Current: $' + a.current.toFixed(3) + '</div></div></div>';
-                html += '<div style="display:flex;align-items:center;gap:.75rem">';
-                if(triggered) html += '<span style="font-size:.6rem;font-weight:600;padding:.2rem .5rem;border-radius:4px;background:rgba(239,68,68,.1);color:var(--red)">TRIGGERED</span>';
-                else html += '<span style="font-size:.6rem;font-weight:600;padding:.2rem .5rem;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green)">Watching</span>';
-                html += '<button style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.8rem">×</button>';
-                html += '</div></div>';
-            });
-            html += '</div>';
-
-            // Recent notifications
-            html += '<div style="padding:1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
-            html += '<div style="font-size:.85rem;font-weight:600;margin-bottom:1rem">Recent Notifications</div>';
-            const notifs = [
-                { type:'🚀', title:'New Sale: ClearNode (CNODE)', msg:'Token sale started — 60 blocks available', time:'12m ago', read:false },
-                { type:'📊', title:'Price Alert: HIVE', msg:'HIVE crossed $0.085 (threshold: $0.10 above)', time:'1h ago', read:false },
-                { type:'🗳️', title:'Governance: Update Fee Structure', msg:'New proposal submitted — vote now', time:'3h ago', read:true },
-                { type:'🤖', title:'Strategy Executed: LP Strategy', msg:'Auto-compounded 2.4 HIVE rewards', time:'5h ago', read:true },
-                { type:'💰', title:'Treasury Distribution #47', msg:'12,400 RITUAL distributed — you received 18.5 RITUAL', time:'2h ago', read:false },
-                { type:'🔒', title:'Staking Reward', msg:'142.5 HIVE staking reward claimed', time:'8h ago', read:true },
-            ];
-            notifs.forEach(n => {
-                html += '<div style="display:flex;align-items:flex-start;gap:.75rem;padding:.75rem;border-bottom:1px solid var(--border);' + (n.read ? 'opacity:.5' : '') + '">';
-                html += '<span style="font-size:1.1rem;flex-shrink:0">' + n.type + '</span>';
-                html += '<div style="flex:1"><div style="font-size:.8rem;font-weight:600">' + n.title + '</div>';
-                html += '<div style="font-size:.7rem;color:var(--text-dim);margin-top:.15rem">' + n.msg + '</div></div>';
-                html += '<div style="font-size:.6rem;color:var(--text-muted);white-space:nowrap">' + n.time + '</div>';
-                if(!n.read) html += '<div style="width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:.35rem"></div>';
-                html += '</div>';
-            });
-            html += '</div>';
-
-            c.innerHTML = html;
-        }
-
-        function toggleEventSub(el) {
-            const isActive = el.style.borderColor.indexOf('139,92,246') >= 0;
-            el.style.borderColor = isActive ? 'var(--border)' : 'rgba(139,92,246,.15)';
-            el.style.background = isActive ? 'var(--bg)' : 'rgba(139,92,246,.05)';
-        }
-        function markAllRead(){ alert('All notifications marked as read'); }
-        function addPriceAlert(){ alert('Add Price Alert modal would open'); }
-
-        function copyToClipboard(el, text, label) {
-            navigator.clipboard.writeText(text);
-            el.textContent = 'Copied!';
-            setTimeout(() => el.textContent = label, 2000);
-        }
-
-        // ═══ REFERRAL PAGE ═══
-        function loadReferralPage(){
-            const c = document.getElementById('referral-content');
-            let html = '';
-
-            const myCode = 'HIVE-' + (connectedAddress ? connectedAddress.slice(2,8).toUpperCase() : '000000');
-            const totalRefs = 12;
-            const activeRefs = 8;
-            const totalEarned = 0.45;
-            const claimable = 0.12;
-            const tier = 1;
-            const tierName = 'Promoter';
-            const tierColors = ['#555','var(--accent)','var(--green)','var(--yellow)'];
-            const tierNames = ['Starter','Promoter','Advocate','Ambassador'];
-            const tierThresholds = ['0-4','5-19','20-49','50+'];
-
-            // Header
-            html += '<div style="margin-bottom:2rem"><h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:800">HiveLink</h1>';
-            html += '<p style="font-size:.8rem;color:var(--text-dim);margin-top:.25rem">Refer friends, earn rewards, climb tiers</p></div>';
-
-            // Referral code card
-            html += '<div style="padding:1.5rem;background:linear-gradient(135deg,rgba(139,92,246,.08),rgba(34,197,94,.04));border:1px solid rgba(139,92,246,.15);border-radius:16px;margin-bottom:2rem;text-align:center">';
-            html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem">Your Referral Code</div>';
-            html += '<div style="font-size:1.8rem;font-weight:800;font-family:var(--font-mono);letter-spacing:.15em;color:var(--accent-light)">' + myCode + '</div>';
-            html += '<div style="margin-top:1rem;display:flex;gap:.75rem;justify-content:center">';
-            html += '<button onclick="copyToClipboard(this,\'' + myCode + '\', \'Copy Code\')" style="padding:.5rem 1.2rem;border-radius:8px;border:1px solid var(--accent);background:rgba(139,92,246,.1);color:var(--accent-light);font-weight:600;cursor:pointer;font-size:.8rem">Copy Code</button>';
-            html += '<button onclick="copyToClipboard(this, window.location.origin + \'/?ref=' + myCode + '\', \'Copy Link\')" style="padding:.5rem 1.2rem;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-weight:500;cursor:pointer;font-size:.8rem">Copy Link</button>';
-            html += '</div></div>';
-
-            // Stats grid
-            html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem">';
-            html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
-            html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.35rem">Total Referrals</div>';
-            html += '<div style="font-size:1.3rem;font-weight:700">' + totalRefs + '</div></div>';
-            html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
-            html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.35rem">Active</div>';
-            html += '<div style="font-size:1.3rem;font-weight:700;color:var(--green)">' + activeRefs + '</div></div>';
-            html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
-            html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.35rem">Total Earned</div>';
-            html += '<div style="font-size:1.3rem;font-weight:700">' + totalEarned + ' RITUAL</div></div>';
-            html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
-            html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.35rem">Claimable</div>';
-            html += '<div style="display:flex;align-items:center;gap:.75rem"><div style="font-size:1.3rem;font-weight:700;color:var(--accent-light)">' + claimable + '</div>';
-            if(claimable > 0) html += '<button onclick="claimReferralRewards()" style="padding:.3rem .6rem;border-radius:6px;border:1px solid var(--green);background:rgba(34,197,94,.1);color:var(--green);font-weight:600;cursor:pointer;font-size:.65rem">Claim</button>';
-            html += '</div></div></div>';
-
-            // Tier progress
-            html += '<div style="padding:1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;margin-bottom:2rem">';
-            html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">';
-            html += '<div style="font-size:.85rem;font-weight:600">Tier Progress</div>';
-            html += '<span style="padding:.25rem .6rem;border-radius:6px;background:' + tierColors[tier] + '20;color:' + tierColors[tier] + ';font-size:.7rem;font-weight:600">' + tierName + '</span></div>';
-            html += '<div style="display:flex;gap:.5rem;height:8px;border-radius:4px;overflow:hidden;margin-bottom:.75rem">';
-            for(let i=0;i<4;i++){
-                html += '<div style="flex:1;background:' + (i <= tier ? tierColors[i] : 'rgba(255,255,255,.06)') + ';border-radius:4px"></div>';
-            }
-            html += '</div>';
-            html += '<div style="display:flex;justify-content:space-between">';
-            tierNames.forEach((t,i) => {
-                html += '<div style="text-align:center"><div style="font-size:.6rem;color:' + (i === tier ? '#fff' : 'var(--text-muted)') + ';font-weight:' + (i === tier ? '700' : '400') + '">' + t + '</div>';
-                html += '<div style="font-size:.5rem;color:var(--text-muted)">' + tierThresholds[i] + ' refs</div></div>';
-            });
-            html += '</div></div>';
-
-            // Referral list
-            html += '<div style="padding:1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
-            html += '<div style="font-size:.85rem;font-weight:600;margin-bottom:1rem">Your Referrals</div>';
-            const refs = [
-                { addr:'0x7a2B...f1e3', joined:'12d ago', active:true, earned:0.05 },
-                { addr:'0x3c9D...8b2a', joined:'8d ago', active:true, earned:0.04 },
-                { addr:'0x1fE4...d7c9', joined:'5d ago', active:false, earned:0.01 },
-                { addr:'0x8bC1...3a5f', joined:'3d ago', active:true, earned:0.02 },
-            ];
-            refs.forEach(r => {
-                html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:.65rem 0;border-bottom:1px solid var(--border)">';
-                html += '<div style="display:flex;align-items:center;gap:.75rem">';
-                html += '<div style="width:28px;height:28px;border-radius:6px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;color:var(--accent-light)">' + r.addr.charAt(2) + '</div>';
-                html += '<div><div style="font-size:.8rem;font-weight:500;font-family:var(--font-mono)">' + r.addr + '</div>';
-                html += '<div style="font-size:.6rem;color:var(--text-dim)">Joined ' + r.joined + '</div></div></div>';
-                html += '<div style="display:flex;align-items:center;gap:.75rem">';
-                html += '<span style="font-size:.6rem;padding:.15rem .4rem;border-radius:3px;background:' + (r.active ? 'rgba(34,197,94,.1);color:var(--green)' : 'rgba(136,136,136,.1);color:var(--text-dim)') + '">' + (r.active ? 'Active' : 'Pending') + '</span>';
-                html += '<div style="font-size:.8rem;font-weight:600">+' + r.earned + '</div>';
-                html += '</div></div>';
-            });
-            html += '</div>';
-
-            c.innerHTML = html;
-        }
-
-        function claimReferralRewards(){ alert('Claim referral rewards — tx would be sent on-chain'); }
-
-        // Helper
-        function formatNum(n){
-            if(n >= 1e6) return (n/1e6).toFixed(1) + 'M';
-            if(n >= 1e3) return (n/1e3).toFixed(1) + 'K';
-            return n.toLocaleString();
+        function disconnectWallet(){
+            connectedAddress = null;
+            hiveReady = false;
+            window.location.href = 'index.html';
         }
 
         init();

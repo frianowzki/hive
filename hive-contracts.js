@@ -53,6 +53,10 @@ const HIVE = {
     HiveChat:         '0x615F139dDFb2f2f486133B3a2D9F74Dd2bA785B6',
     HiveEigenLayer:   '0xD0239931Eb19f3B0E0Ac1946685fab6fFB4FeC0F',
 
+    // Vesting
+    HiveLock:         '0xc731018373799B4D34b1A2bB03387Cc126b5Cc3d',
+    HiveAgentFactory: '0x54850a183d105784d192d9926ec65fede5a42189',
+
     // New: hiveUSD + Faucet
     HiveUSD:          '0x60601e48038E32dBCd9A9667c589bf6D39A32fb5',
     HiveFaucet:       '0x8FCe666BA58154F55ebF6cC63F3965E945130F88',
