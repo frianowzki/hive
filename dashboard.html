@@ -2060,7 +2060,7 @@
 
 
         // ═══ AUCTION MODAL SYSTEM ═══
-        let selectedBlocks = 1;
+        let buyAmount = 0; // total hiveUSD to invest
         const blockPriceUSD = 420; // clearing price per block in hiveUSD
 
         function openAuctionDetail(tab, index){
@@ -2205,13 +2205,14 @@
             const s = mockAuctions.active[index];
             const modal = document.getElementById('auction-buy-modal');
             const inner = document.getElementById('auction-buy-inner');
-            selectedBlocks = 1;
+            buyAmount = 0;
             const available = s.blocks - s.soldBlocks;
+            const maxInvest = available * blockPriceUSD;
             const logoHTML = s.logoUrl ? '<img src="'+s.logoUrl+'" style="width:40px;height:40px;border-radius:10px;object-fit:cover">' : '<div style="width:40px;height:40px;border-radius:10px;background:'+s.color+'22;color:'+s.color+';display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700">'+s.logo+'</div>';
 
             inner.innerHTML = `
                 <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid var(--border)">
-                    <div style="font-size:.85rem;font-weight:700">Buy Blocks</div>
+                    <div style="font-size:.85rem;font-weight:700">Invest in ${s.symbol}</div>
                     <div onclick="closeAuctionBuy()" style="cursor:pointer;color:var(--text-dim);font-size:1.1rem;padding:.25rem;line-height:1">×</div>
                 </div>
                 <div style="padding:1.25rem">
@@ -2219,35 +2220,34 @@
                         ${logoHTML}
                         <div style="flex:1">
                             <div style="font-size:.85rem;font-weight:700">${s.name} <span style="color:var(--text-dim);font-size:.7rem">${s.symbol}</span></div>
-                            <div style="font-size:.6rem;color:var(--text-dim)">${available} blocks available · $${blockPriceUSD}/block</div>
+                            <div style="font-size:.6rem;color:var(--text-dim)">${available} blocks available · $${blockPriceUSD}/block · ${s.endsIn} left</div>
                         </div>
                     </div>
 
                     <div style="margin-bottom:1rem">
                         <div style="display:flex;justify-content:space-between;margin-bottom:.4rem">
-                            <span style="font-size:.7rem;font-weight:600">Blocks to Buy</span>
-                            <span style="font-size:.65rem;color:var(--text-dim)">Max: ${available}</span>
+                            <span style="font-size:.7rem;font-weight:600">Amount (hiveUSD)</span>
+                            <span style="font-size:.6rem;color:var(--text-dim);cursor:pointer" onclick="document.getElementById('buy-amount-input').value=${maxInvest};updateBuyPreview(${available})">Max: $${maxInvest.toLocaleString()}</span>
                         </div>
-                        <div style="display:flex;align-items:center;gap:.5rem">
-                            <button onclick="adjustBuyBlocks(-1, ${available})" style="width:36px;height:36px;border-radius:8px;background:var(--bg);border:1px solid var(--border);color:var(--text);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center">−</button>
-                            <input id="buy-blocks-input" type="number" value="1" min="1" max="${available}" onchange="updateBuyPreview(${available})" style="flex:1;text-align:center;padding:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.9rem;font-weight:700;font-family:var(--font-mono)">
-                            <button onclick="adjustBuyBlocks(1, ${available})" style="width:36px;height:36px;border-radius:8px;background:var(--bg);border:1px solid var(--border);color:var(--text);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center">+</button>
+                        <div style="position:relative">
+                            <input id="buy-amount-input" type="number" placeholder="0.00" min="1" step="any" oninput="updateBuyPreview(${available})" style="width:100%;padding:.75rem 4rem .75rem .75rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:1rem;font-weight:700;font-family:var(--font-mono);box-sizing:border-box">
+                            <div style="position:absolute;right:.75rem;top:50%;transform:translateY(-50%);font-size:.65rem;color:var(--text-dim);font-weight:600">hiveUSD</div>
                         </div>
                     </div>
 
                     <div style="padding:.75rem;background:var(--bg);border-radius:8px;margin-bottom:1rem">
                         <div style="display:flex;justify-content:space-between;margin-bottom:.35rem">
-                            <span style="font-size:.65rem;color:var(--text-dim)">Cost</span>
-                            <span id="buy-cost" style="font-size:.75rem;font-weight:700">$${blockPriceUSD} hiveUSD</span>
+                            <span style="font-size:.65rem;color:var(--text-dim)">Blocks Allocated</span>
+                            <span id="buy-blocks" style="font-size:.75rem;font-weight:700">0 blocks</span>
                         </div>
                         <div style="display:flex;justify-content:space-between;margin-bottom:.35rem">
                             <span style="font-size:.65rem;color:var(--text-dim)">Protocol Fee (1%)</span>
-                            <span id="buy-fee" style="font-size:.75rem;font-weight:700">$${(blockPriceUSD * 0.01).toFixed(2)} hiveUSD</span>
+                            <span id="buy-fee" style="font-size:.75rem;font-weight:700">$0.00 hiveUSD</span>
                         </div>
                         <div style="height:1px;background:var(--border);margin:.5rem 0"></div>
                         <div style="display:flex;justify-content:space-between">
                             <span style="font-size:.7rem;font-weight:600">Total</span>
-                            <span id="buy-total" style="font-size:.8rem;font-weight:700;color:var(--accent)">$${(blockPriceUSD * 1.01).toFixed(2)} hiveUSD</span>
+                            <span id="buy-total" style="font-size:.8rem;font-weight:700;color:var(--accent)">$0.00 hiveUSD</span>
                         </div>
                     </div>
 
@@ -2257,7 +2257,7 @@
                     </div>
 
                     <div id="buy-step-area">
-                        <button onclick="executeBuyBlock(${index})" style="width:100%;padding:.75rem;background:var(--accent);border:none;border-radius:10px;color:#fff;font-weight:600;font-size:.8rem;cursor:pointer;transition:all .15s">Approve hiveUSD</button>
+                        <button onclick="executeBuyAuction(${index})" style="width:100%;padding:.75rem;background:var(--accent);border:none;border-radius:10px;color:#fff;font-weight:600;font-size:.8rem;cursor:pointer;transition:all .15s">Approve hiveUSD</button>
                     </div>
                 </div>
             `;
@@ -2270,26 +2270,17 @@
             document.getElementById('auction-buy-modal').style.display = 'none';
         }
 
-        function adjustBuyBlocks(delta, max){
-            const input = document.getElementById('buy-blocks-input');
-            let val = parseInt(input.value) + delta;
-            if(val < 1) val = 1;
-            if(val > max) val = max;
-            input.value = val;
-            selectedBlocks = val;
-            updateBuyPreview(max);
-        }
-
-        function updateBuyPreview(max){
-            const input = document.getElementById('buy-blocks-input');
-            let val = parseInt(input.value);
-            if(isNaN(val) || val < 1) val = 1;
-            if(val > max) val = max;
-            selectedBlocks = val;
-            const cost = val * blockPriceUSD;
-            const fee = cost * 0.01;
-            const total = cost + fee;
-            document.getElementById('buy-cost').textContent = '$' + cost.toLocaleString() + ' hiveUSD';
+        function updateBuyPreview(maxBlocks){
+            const input = document.getElementById('buy-amount-input');
+            let val = parseFloat(input.value);
+            if(isNaN(val) || val < 0) val = 0;
+            const maxAmount = maxBlocks * blockPriceUSD;
+            if(val > maxAmount) val = maxAmount;
+            buyAmount = val;
+            const blocks = Math.floor(val / blockPriceUSD);
+            const fee = val * 0.01;
+            const total = val + fee;
+            document.getElementById('buy-blocks').textContent = blocks.toLocaleString() + ' blocks';
             document.getElementById('buy-fee').textContent = '$' + fee.toFixed(2) + ' hiveUSD';
             document.getElementById('buy-total').textContent = '$' + total.toFixed(2) + ' hiveUSD';
         }
@@ -2306,14 +2297,18 @@
         }
 
         let buyStep = 0; // 0=approve, 1=buy
-        async function executeBuyBlock(index){
+        async function executeBuyAuction(index){
             const s = mockAuctions.active[index];
             const stepArea = document.getElementById('buy-step-area');
-            const cost = selectedBlocks * blockPriceUSD;
-            const total = cost * 1.01;
+            const total = buyAmount * 1.01;
+            const blocks = Math.floor(buyAmount / blockPriceUSD);
 
             if(!connectedAddress || !hive.signer){
                 alert('Connect your wallet first');
+                return;
+            }
+            if(buyAmount < blockPriceUSD){
+                alert('Minimum investment: $' + blockPriceUSD + ' hiveUSD (1 block)');
                 return;
             }
 
@@ -2324,21 +2319,21 @@
                     const tx = await usdContract.approve(hiveAuctionAddr, ethers.parseEther(total.toString()));
                     await tx.wait();
                     buyStep = 1;
-                    stepArea.innerHTML = '<button onclick="executeBuyBlock('+index+')" style="width:100%;padding:.75rem;background:var(--green);border:none;border-radius:10px;color:#000;font-weight:600;font-size:.8rem;cursor:pointer">Confirm Purchase — '+selectedBlocks+' blocks</button>';
+                    stepArea.innerHTML = '<button onclick="executeBuyAuction('+index+')" style="width:100%;padding:.75rem;background:var(--green);border:none;border-radius:10px;color:#000;font-weight:600;font-size:.8rem;cursor:pointer">Confirm — $'+buyAmount.toLocaleString()+' → '+blocks+' blocks</button>';
                 } catch(e){
-                    stepArea.innerHTML = '<div style="color:var(--red);font-size:.7rem;text-align:center;padding:.5rem">Approval failed: '+(e.message||'User rejected')+'</div><button onclick="executeBuyBlock('+index+')" style="width:100%;padding:.5rem;margin-top:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.75rem;cursor:pointer">Retry</button>';
+                    stepArea.innerHTML = '<div style="color:var(--red);font-size:.7rem;text-align:center;padding:.5rem">Approval failed: '+(e.message||'User rejected')+'</div><button onclick="executeBuyAuction('+index+')" style="width:100%;padding:.5rem;margin-top:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.75rem;cursor:pointer">Retry</button>';
                     buyStep = 0;
                 }
             } else {
                 stepArea.innerHTML = '<div style="text-align:center;padding:.5rem;color:var(--text-dim);font-size:.7rem">Confirming purchase... confirm in wallet</div>';
                 try {
-                    const auctionContract = new ethers.Contract(hiveAuctionAddr, ['function buyBlocks(uint256,uint256) external'], hive.signer);
-                    const tx = await auctionContract.buyBlocks(index, selectedBlocks);
+                    const auctionContract = new ethers.Contract(hiveAuctionAddr, ['function invest(uint256,uint256) external'], hive.signer);
+                    const tx = await auctionContract.invest(index, ethers.parseEther(buyAmount.toString()));
                     await tx.wait();
                     buyStep = 0;
-                    stepArea.innerHTML = '<div style="text-align:center;padding:1rem"><div style="font-size:1.5rem;margin-bottom:.5rem">✓</div><div style="font-size:.85rem;font-weight:700;margin-bottom:.25rem">Purchase Successful</div><div style="font-size:.7rem;color:var(--text-dim)">'+selectedBlocks+' blocks purchased for $'+total.toFixed(2)+' hiveUSD</div></div>';
+                    stepArea.innerHTML = '<div style="text-align:center;padding:1rem"><div style="font-size:1.5rem;margin-bottom:.5rem">✓</div><div style="font-size:.85rem;font-weight:700;margin-bottom:.25rem">Investment Successful</div><div style="font-size:.7rem;color:var(--text-dim)">$'+buyAmount.toLocaleString()+' invested → '+blocks+' blocks allocated</div></div>';
                 } catch(e){
-                    stepArea.innerHTML = '<div style="color:var(--red);font-size:.7rem;text-align:center;padding:.5rem">Purchase failed: '+(e.message||'User rejected')+'</div><button onclick="executeBuyBlock('+index+')" style="width:100%;padding:.5rem;margin-top:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.75rem;cursor:pointer">Retry</button>';
+                    stepArea.innerHTML = '<div style="color:var(--red);font-size:.7rem;text-align:center;padding:.5rem">Purchase failed: '+(e.message||'User rejected')+'</div><button onclick="executeBuyAuction('+index+')" style="width:100%;padding:.5rem;margin-top:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.75rem;cursor:pointer">Retry</button>';
                     buyStep = 1;
                 }
             }
