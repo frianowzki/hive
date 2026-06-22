@@ -1941,6 +1941,13 @@
           ]
         };
 
+        // Mock user positions (auctions user has participated in)
+        const mockPositions = [
+            { symbol:'HIVE', name:'Hive Token', color:'#8b5cf6', logo:'H', invested:2500, blocksBought:5, tokensReceived:50250, avgPrice:0.0498, status:'active', auctionIdx:0, txHash:'0xabc...def' },
+            { symbol:'RDEX', name:'RitualDEX', color:'#22c55e', logo:'R', invested:1000, blocksBought:2, tokensReceived:20000, avgPrice:0.0500, status:'active', auctionIdx:1, txHash:'0x123...456' },
+            { symbol:'PULSE', name:'PulseDAO', color:'#ec4899', logo:'P', invested:5000, blocksBought:12, tokensReceived:120000, avgPrice:0.0417, status:'claimed', auctionIdx:null, txHash:'0x789...012' },
+        ];
+
         function loadAuctionPage(){
             const container = document.getElementById('auction-content');
             if(!connectedAddress){
@@ -1970,6 +1977,7 @@
                     <div class="auction-tab ${tab==='active'?'active':''}" data-tab="active" onclick="switchAuctionTab('active')" style="padding:.5rem 1rem;font-size:.75rem;font-weight:600;cursor:pointer;border-radius:6px 6px 0 0;transition:all .15s;color:${tab==='active'?'var(--accent-light)':'var(--text-dim)'};border-bottom:2px solid ${tab==='active'?'var(--accent)':'transparent'}">Active Sales <span style="background:var(--green);color:#000;font-size:.55rem;padding:.1rem .35rem;border-radius:3px;margin-left:.35rem">${mockAuctions.active.length}</span></div>
                     <div class="auction-tab ${tab==='upcoming'?'active':''}" data-tab="upcoming" onclick="switchAuctionTab('upcoming')" style="padding:.5rem 1rem;font-size:.75rem;font-weight:600;cursor:pointer;border-radius:6px 6px 0 0;transition:all .15s;color:${tab==='upcoming'?'var(--accent-light)':'var(--text-dim)'};border-bottom:2px solid ${tab==='upcoming'?'var(--accent)':'transparent'}">Upcoming <span style="background:var(--yellow);color:#000;font-size:.55rem;padding:.1rem .35rem;border-radius:3px;margin-left:.35rem">${mockAuctions.upcoming.length}</span></div>
                     <div class="auction-tab ${tab==='completed'?'active':''}" data-tab="completed" onclick="switchAuctionTab('completed')" style="padding:.5rem 1rem;font-size:.75rem;font-weight:600;cursor:pointer;border-radius:6px 6px 0 0;transition:all .15s;color:${tab==='completed'?'var(--accent-light)':'var(--text-dim)'};border-bottom:2px solid ${tab==='completed'?'var(--accent)':'transparent'}">Completed <span style="background:var(--text-dim);color:#000;font-size:.55rem;padding:.1rem .35rem;border-radius:3px;margin-left:.35rem">${mockAuctions.completed.length}</span></div>
+                    <div class="auction-tab ${tab==='positions'?'active':''}" data-tab="positions" onclick="switchAuctionTab('positions')" style="padding:.5rem 1rem;font-size:.75rem;font-weight:600;cursor:pointer;border-radius:6px 6px 0 0;transition:all .15s;color:${tab==='positions'?'var(--accent-light)':'var(--text-dim)'};border-bottom:2px solid ${tab==='positions'?'var(--accent)':'transparent'}">My Positions</div>
                 </div>
             `;
 
@@ -2033,6 +2041,45 @@
                         </div>
                     </div>`;
                 }).join('');
+            } else if(tab === 'positions'){
+                if(mockPositions.length === 0){
+                    cardsHTML = '<div style="text-align:center;padding:3rem;color:var(--text-dim);font-size:.8rem">No positions yet. Participate in an auction to see your allocations here.</div>';
+                } else {
+                    cardsHTML = mockPositions.map(p => {
+                        const logoHTML = '<div style="width:36px;height:36px;border-radius:10px;background:'+p.color+'22;color:'+p.color+';display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;flex-shrink:0">'+p.logo+'</div>';
+                        const isActive = p.status === 'active';
+                        const currentPrice = isActive ? getCurrentPriceInfo(mockAuctions.active[p.auctionIdx]).tokenPrice : null;
+                        const priceChange = isActive && currentPrice ? ((currentPrice - p.avgPrice) / p.avgPrice * 100) : 0;
+                        const statusBadge = isActive ? '<span style="background:rgba(34,197,94,.15);color:var(--green);font-size:.5rem;font-weight:600;padding:.1rem .35rem;border-radius:3px">● LIVE</span>' : '<span style="background:rgba(136,136,136,.15);color:var(--text-dim);font-size:.5rem;font-weight:600;padding:.1rem .35rem;border-radius:3px">CLAIMED</span>';
+                        const priceDisplay = isActive ? '<span style="font-size:.65rem;color:'+(priceChange >= 0 ? 'var(--green)' : 'var(--red)')+';font-weight:600">'+(priceChange >= 0 ? '↑' : '↓')+' '+Math.abs(priceChange).toFixed(1)+'%</span>' : '<span style="font-size:.65rem;color:var(--text-dim)">Finalized</span>';
+                        return `
+                        <div style="max-width:60%;padding:.85rem 1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:.5rem">
+                            <div style="display:flex;align-items:center;gap:.65rem;margin-bottom:.6rem">
+                                ${logoHTML}
+                                <div style="flex:1;min-width:0">
+                                    <div style="font-size:.8rem;font-weight:700">${p.name} <span style="color:var(--text-dim);font-weight:400;font-size:.65rem">${p.symbol}</span></div>
+                                    <div style="font-size:.6rem;color:var(--text-dim)">${p.blocksBought} blocks · avg $${p.avgPrice.toFixed(4)}/token</div>
+                                </div>
+                                ${statusBadge}
+                            </div>
+                            <div style="display:flex;gap:.5rem">
+                                <div style="flex:1;padding:.4rem;background:var(--bg);border-radius:6px;text-align:center">
+                                    <div style="font-size:.5rem;color:var(--text-dim);text-transform:uppercase">Invested</div>
+                                    <div style="font-size:.75rem;font-weight:700;margin-top:.1rem">$${p.invested.toLocaleString()}</div>
+                                </div>
+                                <div style="flex:1;padding:.4rem;background:var(--bg);border-radius:6px;text-align:center">
+                                    <div style="font-size:.5rem;color:var(--text-dim);text-transform:uppercase">Tokens</div>
+                                    <div style="font-size:.75rem;font-weight:700;margin-top:.1rem">~${p.tokensReceived.toLocaleString()}</div>
+                                </div>
+                                <div style="flex:1;padding:.4rem;background:var(--bg);border-radius:6px;text-align:center">
+                                    <div style="font-size:.5rem;color:var(--text-dim);text-transform:uppercase">PnL</div>
+                                    <div style="font-size:.75rem;font-weight:700;margin-top:.1rem">${priceDisplay}</div>
+                                </div>
+                            </div>
+                            ${isActive ? '<div style="margin-top:.5rem;padding:.35rem .6rem;background:rgba(34,197,94,.06);border-radius:6px;font-size:.55rem;color:var(--text-dim);display:flex;justify-content:space-between"><span>Current: $'+currentPrice.toFixed(4)+'/token</span><span>Allocated: '+mockAuctions.active[p.auctionIdx].soldBlocks+'/'+mockAuctions.active[p.auctionIdx].blocks+' blocks</span></div>' : ''}
+                        </div>`;
+                    }).join('');
+                }
             }
 
             container.innerHTML = `
@@ -2168,9 +2215,7 @@
                             </div>
                         </div>
 
-                        ${renderLivePriceTicker(s, false)}
-
-                        <div style="display:flex;gap:.75rem;margin-top:1rem">
+                        <div style="display:flex;gap:.75rem">
                             <button onclick="openAuctionBuy(${index})" style="flex:1;padding:.75rem;background:var(--accent);border:none;border-radius:10px;color:#fff;font-weight:600;font-size:.8rem;cursor:pointer;transition:all .15s">Participate</button>
                             <button onclick="closeAuctionDetail()" style="flex:1;padding:.75rem;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-weight:600;font-size:.8rem;cursor:pointer;transition:all .15s">Close</button>
                         </div>
