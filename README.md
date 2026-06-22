@@ -91,6 +91,13 @@ No other chain supports all five primitives natively.
 │  │(DCA/TP/  │  │  P2P)    │  │ Orchest) │  │(Token    │           │
 │  │ SL/Trail)│  │          │  │          │  │ Launch)  │           │
 │  └──────────┘  └──────────┘  └──────────┘  └──────────┘           │
+│                                                                     │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐           │
+│  │HiveLock  │  │HiveAgent │  │ hiveUSD  │  │HiveFaucet│           │
+│  │(Vesting  │  │ Factory  │  │(USD      │  │(Testnet  │           │
+│  │ 3 types) │  │(Summon   │  │ Stable)  │  │ Drip)    │           │
+│  │          │  │ Agents)  │  │          │  │          │           │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘           │
 └─────────────────────────────────────────────────────────────────────┘
                               │
                     ┌─────────┴─────────┐
@@ -141,8 +148,8 @@ User (MetaMask) ──→ HiveID ──→ Register (free) ──→ Get Hive Wa
 | **HiveReferral** | `0x6fc9...41ED` | 4-tier referral engine with fee sharing |
 | **HiveOracle** | `0x5D72...1aEbE` | Price feed via Ritual HTTP precompile + Allora Network. AI-inferred price predictions with confidence intervals, batch fetching, price history |
 | **HiveToken** | `0xDA81...5ec3` | ERC20 token with vesting schedules and transfer restrictions |
-| **HiveStaking** | `0x93dd...b408` | 4-tier staking with Treasury integration. setTreasury() for fee notifications. Lock multiplier, auto-compound, voting power |
-| **HiveTreasury** | `0x90fb...8C18` | Fee collector & distributor. Multi-sig controlled. Auto-distributes: 60% stakers, 25% referrers, 15% reserve |
+| **HiveStaking** | `0x8D2A...3d28` | 4-tier staking with Treasury integration. setTreasury() for fee notifications. Lock multiplier, auto-compound, voting power |
+| **HiveTreasury** | `0x90fb...8C18` | Fee collector & distributor. Multi-sig controlled. Auto-distributes: 60% stakers, 25% referrers, 15% to reserve |
 
 ### 🤖 AI & Agent Layer
 
@@ -150,7 +157,8 @@ User (MetaMask) ──→ HiveID ──→ Register (free) ──→ Get Hive Wa
 |----------|---------|-------------|
 | **HiveAgent** | `0x8424...4327` | AI Agent Gateway via Ritual LLM precompile. On-chain chatbot for market analysis, token insights, strategy advice |
 | **HiveBrain** | `0x0ad0...42B4` | Sovereign agent brain with async LLM, PII mode, Oracle price feeds, and FLock model integration. 14 action types. Cross-contract calls to HiveOracle and HiveFLock |
-| **Queen** | `0xDC96...Ae8E` | Central orchestrator with AI integration. `runCycle()` calls Brain.think(). `setDivision()` wires 9 modules |
+| **HiveAgentFactory** | `0x5485...2189` | Per-user sovereign agent summoning. Deploys HiveGovernor + HiveSovereignAgent per user. Default/custom limits, fee to treasury |
+| **Queen** | `0xC2ec...DDfd` | Central orchestrator with AI integration. `runCycle()` calls Brain.think(). `setDivision()` wires 9 modules |
 | **HiveAutoStrategy** | `0x1b3A...BEF9` | Automated trading with Oracle integration. DCA, TP, SL, Trailing Stop. `fetchPrice()` calls HiveOracle.getBestPrice() |
 | **HiveMarketMaker** | `0x62C8...637D` | AI-driven market making via Ritual LLM |
 | **HiveFLock** | `0xb0f4...F5d2` | Federated learning with Brain integration. Training tasks, model validation, ONNX deployment, FLock API inference |
@@ -169,11 +177,19 @@ User (MetaMask) ──→ HiveID ──→ Register (free) ──→ Get Hive Wa
 | **HiveFactory** | `0x0241...63c6` | Master wiring contract. 25 module references. `wireAll()` connects AI layer (Brain↔Oracle↔FLock), security layer (Staking↔Treasury), Queen orchestration |
 | **HiveChat** | `0x615F...85B6` | Encrypted P2P messaging via Ritual ECIES precompile |
 | **HiveLaunchPad** | `0x8eb7...3d95b` | Token launch platform with HCA mechanics |
-| **HiveCouncil** | `0xD79F...3D94` | Council governance (multi-representative) |
-| **HivePoints** | `0xA2fE...01a7` | On-chain points/rewards system |
+| **HiveCouncil** | `0x2455...715B3` | Council governance (multi-representative) |
+| **HivePoints** | `0xC031...fbaa` | On-chain points/rewards system |
 | **HiveRegistry** | `0x89Cf...82eE` | Contract registry for module discovery |
-| **Drone** | `0x8607...704` | Autonomous execution agents |
+| **Drone** | `0x8607...BC704` | Autonomous execution agents |
 | **Strategy** | `0xc2d2...b202` | Base strategy contract (parent of HiveAutoStrategy) |
+
+### 📦 Vesting & Tokens
+
+| Contract | Address | Description |
+|----------|---------|-------------|
+| **HiveLock** | `0xc731...c3d` | Vesting contract with 3 types: Linear, Cliff+Linear, Custom. Create/claim/cancel schedules, auto-unlock |
+| **hiveUSD** | `0x6060...fb5` | USD-pegged stablecoin for testnet. 100B supply, faucet-based distribution |
+| **HiveFaucet** | `0x8FCe...0F88` | Testnet faucet. Claim 1,000 hiveUSD every 24 hours for testing and sale participation |
 
 ### 📚 Libraries & Interfaces
 
@@ -190,10 +206,13 @@ User (MetaMask) ──→ HiveID ──→ Register (free) ──→ Get Hive Wa
 
 ```
 hive/
-├── src/                          # Smart contracts (35 files, ~10,700 LOC)
+├── src/                          # Smart contracts (~40 files, ~12,000 LOC)
 │   ├── agent/
 │   │   ├── HiveAgent.sol         # AI Agent Gateway (LLM precompile)
-│   │   └── HiveBrain.sol         # Sovereign agent brain
+│   │   ├── HiveAgentFactory.sol  # Per-user agent summoning
+│   │   ├── HiveBrain.sol         # Sovereign agent brain
+│   │   ├── HiveGovernor.sol      # Safety layer for agents
+│   │   └── HiveSovereignAgent.sol # Ritual Sovereign Agent
 │   ├── auction/
 │   │   └── HiveClearing.sol      # Hive Clearing Auction + AI pricing
 │   ├── chat/
@@ -204,6 +223,8 @@ hive/
 │   │   └── Drone.sol             # Autonomous execution agents
 │   ├── factory/
 │   │   └── HiveFactory.sol       # Master wiring contract
+│   ├── faucet/
+│   │   └── HiveFaucet.sol        # Testnet token faucet
 │   ├── governance/
 │   │   └── HiveGovernance.sol    # DAO governance
 │   ├── identity/
@@ -244,9 +265,13 @@ hive/
 │   │   ├── HiveAutoStrategy.sol  # Automated trading strategies
 │   │   └── Strategy.sol          # Base strategy contract
 │   ├── token/
-│   │   └── HiveToken.sol         # ERC20 + vesting
+│   │   ├── HiveToken.sol         # ERC20 + vesting
+│   │   └── HiveUSD.sol           # USD-pegged stablecoin
 │   ├── treasury/
-│   │   └── HiveTreasury.sol      # Fee collector & distributor
+│   │   ├── HiveTreasury.sol      # Fee collector & distributor
+│   │   └── HoneyPot.sol          # Treasury vault
+│   ├── vesting/
+│   │   └── HiveLock.sol          # Vesting (Linear, Cliff, Custom)
 │   └── verifier/
 │       └── HiveVerifier.sol      # ZK proof verifier
 │
@@ -256,11 +281,15 @@ hive/
 │   ├── HiveSuite.t.sol           # Suite 1: ID, MultiSig, Clearing
 │   ├── HiveSuite2.t.sol          # Suite 2: Verifier, Relayer, Oracle
 │   ├── AlloraBrain.t.sol         # Allora + HiveBrain async/PII tests
-│   └── HiveFLock.t.sol           # FLock federated learning tests
+│   ├── HiveFLock.t.sol           # FLock federated learning tests
+│   ├── HiveStaking.t.sol         # Staking + agent system tests
+│   └── HiveLock.t.sol            # Vesting contract tests
 │
 ├── script/
 │   ├── Deploy.s.sol              # Deployment script (Phase 1)
-│   └── DeployV3.s.sol            # Deployment script (Phase 2)
+│   ├── DeployV3.s.sol            # Deployment script (Phase 2)
+│   ├── DeployHiveLock.s.sol      # Deploy HiveLock
+│   └── DeployAgentFactory.s.sol  # Deploy HiveAgentFactory
 │
 ├── verification/                 # Contract verification package
 │   ├── README.md                 # Manual verification guide
@@ -313,6 +342,7 @@ All modules connected via `HiveFactory.wireAll()`:
 **Security Chain:** HiveStaking ↔ HiveTreasury
 **Orchestration:** Queen → Brain (think) → Strategy (execute) → Registry (heartbeat)
 **User Flow:** HiveAutoStrategy → HiveOracle (fetchPrice) → HiveMarketMaker (swap)
+**Agent Summoning:** User → HiveAgentFactory → deploys HiveGovernor + HiveSovereignAgent
 
 ---
 
@@ -388,6 +418,9 @@ EVM Version:  default (shanghai)
 - Phase 1-3 integrations (Allora, FLock, wireAll wiring)
 - HiveBrain ↔ HiveOracle ↔ HiveFLock data flow
 - Queen orchestration cycle (Brain → Strategy → Registry)
+- HiveLock vesting logic
+- HiveAgentFactory agent deployment
+- HiveUSD + HiveFaucet
 
 **Production readiness:** Testnet only. Full re-audit required before mainnet.
 
@@ -400,5 +433,5 @@ MIT
 ---
 
 <p align="center">
-  Built on <a href="https://ritual.net">Ritual Testnet</a> · 28 contracts deployed · 300 tests · Powered by Ritual LLM, HTTP, DKMS, ECIES, and Passkey precompiles · Price feeds by <a href="https://allora.network">Allora Network</a> · Training by <a href="https://flock.io">FLock.io</a>
+  Built on <a href="https://ritual.net">Ritual Testnet</a> · 33 contracts deployed · 300 tests · Powered by Ritual LLM, HTTP, DKMS, ECIES, and Passkey precompiles · Price feeds by <a href="https://allora.network">Allora Network</a> · Training by <a href="https://flock.io">FLock.io</a>
 </p>
