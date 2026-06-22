@@ -2312,8 +2312,8 @@
                             <span id="buy-blocks" style="font-size:.75rem;font-weight:700">0</span>
                         </div>
                         <div style="display:flex;justify-content:space-between;margin-bottom:.3rem">
-                            <span style="font-size:.65rem;color:var(--text-dim)">Tokens</span>
-                            <span id="buy-tokens" style="font-size:.75rem;font-weight:700">0</span>
+                            <span style="font-size:.65rem;color:var(--text-dim)">Tokens (est.)</span>
+                            <span id="buy-tokens" style="font-size:.75rem;font-weight:700">~0</span>
                         </div>
                         <div style="display:flex;justify-content:space-between;margin-bottom:.3rem">
                             <span style="font-size:.65rem;color:var(--text-dim)">Avg Price</span>
@@ -2393,7 +2393,7 @@
             const preview = calculateBuyPreview(val, maxTokenPrice, currentSold, totalBlocks);
 
             document.getElementById('buy-blocks').textContent = preview.blocksAllocated.toLocaleString() + ' blocks';
-            document.getElementById('buy-tokens').textContent = preview.totalTokens.toLocaleString() + ' tokens';
+            document.getElementById('buy-tokens').textContent = '~' + preview.totalTokens.toLocaleString();
             document.getElementById('buy-avg').textContent = preview.avgPrice > 0 ? '$' + preview.avgPrice.toFixed(4) : '$0.00';
             document.getElementById('buy-spent').textContent = '$' + preview.totalSpent.toLocaleString() + ' hiveUSD';
             document.getElementById('buy-fee').textContent = '$' + preview.fee.toFixed(2) + ' (from invested)';
@@ -2444,7 +2444,7 @@
                     const tx = await usdContract.approve(hiveAuctionAddr, ethers.parseEther(total.toString()));
                     await tx.wait();
                     buyStep = 1;
-                    stepArea.innerHTML = '<button onclick="executeBuyAuction('+index+')" style="width:100%;padding:.75rem;background:var(--green);border:none;border-radius:10px;color:#000;font-weight:600;font-size:.8rem;cursor:pointer">Confirm — '+preview.blocksAllocated+' blocks · '+preview.totalTokens.toLocaleString()+' tokens'+refundNote+'</button>';
+                    stepArea.innerHTML = '<button onclick="executeBuyAuction('+index+')" style="width:100%;padding:.75rem;background:var(--green);border:none;border-radius:10px;color:#000;font-weight:600;font-size:.8rem;cursor:pointer">Confirm — '+preview.blocksAllocated+' blocks · ~'+preview.totalTokens.toLocaleString()+' tokens'+refundNote+'</button>';
                 } catch(e){
                     stepArea.innerHTML = '<div style="color:var(--red);font-size:.7rem;text-align:center;padding:.5rem">Approval failed: '+(e.message||'User rejected')+'</div><button onclick="executeBuyAuction('+index+')" style="width:100%;padding:.5rem;margin-top:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.75rem;cursor:pointer">Retry</button>';
                     buyStep = 0;
@@ -2458,7 +2458,7 @@
                     await tx.wait();
                     buyStep = 0;
                     const successNote = preview.refunded > 0.01 ? '<div style="font-size:.65rem;color:var(--yellow);margin-top:.25rem">$'+preview.refunded.toFixed(2)+' refunded to your wallet</div>' : '';
-                    stepArea.innerHTML = '<div style="text-align:center;padding:1rem"><div style="font-size:1.5rem;margin-bottom:.5rem">✓</div><div style="font-size:.85rem;font-weight:700;margin-bottom:.25rem">Investment Successful</div><div style="font-size:.7rem;color:var(--text-dim)">'+preview.blocksAllocated+' blocks · '+preview.totalTokens.toLocaleString()+' tokens · avg $'+preview.avgPrice.toFixed(4)+'/token · fee $'+preview.fee.toFixed(2)+'</div>'+successNote+'</div>';
+                    stepArea.innerHTML = '<div style="text-align:center;padding:1rem"><div style="font-size:1.5rem;margin-bottom:.5rem">✓</div><div style="font-size:.85rem;font-weight:700;margin-bottom:.25rem">Investment Successful</div><div style="font-size:.7rem;color:var(--text-dim)">'+preview.blocksAllocated+' blocks · ~'+preview.totalTokens.toLocaleString()+' tokens · ~$'+preview.avgPrice.toFixed(4)+'/token · fee $'+preview.fee.toFixed(2)+'</div>'+successNote+'</div>';
                 } catch(e){
                     stepArea.innerHTML = '<div style="color:var(--red);font-size:.7rem;text-align:center;padding:.5rem">Purchase failed: '+(e.message||'User rejected')+'</div><button onclick="executeBuyAuction('+index+')" style="width:100%;padding:.5rem;margin-top:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.75rem;cursor:pointer">Retry</button>';
                     buyStep = 1;
