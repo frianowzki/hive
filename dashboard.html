@@ -3834,10 +3834,21 @@
         }
 
         // ═══ AI AGENTS TAB ═══
+        let userSummonedAgents = [];
+
         function renderAgentsTab(){
             const statusColors = {online:'var(--green)',idle:'var(--yellow)',offline:'var(--red)'};
             const typeIcons = {Orchestrator:'👑',Executor:'⚡',Research:'🔍'};
             return `
+                <!-- Summon Agent CTA -->
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+                    <div style="font-size:.85rem;font-weight:700">Protocol Agents</div>
+                    <button onclick="openSummonModal()" style="padding:.55rem 1.25rem;background:var(--accent);border:none;border-radius:8px;color:#fff;font-weight:600;font-size:.7rem;cursor:pointer;display:flex;align-items:center;gap:.4rem;transition:all .15s">
+                        <span style="font-size:.85rem">+</span> Summon Agent
+                    </button>
+                </div>
+
+                <!-- Protocol Agents -->
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.5rem">
                     ${mockAgents.map(a => `
                         <div class="agent-card">
@@ -3865,6 +3876,54 @@
                     `).join('')}
                 </div>
 
+                <!-- User Summoned Agents -->
+                ${userSummonedAgents.length > 0 ? `
+                    <div style="font-size:.85rem;font-weight:700;margin-bottom:.75rem">Your Agents</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.5rem">
+                        ${userSummonedAgents.map(a => `
+                            <div class="agent-card" style="border-color:rgba(139,92,246,.2)">
+                                <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.75rem">
+                                    <div style="width:40px;height:40px;border-radius:10px;background:rgba(139,92,246,.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem">${a.icon}</div>
+                                    <div style="flex:1">
+                                        <div style="font-size:.85rem;font-weight:700">${a.name}</div>
+                                        <div style="display:flex;align-items:center;gap:.4rem">
+                                            <div style="width:6px;height:6px;border-radius:50%;background:var(--green)"></div>
+                                            <span style="font-size:.55rem;color:var(--green);text-transform:uppercase;font-weight:600">Active</span>
+                                            <span style="font-size:.5rem;color:var(--text-muted)">· ${a.sector}</span>
+                                        </div>
+                                    </div>
+                                    <div style="text-align:right">
+                                        <div style="font-size:.55rem;padding:.15rem .35rem;border-radius:3px;background:rgba(139,92,246,.1);color:var(--accent-light);font-weight:600">Sovereign</div>
+                                    </div>
+                                </div>
+                                <div style="padding:.5rem .6rem;background:var(--bg);border-radius:6px;margin-bottom:.5rem">
+                                    <div style="font-size:.55rem;color:var(--text-dim);margin-bottom:.15rem">Soul</div>
+                                    <div style="font-size:.6rem;color:var(--text-dim);line-height:1.4">${a.soul}</div>
+                                </div>
+                                <div style="display:flex;gap:.35rem">
+                                    <div style="flex:1;padding:.3rem;background:var(--bg);border-radius:6px;text-align:center">
+                                        <div style="font-size:.45rem;color:var(--text-dim)">Per-Tx Max</div>
+                                        <div style="font-size:.6rem;font-weight:700">${a.perTxMax}</div>
+                                    </div>
+                                    <div style="flex:1;padding:.3rem;background:var(--bg);border-radius:6px;text-align:center">
+                                        <div style="font-size:.45rem;color:var(--text-dim)">Daily Max</div>
+                                        <div style="font-size:.6rem;font-weight:700">${a.dailyMax}</div>
+                                    </div>
+                                    <div style="flex:1;padding:.3rem;background:var(--bg);border-radius:6px;text-align:center">
+                                        <div style="font-size:.45rem;color:var(--text-dim)">Wake</div>
+                                        <div style="font-size:.6rem;font-weight:700">${a.wakeDelay}b</div>
+                                    </div>
+                                </div>
+                                <div style="display:flex;gap:.35rem;margin-top:.5rem">
+                                    <button style="flex:1;padding:.45rem;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);border-radius:6px;color:var(--green);font-weight:600;font-size:.6rem;cursor:pointer">Start</button>
+                                    <button style="flex:1;padding:.45rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text-dim);font-weight:600;font-size:.6rem;cursor:pointer">Pause</button>
+                                    <button style="flex:1;padding:.45rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text-dim);font-weight:600;font-size:.6rem;cursor:pointer">Config</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+
                 <!-- Agent Activity Log -->
                 <div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">
                     <div style="font-size:.8rem;font-weight:700;margin-bottom:.75rem">Recent Activity</div>
@@ -3891,6 +3950,196 @@
                     </div>
                 </div>
             `;
+        }
+
+        // ═══ SUMMON AGENT MODAL ═══
+        function openSummonModal(){
+            const modal = document.getElementById('auction-buy-modal');
+            const inner = document.getElementById('auction-buy-inner');
+
+            const sectors = [
+                {id:'market-maker',name:'Market Maker',icon:'📈',desc:'AI-powered trading and liquidity provision'},
+                {id:'staking',name:'Staking Agent',icon:'🥩',desc:'Auto-stake, compound, and optimize yields'},
+                {id:'auction',name:'HCA Sniper',icon:'🎯',desc:'Participate in new token launches at best prices'},
+                {id:'portfolio',name:'Portfolio Manager',icon:'📊',desc:'Rebalance and optimize your DeFi portfolio'},
+                {id:'governance',name:'Governance Voter',icon:'🗳️',desc:'Auto-vote on proposals based on your preferences'},
+                {id:'research',name:'Research Scout',icon:'🔍',desc:'Monitor markets, detect opportunities, alert you'},
+            ];
+
+            inner.innerHTML = `
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid var(--border)">
+                    <div style="font-size:.85rem;font-weight:700">Summon Sovereign Agent</div>
+                    <div onclick="closeAuctionBuy()" style="cursor:pointer;color:var(--text-dim);font-size:1.1rem;padding:.25rem;line-height:1">×</div>
+                </div>
+                <div style="padding:1.25rem;max-height:70vh;overflow-y:auto">
+                    <!-- Agent Name -->
+                    <div style="margin-bottom:1rem">
+                        <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Agent Name</div>
+                        <input id="summon-name" type="text" placeholder="MyTrader" maxlength="32" style="width:100%;padding:.65rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.8rem;font-weight:600;box-sizing:border-box">
+                    </div>
+
+                    <!-- Sector Selection -->
+                    <div style="margin-bottom:1rem">
+                        <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.4rem">Sector</div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem">
+                            ${sectors.map((s,i) => `
+                                <div onclick="selectSector('${s.id}',this)" class="sector-pill" style="padding:.5rem;background:var(--bg);border:1px solid ${i===0?'var(--accent)':'var(--border)'};border-radius:8px;cursor:pointer;text-align:center;transition:all .15s">
+                                    <div style="font-size:.9rem;margin-bottom:.15rem">${s.icon}</div>
+                                    <div style="font-size:.55rem;font-weight:600;color:${i===0?'var(--accent-light)':'var(--text-dim)'}">${s.name}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <input type="hidden" id="summon-sector" value="market-maker">
+                    </div>
+
+                    <!-- Soul (Behavioral Constraints) -->
+                    <div style="margin-bottom:1rem">
+                        <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Soul — Identity & Rules</div>
+                        <textarea id="summon-soul" rows="3" placeholder="You are a conservative market maker. Max 5% per trade. Never sell below entry price. Focus on HIVE/hiveUSD pair." style="width:100%;padding:.65rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.75rem;font-family:var(--font);resize:vertical;box-sizing:border-box;line-height:1.5"></textarea>
+                        <div style="font-size:.5rem;color:var(--text-muted);margin-top:.2rem">Define your agent's identity, purpose, and behavioral constraints. This becomes its "soul".</div>
+                    </div>
+
+                    <!-- Wake Delay -->
+                    <div style="margin-bottom:1rem">
+                        <div style="display:flex;justify-content:space-between;margin-bottom:.3rem">
+                            <span style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase">Wake Interval (blocks)</span>
+                            <span id="wake-display" style="font-size:.6rem;color:var(--accent-light);font-weight:600">50 blocks (~6 min)</span>
+                        </div>
+                        <input id="summon-wake" type="range" min="10" max="500" value="50" oninput="updateWakeDisplay(this.value)" style="width:100%;accent-color:var(--accent)">
+                        <div style="display:flex;justify-content:space-between;font-size:.45rem;color:var(--text-muted);margin-top:.15rem">
+                            <span>10 (fast)</span><span>500 (slow)</span>
+                        </div>
+                    </div>
+
+                    <!-- Limits Toggle -->
+                    <div style="margin-bottom:1rem">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+                            <span style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase">Spending Limits</span>
+                            <div onclick="toggleSummonLimits()" id="limits-toggle" style="width:36px;height:20px;border-radius:10px;background:var(--border);cursor:pointer;position:relative;transition:background .2s">
+                                <div id="limits-toggle-dot" style="width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:all .2s"></div>
+                            </div>
+                        </div>
+                        <div id="custom-limits" style="display:none">
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+                                <div>
+                                    <div style="font-size:.5rem;color:var(--text-muted);margin-bottom:.2rem">Per-Tx Max (hiveUSD)</div>
+                                    <input id="limit-per-tx" type="number" value="100" style="width:100%;padding:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.75rem;font-family:var(--font-mono);box-sizing:border-box">
+                                </div>
+                                <div>
+                                    <div style="font-size:.5rem;color:var(--text-muted);margin-bottom:.2rem">Daily Max (hiveUSD)</div>
+                                    <input id="limit-daily" type="number" value="5000" style="width:100%;padding:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.75rem;font-family:var(--font-mono);box-sizing:border-box">
+                                </div>
+                            </div>
+                            <div style="font-size:.45rem;color:var(--text-muted);margin-top:.3rem">Custom limits cost 2× deployment fee</div>
+                        </div>
+                        <div id="default-limits-info" style="padding:.5rem;background:var(--bg);border-radius:6px">
+                            <div style="font-size:.55rem;color:var(--text-dim);line-height:1.6">
+                                <strong>Default:</strong> $100/tx · $5,000/day · 20 tx/hour<br>
+                                <span style="color:var(--text-muted)">Safe for most use cases. Toggle for custom limits.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fee -->
+                    <div style="padding:.6rem;background:rgba(139,92,246,.06);border-radius:8px;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center">
+                        <div>
+                            <div style="font-size:.6rem;color:var(--text-dim)">Deployment Fee</div>
+                            <div style="font-size:.5rem;color:var(--text-muted)">Governor + Agent + Scheduler</div>
+                        </div>
+                        <div style="font-size:.85rem;font-weight:800;color:var(--accent-light)" id="deploy-fee">0.01 RITUAL</div>
+                    </div>
+
+                    <!-- What You Get -->
+                    <div style="padding:.6rem;background:var(--bg);border-radius:8px;margin-bottom:1rem">
+                        <div style="font-size:.55rem;color:var(--text-dim);margin-bottom:.4rem;font-weight:600">What You Get</div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.3rem">
+                            ${['DKMS Wallet (self-custody)','Scheduler Heartbeat','Governor Safety Layer','TEE Execution (private)','DA State Persistence','Auto-Revival on Crash'].map(f => `
+                                <div style="display:flex;align-items:center;gap:.3rem">
+                                    <span style="font-size:.5rem;color:var(--green)">✓</span>
+                                    <span style="font-size:.5rem;color:var(--text-dim)">${f}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Summon Button -->
+                    <button onclick="executeSummonAgent()" style="width:100%;padding:.8rem;background:var(--accent);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:.85rem;cursor:pointer;transition:all .15s">
+                        ⚡ Summon Agent
+                    </button>
+                    <div style="font-size:.5rem;color:var(--text-muted);text-align:center;margin-top:.4rem">
+                        Agent will be deployed on Ritual Chain with your wallet as owner
+                    </div>
+                </div>
+            `;
+
+            modal.style.display = 'flex';
+        }
+
+        let summonSector = 'market-maker';
+        let summonCustomLimits = false;
+
+        function selectSector(id, el){
+            summonSector = id;
+            document.querySelectorAll('.sector-pill').forEach(p => {
+                p.style.borderColor = 'var(--border)';
+                p.querySelector('div:last-child').style.color = 'var(--text-dim)';
+            });
+            el.style.borderColor = 'var(--accent)';
+            el.querySelector('div:last-child').style.color = 'var(--accent-light)';
+            document.getElementById('summon-sector').value = id;
+        }
+
+        function updateWakeDisplay(val){
+            const secs = Math.round(val * 12);
+            const mins = Math.round(secs / 60);
+            document.getElementById('wake-display').textContent = `${val} blocks (~${mins} min)`;
+        }
+
+        function toggleSummonLimits(){
+            summonCustomLimits = !summonCustomLimits;
+            const toggle = document.getElementById('limits-toggle');
+            const dot = document.getElementById('limits-toggle-dot');
+            const custom = document.getElementById('custom-limits');
+            const info = document.getElementById('default-limits-info');
+            const fee = document.getElementById('deploy-fee');
+
+            if(summonCustomLimits){
+                toggle.style.background = 'var(--green)';
+                dot.style.right = '2px';
+                dot.style.left = 'unset';
+                custom.style.display = '';
+                info.style.display = 'none';
+                fee.textContent = '0.02 RITUAL';
+            } else {
+                toggle.style.background = 'var(--border)';
+                dot.style.left = '2px';
+                dot.style.right = 'unset';
+                custom.style.display = 'none';
+                info.style.display = '';
+                fee.textContent = '0.01 RITUAL';
+            }
+        }
+
+        function executeSummonAgent(){
+            const name = document.getElementById('summon-name').value || 'Agent';
+            const soul = document.getElementById('summon-soul').value || 'Default agent';
+            const wake = parseInt(document.getElementById('summon-wake').value) || 50;
+
+            // Mock deployment
+            userSummonedAgents.push({
+                name: name,
+                sector: summonSector,
+                soul: soul,
+                wakeDelay: wake,
+                icon: summonSector === 'market-maker' ? '📈' : summonSector === 'staking' ? '🥩' : summonSector === 'auction' ? '🎯' : summonSector === 'portfolio' ? '📊' : summonSector === 'governance' ? '🗳️' : '🔍',
+                perTxMax: summonCustomLimits ? '$' + (document.getElementById('limit-per-tx').value || '100') : '$100',
+                dailyMax: summonCustomLimits ? '$' + (document.getElementById('limit-daily').value || '5,000') : '$5,000',
+                address: '0x' + Math.random().toString(16).slice(2,10) + '...' + Math.random().toString(16).slice(2,6),
+                governor: '0x' + Math.random().toString(16).slice(2,10) + '...' + Math.random().toString(16).slice(2,6),
+            });
+
+            closeAuctionBuy();
+            switchMakerTab('agents');
         }
 
         // ═══ ORACLE FEEDS TAB ═══
