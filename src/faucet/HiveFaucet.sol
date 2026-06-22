@@ -13,7 +13,7 @@ contract HiveFaucet {
     IERC20 public immutable token;
     address public owner;
 
-    uint256 public constant CLAIM_AMOUNT = 25000 * 1e18;     // 25000 hiveUSD
+    uint256 public constant CLAIM_AMOUNT = 100000 * 1e18;     // 100000 hiveUSD
     uint256 public constant COOLDOWN = 24 hours;
 
     mapping(address => uint256) public lastClaim;

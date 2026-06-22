@@ -457,26 +457,51 @@
                 <p>Compliant AI launchpad on Ritual Chain</p>
             </div>
 
-            <div class="stats-grid">
+            <div class="stats-grid" style="grid-template-columns:repeat(5,1fr)">
                 <div class="stat-card">
                     <div class="stat-label">Total Value Locked</div>
                     <div class="stat-value" id="stat-tvl">—</div>
-                    <div class="stat-change up">↑ Loading...</div>
+                    <div class="stat-change">Staked RITUAL</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Active Proposals</div>
-                    <div class="stat-value" id="stat-proposals">—</div>
-                    <div class="stat-change">Loading...</div>
+                    <div class="stat-label">Treasury</div>
+                    <div class="stat-value" id="stat-treasury">—</div>
+                    <div class="stat-change">Available balance</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">AI Agents Online</div>
+                    <div class="stat-label">Stakers</div>
+                    <div class="stat-value" id="stat-stakers">—</div>
+                    <div class="stat-change">Active stakers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">hiveUSD Supply</div>
+                    <div class="stat-value" id="stat-usd-supply">—</div>
+                    <div class="stat-change">Total minted</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">AI Agents</div>
                     <div class="stat-value" id="stat-agents">—</div>
-                    <div class="stat-change up">↑ Loading...</div>
+                    <div class="stat-change">Registered</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-label">Your Points</div>
-                    <div class="stat-value" id="stat-points">—</div>
-                    <div class="stat-change">Loading...</div>
+            </div>
+
+            <!-- User Stats -->
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-top:.75rem">
+                <div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px">
+                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.25rem">Your HIVE</div>
+                    <div style="font-size:1rem;font-weight:700;font-family:var(--font-display)" id="stat-hive-bal">—</div>
+                </div>
+                <div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px">
+                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.25rem">Your Staked</div>
+                    <div style="font-size:1rem;font-weight:700;font-family:var(--font-display)" id="stat-staked">—</div>
+                </div>
+                <div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px">
+                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.25rem">Pending Rewards</div>
+                    <div style="font-size:1rem;font-weight:700;font-family:var(--font-display);color:var(--green)" id="stat-rewards">—</div>
+                </div>
+                <div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px">
+                    <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.25rem">Your Points</div>
+                    <div style="font-size:1rem;font-weight:700;font-family:var(--font-display);color:var(--accent-light)" id="stat-points">—</div>
                 </div>
             </div>
 
@@ -689,7 +714,7 @@
         <div class="content page-content" id="page-faucet" style="display:none">
             <div class="content-header">
                 <h1>hiveUSD Faucet</h1>
-                <p>Claim 25,000 hiveUSD every 24 hours for testing and sale participation</p>
+                <p>Claim 100,000 hiveUSD every 24 hours for testing and sale participation</p>
             </div>
             <div id="faucet-content">
                 <div style="color:var(--text-muted);text-align:center;padding:4rem">Connect wallet to access faucet</div>
@@ -977,7 +1002,7 @@
                 hiveReady = await hive.init();
                 const stats = await hive.getDashboardStats(connectedAddress);
 
-                // TVL = total staked across protocol
+                // TVL = total staked
                 document.getElementById('stat-tvl').textContent = hive.formatEther(stats.totalStaked) + ' RITUAL';
 
                 // Active proposals
@@ -989,15 +1014,44 @@
                 // User points
                 document.getElementById('stat-points').textContent = Number(stats.userPoints).toLocaleString();
 
+                // Additional stats
+                try {
+                    const treasury = hive.getContract('HiveTreasury');
+                    const treasuryBal = await treasury.getAvailableBalance();
+                    document.getElementById('stat-treasury').textContent = hive.formatEther(treasuryBal) + ' RITUAL';
+                } catch(e) {}
+
+                try {
+                    const stakerCount = stats.stakerCount;
+                    document.getElementById('stat-stakers').textContent = Number(stakerCount).toLocaleString();
+                } catch(e) {}
+
+                try {
+                    const hiveUSD = hive.getContract('HiveUSD');
+                    const usdSupply = await hiveUSD.totalSupply();
+                    document.getElementById('stat-usd-supply').textContent = formatNum(Math.round(parseFloat(ethers.formatEther(usdSupply))));
+                } catch(e) {}
+
+                try {
+                    document.getElementById('stat-hive-bal').textContent = hive.formatEther(stats.tokenBalance) + ' HIVE';
+                } catch(e) {}
+
+                try {
+                    document.getElementById('stat-staked').textContent = hive.formatEther(stats.userStaked) + ' RITUAL';
+                } catch(e) {}
+
+                try {
+                    document.getElementById('stat-rewards').textContent = hive.formatEther(stats.pendingRewards) + ' HIVE';
+                } catch(e) {}
+
                 // Load transactions
                 loadTransactions();
             } catch(e){
                 console.error('[Hive] Dashboard load error:', e);
-                // Show fallback
-                document.getElementById('stat-tvl').textContent = '—';
-                document.getElementById('stat-proposals').textContent = '—';
-                document.getElementById('stat-agents').textContent = '—';
-                document.getElementById('stat-points').textContent = '—';
+                ['stat-tvl','stat-proposals','stat-agents','stat-points','stat-treasury','stat-stakers','stat-usd-supply','stat-hive-bal','stat-staked','stat-rewards'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el) el.textContent = '—';
+                });
             }
         }
 
@@ -1353,7 +1407,7 @@
                         ${canClaim ? `
                             <div style="font-size:1.1rem;font-weight:700;margin-bottom:1rem">Ready to Claim</div>
                             <button class="btn btn-p" onclick="doClaimFaucet()" style="padding:.85rem 2.5rem;font-size:.8rem;border-radius:10px">
-                                Claim 25,000 hiveUSD
+                                Claim 100,000 hiveUSD
                             </button>
                         ` : `
                             <div style="font-size:1.1rem;font-weight:700;margin-bottom:.35rem">Cooldown Active</div>
