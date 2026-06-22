@@ -1988,7 +1988,7 @@
                             </div>
                             <div style="text-align:right">
                                 <div style="background:rgba(34,197,94,.15);color:var(--green);font-size:.5rem;font-weight:600;padding:.1rem .35rem;border-radius:3px;display:inline-block">LIVE</div>
-                                <div style="font-size:.6rem;font-weight:700;margin-top:.25rem;color:var(--green)">$${(s.raisedUSD/1000).toFixed(1)}K</div>
+                                <div style="font-size:.55rem;font-weight:700;margin-top:.2rem;color:var(--green)">${getCurrentPriceInfo(s).tokenPrice.toFixed(4)}</div>
                             </div>
                         </div>
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.25rem">
@@ -2153,8 +2153,8 @@
                                 <div style="font-size:1rem;font-weight:700">${s.endsIn}</div>
                             </div>
                             <div style="padding:.75rem;background:var(--bg);border-radius:8px;text-align:center">
-                                <div style="font-size:.55rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.25rem">Clearing Price</div>
-                                <div style="font-size:1rem;font-weight:700">$${blockPriceUSD} / block</div>
+                                <div style="font-size:.55rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.25rem">Current Token Price</div>
+                                <div style="font-size:1rem;font-weight:700;color:var(--green)">${getCurrentPriceInfo(s).tokenPrice.toFixed(4)}</div>
                             </div>
                         </div>
 
@@ -2168,7 +2168,9 @@
                             </div>
                         </div>
 
-                        <div style="display:flex;gap:.75rem">
+                        ${renderLivePriceTicker(s, false)}
+
+                        <div style="display:flex;gap:.75rem;margin-top:1rem">
                             <button onclick="openAuctionBuy(${index})" style="flex:1;padding:.75rem;background:var(--accent);border:none;border-radius:10px;color:#fff;font-weight:600;font-size:.8rem;cursor:pointer;transition:all .15s">Participate</button>
                             <button onclick="closeAuctionDetail()" style="flex:1;padding:.75rem;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-weight:600;font-size:.8rem;cursor:pointer;transition:all .15s">Close</button>
                         </div>
@@ -2277,7 +2279,7 @@
                         ${logoHTML}
                         <div style="flex:1">
                             <div style="font-size:.85rem;font-weight:700">${s.name} <span style="color:var(--text-dim);font-size:.7rem">${s.symbol}</span></div>
-                            <div style="font-size:.6rem;color:var(--text-dim)">${available} blocks · $${basePrice}-$${maxPriceBlock}/block · ${s.endsIn} left</div>
+                            <div style="font-size:.6rem;color:var(--text-dim)">${available} blocks · ${renderLivePriceTicker(s, true)} · ${s.endsIn} left</div>
                         </div>
                     </div>
 
@@ -2473,6 +2475,55 @@
         document.getElementById('auction-buy-modal').addEventListener('click', function(e){
             if(e.target === this) closeAuctionBuy();
         });
+
+        // ═══ REAL-TIME PRICE UPDATES ═══
+        function getCurrentPriceInfo(s){
+            const soldPct = s.soldBlocks / s.blocks;
+            const price = getBlockPrice(soldPct);
+            const tokens = getTokensForBlock(s.soldBlocks, s.blocks);
+            const tokenPrice = price / tokens;
+            return { price, tokens, tokenPrice, soldPct };
+        }
+
+        function renderLivePriceTicker(s, compact){
+            const info = getCurrentPriceInfo(s);
+            if(compact){
+                return '<span style="font-size:.6rem;color:var(--green);font-weight:600">$'+info.tokenPrice.toFixed(4)+'/token</span> · <span style="font-size:.6rem;color:var(--text-dim)">$'+info.price.toFixed(0)+'/block</span>';
+            }
+            return '<div style="display:flex;gap:.5rem;align-items:center">'+
+                '<div style="padding:.35rem .6rem;background:var(--bg);border-radius:6px;text-align:center">'+
+                    '<div style="font-size:.5rem;color:var(--text-dim);text-transform:uppercase">Current Price</div>'+
+                    '<div style="font-size:.8rem;font-weight:700;color:var(--green)">$'+info.tokenPrice.toFixed(4)+'</div>'+
+                '</div>'+
+                '<div style="padding:.35rem .6rem;background:var(--bg);border-radius:6px;text-align:center">'+
+                    '<div style="font-size:.5rem;color:var(--text-dim);text-transform:uppercase">Block</div>'+
+                    '<div style="font-size:.8rem;font-weight:700">$'+info.price.toFixed(0)+'</div>'+
+                '</div>'+
+                '<div style="padding:.35rem .6rem;background:var(--bg);border-radius:6px;text-align:center">'+
+                    '<div style="font-size:.5rem;color:var(--text-dim);text-transform:uppercase">Sold</div>'+
+                    '<div style="font-size:.8rem;font-weight:700">'+Math.round(info.soldPct*100)+'%</div>'+
+                '</div>'+
+            '</div>';
+        }
+
+        // Simulate real-time block sales (demo)
+        setInterval(function(){
+            mockAuctions.active.forEach(s => {
+                if(s.soldBlocks < s.blocks && Math.random() > 0.6){
+                    s.soldBlocks++;
+                    // Recalculate raised based on bonding curve
+                    let total = 0;
+                    for(let i = 0; i < s.soldBlocks; i++){
+                        total += getBlockPrice(i / s.blocks);
+                    }
+                    s.raisedUSD = total;
+                }
+            });
+            // Update dashboard widgets if visible
+            if(document.getElementById('page-auction').style.display !== 'none'){
+                renderAuctionTab(auctionTab);
+            }
+        }, 5000);
 
         // ═══ TOKEN LAUNCH PAGE ═══
         let launchTab = 'create'; // 'create' | 'active' | 'my'
