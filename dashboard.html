@@ -1917,17 +1917,17 @@
 
         const mockAuctions = {
           active: [
-            { name:'Hive Token', symbol:'HIVE', logo:'H', color:'#8b5cf6', endsIn:'2h 14m', blocks:120, soldBlocks:101 },
-            { name:'RitualDEX', symbol:'RDEX', logo:'R', color:'#22c55e', endsIn:'5h 42m', blocks:90, soldBlocks:62 },
-            { name:'ClearNode', symbol:'CNODE', logo:'C', color:'#3b82f6', endsIn:'11h 08m', blocks:60, soldBlocks:22 },
+            { name:'Hive Token', symbol:'HIVE', logo:'H', color:'#8b5cf6', endsIn:'2h 14m', blocks:120, soldBlocks:101, participants:1247, raisedUSD:42500, logoUrl:'' },
+            { name:'RitualDEX', symbol:'RDEX', logo:'R', color:'#22c55e', endsIn:'5h 42m', blocks:90, soldBlocks:62, participants:834, raisedUSD:26040, logoUrl:'' },
+            { name:'ClearNode', symbol:'CNODE', logo:'C', color:'#3b82f6', endsIn:'11h 08m', blocks:60, soldBlocks:22, participants:412, raisedUSD:9240, logoUrl:'' },
           ],
           upcoming: [
-            { name:'AetherFi', symbol:'AETH', logo:'A', color:'#f59e0b', startsIn:'2d 6h', blocks:200 },
-            { name:'VaultGuard', symbol:'VGUARD', logo:'V', color:'#ef4444', startsIn:'4d 12h', blocks:80 },
+            { name:'AetherFi', symbol:'AETH', logo:'A', color:'#f59e0b', startsIn:'2d 6h', blocks:200, logoUrl:'' },
+            { name:'VaultGuard', symbol:'VGUARD', logo:'V', color:'#ef4444', startsIn:'4d 12h', blocks:80, logoUrl:'' },
           ],
           completed: [
-            { name:'PulseDAO', symbol:'PULSE', logo:'P', color:'#ec4899', participants:2103, ended:'3d ago', blocks:150 },
-            { name:'NexBridge', symbol:'NEXB', logo:'N', color:'#06b6d4', participants:678, ended:'1w ago', blocks:60 },
+            { name:'PulseDAO', symbol:'PULSE', logo:'P', color:'#ec4899', participants:2103, ended:'3d ago', blocks:150, raisedUSD:120000, logoUrl:'' },
+            { name:'NexBridge', symbol:'NEXB', logo:'N', color:'#06b6d4', participants:678, ended:'1w ago', blocks:60, raisedUSD:45000, logoUrl:'' },
           ]
         };
 
@@ -1967,16 +1967,18 @@
             if(tab === 'active'){
                 cardsHTML = sales.map(s => {
                     const blockPct = Math.round((s.soldBlocks/s.blocks)*100);
+                    const logoHTML = s.logoUrl ? '<img src="'+s.logoUrl+'" style="width:32px;height:32px;border-radius:8px;object-fit:cover;flex-shrink:0">' : '<div style="width:32px;height:32px;border-radius:8px;background:'+s.color+'22;color:'+s.color+';display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0">'+s.logo+'</div>';
                     return `
-                    <div style="padding:.6rem .8rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:.4rem;transition:all .15s;cursor:pointer" onmouseenter="this.style.borderColor='rgba(255,255,255,.1)'" onmouseleave="this.style.borderColor='var(--border)'">
+                    <div style="max-width:50%;padding:.75rem 1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:.5rem;transition:all .15s;cursor:pointer" onmouseenter="this.style.borderColor='rgba(255,255,255,.1)'" onmouseleave="this.style.borderColor='var(--border)'">
                         <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem">
-                            <div style="width:32px;height:32px;border-radius:8px;background:${s.color}22;color:${s.color};display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0">${s.logo}</div>
+                            ${logoHTML}
                             <div style="flex:1;min-width:0">
                                 <div style="font-size:.8rem;font-weight:700">${s.name} <span style="color:var(--text-dim);font-weight:400;font-size:.65rem">${s.symbol}</span></div>
-                                <div style="font-size:.6rem;color:var(--text-dim)">${s.endsIn} left · ${s.blocks} blocks</div>
+                                <div style="font-size:.6rem;color:var(--text-dim)">${s.participants} participants · ${s.endsIn} left</div>
                             </div>
                             <div style="text-align:right">
                                 <div style="background:rgba(34,197,94,.15);color:var(--green);font-size:.5rem;font-weight:600;padding:.1rem .35rem;border-radius:3px;display:inline-block">LIVE</div>
+                                <div style="font-size:.6rem;font-weight:700;margin-top:.25rem;color:var(--green)">$${(s.raisedUSD/1000).toFixed(1)}K</div>
                             </div>
                         </div>
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.25rem">
@@ -1989,31 +1991,38 @@
                     </div>`;
                 }).join('');
             } else if(tab === 'upcoming'){
-                cardsHTML = sales.map(s => `
-                    <div style="padding:.6rem .8rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:.4rem;transition:all .15s;cursor:pointer" onmouseenter="this.style.borderColor='rgba(255,255,255,.1)'" onmouseleave="this.style.borderColor='var(--border)'">
+                cardsHTML = sales.map(s => {
+                    const logoHTML = s.logoUrl ? '<img src="'+s.logoUrl+'" style="width:32px;height:32px;border-radius:8px;object-fit:cover;flex-shrink:0">' : '<div style="width:32px;height:32px;border-radius:8px;background:'+s.color+'22;color:'+s.color+';display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0">'+s.logo+'</div>';
+                    return `
+                    <div style="max-width:50%;padding:.75rem 1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:.5rem;transition:all .15s;cursor:pointer" onmouseenter="this.style.borderColor='rgba(255,255,255,.1)'" onmouseleave="this.style.borderColor='var(--border)'">
                         <div style="display:flex;align-items:center;gap:.6rem">
-                            <div style="width:32px;height:32px;border-radius:8px;background:${s.color}22;color:${s.color};display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0">${s.logo}</div>
+                            ${logoHTML}
                             <div style="flex:1;min-width:0">
                                 <div style="font-size:.8rem;font-weight:700">${s.name} <span style="color:var(--text-dim);font-weight:400;font-size:.65rem">${s.symbol}</span></div>
                                 <div style="font-size:.6rem;color:var(--text-dim)">${s.blocks} blocks · Starts in ${s.startsIn}</div>
                             </div>
                             <div style="background:rgba(234,179,8,.15);color:var(--yellow);font-size:.5rem;font-weight:600;padding:.1rem .35rem;border-radius:3px">UPCOMING</div>
                         </div>
-                    </div>
-                `).join('');
+                    </div>`;
+                }).join('');
             } else {
-                cardsHTML = sales.map(s => `
-                    <div style="padding:.6rem .8rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:.4rem;transition:all .15s;cursor:pointer" onmouseenter="this.style.borderColor='rgba(255,255,255,.1)'" onmouseleave="this.style.borderColor='var(--border)'">
+                cardsHTML = sales.map(s => {
+                    const logoHTML = s.logoUrl ? '<img src="'+s.logoUrl+'" style="width:32px;height:32px;border-radius:8px;object-fit:cover;flex-shrink:0">' : '<div style="width:32px;height:32px;border-radius:8px;background:'+s.color+'22;color:'+s.color+';display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0">'+s.logo+'</div>';
+                    return `
+                    <div style="max-width:50%;padding:.75rem 1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:.5rem;transition:all .15s;cursor:pointer" onmouseenter="this.style.borderColor='rgba(255,255,255,.1)'" onmouseleave="this.style.borderColor='var(--border)'">
                         <div style="display:flex;align-items:center;gap:.6rem">
-                            <div style="width:32px;height:32px;border-radius:8px;background:${s.color}22;color:${s.color};display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0">${s.logo}</div>
+                            ${logoHTML}
                             <div style="flex:1;min-width:0">
                                 <div style="font-size:.8rem;font-weight:700">${s.name} <span style="color:var(--text-dim);font-weight:400;font-size:.65rem">${s.symbol}</span></div>
                                 <div style="font-size:.6rem;color:var(--text-dim)">${s.blocks} blocks · ${s.participants} participants · ${s.ended}</div>
                             </div>
-                            <div style="background:rgba(136,136,136,.15);color:var(--text-dim);font-size:.5rem;font-weight:600;padding:.1rem .35rem;border-radius:3px">COMPLETED</div>
+                            <div style="text-align:right">
+                                <div style="background:rgba(136,136,136,.15);color:var(--text-dim);font-size:.5rem;font-weight:600;padding:.1rem .35rem;border-radius:3px">COMPLETED</div>
+                                <div style="font-size:.6rem;font-weight:700;margin-top:.25rem">$${(s.raisedUSD/1000).toFixed(0)}K raised</div>
+                            </div>
                         </div>
-                    </div>
-                `).join('');
+                    </div>`;
+                }).join('');
             }
 
             container.innerHTML = `
