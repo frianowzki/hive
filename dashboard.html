@@ -2112,7 +2112,7 @@
             }
 
             const fee = totalSpent * 0.001;
-            const refunded = totalHiveUSD - totalSpent;
+            const refunded = totalHiveUSD - totalSpent - fee;
             const avgPrice = totalTokens > 0 ? totalSpent / totalTokens : 0;
 
             return { blocksAllocated, totalTokens, totalSpent, fee, refunded, avgPrice, stoppedByPrice };
@@ -2293,14 +2293,17 @@
                     </div>
 
                     <div style="margin-bottom:1rem">
-                        <div style="display:flex;justify-content:space-between;margin-bottom:.4rem">
-                            <span style="font-size:.7rem;font-weight:600">Max Token Price <span style="font-weight:400;color:var(--text-dim)">(optional)</span></span>
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem">
+                            <span style="font-size:.7rem;font-weight:600">Max Token Price</span>
+                            <div id="max-price-toggle" onclick="toggleMaxPrice(${s.soldBlocks},${s.blocks})" style="width:36px;height:20px;border-radius:10px;background:var(--green);cursor:pointer;position:relative;transition:background .2s">
+                                <div id="max-price-toggle-dot" style="width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:2px;right:2px;transition:all .2s"></div>
+                            </div>
                         </div>
-                        <div style="position:relative">
-                            <input id="buy-max-price" type="number" placeholder="No limit" min="0" step="any" oninput="updateBuyPreview(${s.soldBlocks},${s.blocks})" style="width:100%;padding:.75rem 3rem .75rem .75rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:1rem;font-weight:700;font-family:var(--font-mono);box-sizing:border-box">
+                        <div id="max-price-input-wrap" style="position:relative">
+                            <input id="buy-max-price" type="number" placeholder="0.05" min="0" step="any" oninput="updateBuyPreview(${s.soldBlocks},${s.blocks})" style="width:100%;padding:.75rem 3rem .75rem .75rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:1rem;font-weight:700;font-family:var(--font-mono);box-sizing:border-box">
                             <div style="position:absolute;right:.75rem;top:50%;transform:translateY(-50%);font-size:.65rem;color:var(--text-dim);font-weight:600">/token</div>
                         </div>
-                        <div style="font-size:.55rem;color:var(--text-dim);margin-top:.3rem">Stops buying when token price exceeds this. Remaining hiveUSD refunded.</div>
+                        <div id="max-price-hint" style="font-size:.55rem;color:var(--text-dim);margin-top:.3rem">Stops buying when token price exceeds this. Remaining hiveUSD refunded.</div>
                     </div>
 
                     <div style="padding:.75rem;background:var(--bg);border-radius:8px;margin-bottom:1rem">
@@ -2354,13 +2357,38 @@
             document.getElementById('auction-buy-modal').style.display = 'none';
         }
 
+        let maxPriceEnabled = true;
+
+        function toggleMaxPrice(currentSold, totalBlocks){
+            maxPriceEnabled = !maxPriceEnabled;
+            const toggle = document.getElementById('max-price-toggle');
+            const dot = document.getElementById('max-price-toggle-dot');
+            const wrap = document.getElementById('max-price-input-wrap');
+            const hint = document.getElementById('max-price-hint');
+
+            if(maxPriceEnabled){
+                toggle.style.background = 'var(--green)';
+                dot.style.right = '2px';
+                wrap.style.display = '';
+                hint.style.display = '';
+            } else {
+                toggle.style.background = 'var(--border)';
+                dot.style.right = 'unset';
+                dot.style.left = '2px';
+                wrap.style.display = 'none';
+                hint.style.display = 'none';
+                document.getElementById('buy-max-price').value = '';
+            }
+            updateBuyPreview(currentSold, totalBlocks);
+        }
+
         function updateBuyPreview(currentSold, totalBlocks){
             const amountInput = document.getElementById('buy-amount-input');
             const priceInput = document.getElementById('buy-max-price');
             let val = parseFloat(amountInput.value);
             if(isNaN(val) || val < 0) val = 0;
             buyAmount = val;
-            maxTokenPrice = parseFloat(priceInput.value) || 0;
+            maxTokenPrice = (maxPriceEnabled ? (parseFloat(priceInput.value) || 0) : 0);
 
             const preview = calculateBuyPreview(val, maxTokenPrice, currentSold, totalBlocks);
 
@@ -2368,7 +2396,7 @@
             document.getElementById('buy-tokens').textContent = preview.totalTokens.toLocaleString() + ' tokens';
             document.getElementById('buy-avg').textContent = preview.avgPrice > 0 ? '$' + preview.avgPrice.toFixed(4) : '$0.00';
             document.getElementById('buy-spent').textContent = '$' + preview.totalSpent.toLocaleString() + ' hiveUSD';
-            document.getElementById('buy-fee').textContent = '$' + preview.fee.toFixed(2);
+            document.getElementById('buy-fee').textContent = '$' + preview.fee.toFixed(2) + ' (from invested)';
             document.getElementById('buy-total').textContent = '$' + val.toFixed(2) + ' hiveUSD';
 
             const refundRow = document.getElementById('buy-refund-row');
@@ -2430,7 +2458,7 @@
                     await tx.wait();
                     buyStep = 0;
                     const successNote = preview.refunded > 0.01 ? '<div style="font-size:.65rem;color:var(--yellow);margin-top:.25rem">$'+preview.refunded.toFixed(2)+' refunded to your wallet</div>' : '';
-                    stepArea.innerHTML = '<div style="text-align:center;padding:1rem"><div style="font-size:1.5rem;margin-bottom:.5rem">✓</div><div style="font-size:.85rem;font-weight:700;margin-bottom:.25rem">Investment Successful</div><div style="font-size:.7rem;color:var(--text-dim)">'+preview.blocksAllocated+' blocks · '+preview.totalTokens.toLocaleString()+' tokens · avg $'+preview.avgPrice.toFixed(4)+'/token</div>'+successNote+'</div>';
+                    stepArea.innerHTML = '<div style="text-align:center;padding:1rem"><div style="font-size:1.5rem;margin-bottom:.5rem">✓</div><div style="font-size:.85rem;font-weight:700;margin-bottom:.25rem">Investment Successful</div><div style="font-size:.7rem;color:var(--text-dim)">'+preview.blocksAllocated+' blocks · '+preview.totalTokens.toLocaleString()+' tokens · avg $'+preview.avgPrice.toFixed(4)+'/token · fee $'+preview.fee.toFixed(2)+'</div>'+successNote+'</div>';
                 } catch(e){
                     stepArea.innerHTML = '<div style="color:var(--red);font-size:.7rem;text-align:center;padding:.5rem">Purchase failed: '+(e.message||'User rejected')+'</div><button onclick="executeBuyAuction('+index+')" style="width:100%;padding:.5rem;margin-top:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.75rem;cursor:pointer">Retry</button>';
                     buyStep = 1;
