@@ -1948,6 +1948,13 @@
             { symbol:'PULSE', name:'PulseDAO', color:'#ec4899', logo:'P', invested:5000, blocksBought:12, tokensReceived:120000, avgPrice:0.0417, status:'claimed', auctionIdx:null, txHash:'0x789...012' },
         ];
 
+        // Mock refund history
+        const mockRefunds = [
+            { symbol:'HIVE', name:'Hive Token', color:'#8b5cf6', logo:'H', inputAmount:5000, investedAmount:4200, fee:4.2, refundAmount:795.8, reason:'Max price exceeded', status:'completed', timestamp:'12 min ago', txHash:'0xdef...789' },
+            { symbol:'CNODE', name:'ClearNode', color:'#3b82f6', logo:'C', inputAmount:3000, investedAmount:2800, fee:2.8, refundAmount:197.2, reason:'Partial fill', status:'completed', timestamp:'1h ago', txHash:'0x456...abc' },
+            { symbol:'AETH', name:'AetherFi', color:'#f59e0b', logo:'A', inputAmount:10000, investedAmount:0, fee:0, refundAmount:10000, reason:'Sale cancelled', status:'pending', timestamp:'3h ago', txHash:'0x789...123' },
+        ];
+
         function loadAuctionPage(){
             const container = document.getElementById('auction-content');
             if(!connectedAddress){
@@ -1978,6 +1985,7 @@
                     <div class="auction-tab ${tab==='upcoming'?'active':''}" data-tab="upcoming" onclick="switchAuctionTab('upcoming')" style="padding:.5rem 1rem;font-size:.75rem;font-weight:600;cursor:pointer;border-radius:6px 6px 0 0;transition:all .15s;color:${tab==='upcoming'?'var(--accent-light)':'var(--text-dim)'};border-bottom:2px solid ${tab==='upcoming'?'var(--accent)':'transparent'}">Upcoming <span style="background:var(--yellow);color:#000;font-size:.55rem;padding:.1rem .35rem;border-radius:3px;margin-left:.35rem">${mockAuctions.upcoming.length}</span></div>
                     <div class="auction-tab ${tab==='completed'?'active':''}" data-tab="completed" onclick="switchAuctionTab('completed')" style="padding:.5rem 1rem;font-size:.75rem;font-weight:600;cursor:pointer;border-radius:6px 6px 0 0;transition:all .15s;color:${tab==='completed'?'var(--accent-light)':'var(--text-dim)'};border-bottom:2px solid ${tab==='completed'?'var(--accent)':'transparent'}">Completed <span style="background:var(--text-dim);color:#000;font-size:.55rem;padding:.1rem .35rem;border-radius:3px;margin-left:.35rem">${mockAuctions.completed.length}</span></div>
                     <div class="auction-tab ${tab==='positions'?'active':''}" data-tab="positions" onclick="switchAuctionTab('positions')" style="padding:.5rem 1rem;font-size:.75rem;font-weight:600;cursor:pointer;border-radius:6px 6px 0 0;transition:all .15s;color:${tab==='positions'?'var(--accent-light)':'var(--text-dim)'};border-bottom:2px solid ${tab==='positions'?'var(--accent)':'transparent'}">My Positions</div>
+                    <div class="auction-tab ${tab==='refunds'?'active':''}" data-tab="refunds" onclick="switchAuctionTab('refunds')" style="padding:.5rem 1rem;font-size:.75rem;font-weight:600;cursor:pointer;border-radius:6px 6px 0 0;transition:all .15s;color:${tab==='refunds'?'var(--accent-light)':'var(--text-dim)'};border-bottom:2px solid ${tab==='refunds'?'var(--accent)':'transparent'}">Refunds</div>
                 </div>
             `;
 
@@ -2066,7 +2074,7 @@
                                 </div>
                             </div>
                             ${isActive ? `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.25rem">
-                                    <div style="font-size:.6rem;color:var(--text-dim)">${p.blocksBought}/${totalBlocks} your blocks</div>
+                                    <div style="font-size:.6rem;color:var(--text-dim)">${p.blocksBought}/${totalBlocks} blocks</div>
                                     <div style="font-size:.6rem;color:var(--text-dim)">${pct}% of pool</div>
                                 </div>
                                 <div style="height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden">
@@ -2076,6 +2084,48 @@
                                     <span>Current: $${currentPrice.toFixed(4)}/token</span>
                                     <span>Sold: ${mockAuctions.active[p.auctionIdx].soldBlocks}/${totalBlocks} blocks</span>
                                 </div>` : `<div style="margin-top:.4rem;font-size:.55rem;color:var(--text-dim)">Sale completed · Tokens claimed</div>`}
+                        </div>`;
+                    }).join('');
+                }
+            } else if(tab === 'refunds'){
+                if(mockRefunds.length === 0){
+                    cardsHTML = '<div style="text-align:center;padding:3rem;color:var(--text-dim);font-size:.8rem">No refunds yet. Refunds are processed automatically when your max price is exceeded or sale conditions change.</div>';
+                } else {
+                    cardsHTML = mockRefunds.map(r => {
+                        const logoHTML = '<div style="width:32px;height:32px;border-radius:8px;background:'+r.color+'22;color:'+r.color+';display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0">'+r.logo+'</div>';
+                        const isPending = r.status === 'pending';
+                        const statusBadge = isPending ? '<div style="background:rgba(234,179,8,.15);color:var(--yellow);font-size:.5rem;font-weight:600;padding:.1rem .35rem;border-radius:3px;display:inline-block">PENDING</div>' : '<div style="background:rgba(34,197,94,.15);color:var(--green);font-size:.5rem;font-weight:600;padding:.1rem .35rem;border-radius:3px;display:inline-block">REFUNDED</div>';
+                        return `
+                        <div style="max-width:50%;padding:.75rem 1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:.5rem;transition:all .15s" onmouseenter="this.style.borderColor='rgba(255,255,255,.1)'" onmouseleave="this.style.borderColor='var(--border)'">
+                            <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem">
+                                ${logoHTML}
+                                <div style="flex:1;min-width:0">
+                                    <div style="font-size:.8rem;font-weight:700">${r.name} <span style="color:var(--text-dim);font-weight:400;font-size:.65rem">${r.symbol}</span></div>
+                                    <div style="font-size:.6rem;color:var(--text-dim)">${r.reason} · ${r.timestamp}</div>
+                                </div>
+                                <div style="text-align:right">
+                                    ${statusBadge}
+                                    <div style="font-size:.65rem;font-weight:700;margin-top:.2rem;color:var(--green)">+$${r.refundAmount.toLocaleString()}</div>
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:.5rem;margin-top:.25rem">
+                                <div style="flex:1;padding:.35rem;background:var(--bg);border-radius:6px;text-align:center">
+                                    <div style="font-size:.5rem;color:var(--text-dim)">Input</div>
+                                    <div style="font-size:.7rem;font-weight:700">$${r.inputAmount.toLocaleString()}</div>
+                                </div>
+                                <div style="flex:1;padding:.35rem;background:var(--bg);border-radius:6px;text-align:center">
+                                    <div style="font-size:.5rem;color:var(--text-dim)">Invested</div>
+                                    <div style="font-size:.7rem;font-weight:700">$${r.investedAmount.toLocaleString()}</div>
+                                </div>
+                                <div style="flex:1;padding:.35rem;background:var(--bg);border-radius:6px;text-align:center">
+                                    <div style="font-size:.5rem;color:var(--text-dim)">Fee (0.1%)</div>
+                                    <div style="font-size:.7rem;font-weight:700">$${r.fee.toFixed(2)}</div>
+                                </div>
+                                <div style="flex:1;padding:.35rem;background:var(--bg);border-radius:6px;text-align:center">
+                                    <div style="font-size:.5rem;color:var(--text-dim)">Refund</div>
+                                    <div style="font-size:.7rem;font-weight:700;color:var(--green)">$${r.refundAmount.toLocaleString()}</div>
+                                </div>
+                            </div>
                         </div>`;
                     }).join('');
                 }
