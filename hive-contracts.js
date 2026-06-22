@@ -1,6 +1,6 @@
 /**
  * Hive Contract Integration Layer
- * 29 contracts on Ritual Chain (1979)
+ * 33 contracts on Ritual Chain (1979)
  * Minimal ABIs — only functions the dashboard needs
  */
 
@@ -290,6 +290,78 @@ const HIVE = {
       'function updatePrice(address,uint256,string)',
       'function fetchPrice(address) returns (uint256)',
       'event PriceUpdated(address indexed token, uint256 price, uint256 timestamp, string source)',
+    ],
+
+    // HiveReferral
+    HiveReferral: [
+      'function createReferralCode(bytes32) returns (bytes32)',
+      'function registerReferral(bytes32,bytes32)',
+      'function claimRewards(bytes32) returns (uint256)',
+      'function getReferralCode(bytes32) view returns (bytes32)',
+      'function getReferrer(bytes32) view returns (bytes32)',
+      'function getReferrals(bytes32) view returns (tuple(bytes32 referrerHash, bytes32 refereeHash, uint256 timestamp, uint256 rewardAmount, bool rewardClaimed)[])',
+      'function getStats(bytes32) view returns (uint256 totalReferrals, uint256 activeReferrals, uint256 totalRewardsEarned, uint256 totalRewardsClaimed, uint256 tier)',
+      'function getClaimable(bytes32) view returns (uint256)',
+      'function getTierName(uint256) view returns (string)',
+      'function baseReward() view returns (uint256)',
+      'function feeShareBps() view returns (uint256)',
+      'function fundPool() payable',
+      'event ReferralCodeCreated(bytes32 indexed usernameHash, bytes32 code)',
+      'event ReferralRegistered(bytes32 indexed referrer, bytes32 indexed referee, uint256 reward)',
+      'event RewardClaimed(bytes32 indexed usernameHash, uint256 amount)',
+    ],
+
+    // HiveNotification
+    HiveNotification: [
+      'function subscribe(uint256,string)',
+      'function updateSubscription(uint256)',
+      'function unsubscribe()',
+      'function setPriceAlert(string,uint256,bool)',
+      'function cancelPriceAlert(uint256)',
+      'function markRead(uint256)',
+      'function markAllRead()',
+      'function getUnreadCount(address) view returns (uint256)',
+      'function getNotificationCount(address) view returns (uint256)',
+      'function getSubscription(address) view returns (uint256 eventMask, uint256 lastNotified, string webhookUrl, bool active)',
+      'function getPriceAlertCount(address) view returns (uint256)',
+      'event Subscribed(address indexed user, uint256 eventMask)',
+      'event PriceAlertSet(address indexed user, uint256 alertId, string token, uint256 threshold, bool above)',
+      'event PriceAlertTriggered(address indexed user, uint256 alertId, string token, uint256 currentPrice)',
+      'event NotificationRead(address indexed user, uint256 index)',
+    ],
+
+    // HiveLock (Vesting)
+    HiveLock: [
+      'function createLinear(address,address,uint256,uint256,uint256,string)',
+      'function createCliffLinear(address,address,uint256,uint256,uint256,uint256,uint256,string)',
+      'function claim(uint256)',
+      'function claimAll()',
+      'function getVestedAmount(uint256) view returns (uint256)',
+      'function getClaimableAmount(uint256) view returns (uint256)',
+      'function getSchedules(address) view returns (uint256[])',
+      'function getScheduleCount() view returns (uint256)',
+      'function getTotalClaimable(address) view returns (uint256)',
+      'function schedules(uint256) view returns (address beneficiary, address token, uint256 totalAmount, uint256 claimedAmount, uint256 startTime, uint256 cliffDuration, uint256 vestingDuration, uint256 unlockPercentage, uint8 vestingType, bool cancelled, string label)',
+      'function paused() view returns (bool)',
+      'event ScheduleCreated(uint256 indexed scheduleId, address indexed beneficiary, address token, uint256 totalAmount, uint8 vestingType)',
+      'event TokensClaimed(uint256 indexed scheduleId, address indexed beneficiary, uint256 amount)',
+      'event ScheduleCancelled(uint256 indexed scheduleId)',
+    ],
+
+    // HiveAgentFactory
+    HiveAgentFactory: [
+      'function summonAgent(string,string,string,uint32) payable returns (address,address)',
+      'function summonAgentCustom(string,string,string,uint32,uint256,uint256,uint256,uint256) payable returns (address,address)',
+      'function deactivateAgent(address)',
+      'function getUserAgents(address) view returns (tuple(address agent, address governor, string name, bytes32 sector, uint256 deployedAt, bool active)[])',
+      'function getUserAgentCount(address) view returns (uint256)',
+      'function getAllAgents(uint256,uint256) view returns (address[])',
+      'function getAgentInfo(address) view returns (address owner, address governor, string name, bytes32 sector, uint256 deployedAt, bool active)',
+      'function deploymentFee() view returns (uint256)',
+      'function freeTierEnabled() view returns (bool)',
+      'function hasUsedFreeTier(address) view returns (bool)',
+      'event AgentSummoned(address indexed user, address indexed agent, address indexed governor, string name, bytes32 sector)',
+      'event AgentDeactivated(address indexed user, address indexed agent)',
     ],
   },
 };
