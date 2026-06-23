@@ -2240,7 +2240,7 @@
             ['my','templates','backtest'].forEach(t => {
                 const labels = {my:'My Strategies',templates:'Templates',backtest:'Backtest'};
                 const active = _stratTab === t;
-                html += '<div onclick="switchStratTab(\''+t+'\')" style="padding:.5rem 1rem;font-size:.75rem;font-weight:600;cursor:pointer;border-radius:6px 6px 0 0;transition:all .15s;color:'+(active?'var(--accent-light)':'var(--text-dim))+';border-bottom:2px solid '+(active?'var(--accent)':'transparent')+'">'+labels[t]+'</div>';
+                html += '<div onclick="switchStratTab(\''+t+'\')" style="padding:.5rem 1rem;font-size:.75rem;font-weight:600;cursor:pointer;border-radius:6px 6px 0 0;transition:all .15s;color:'+(active?'var(--accent-light)':'var(--text-dim)')+';border-bottom:2px solid '+(active?'var(--accent)':'transparent')+'">'+labels[t]+'</div>';
             });
             html += '</div>';
 

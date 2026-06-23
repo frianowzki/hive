@@ -452,7 +452,7 @@ class HiveProvider {
 
   getContract(name, addr) {
     if(addr){
-      const abi = CONTRACTS.abi[name];
+      const abi = HIVE.abi[name];
       if(!abi) return null;
       return new ethers.Contract(addr, abi, this.provider);
     }
@@ -461,7 +461,7 @@ class HiveProvider {
 
   getWriteContract(name, addr) {
     if(addr){
-      const abi = CONTRACTS.abi[name];
+      const abi = HIVE.abi[name];
       if(!abi) return null;
       return new ethers.Contract(addr, abi, this.signer);
     }
