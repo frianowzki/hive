@@ -1354,33 +1354,191 @@
         // ═══ AGENTS PAGE ═══
         async function loadAgentsPage(){
             const container = document.getElementById('agents-content');
-            try {
-                const agents = await hive.getAgents();
-                if(agents.length === 0){
-                    container.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:4rem">No agents registered</div>';
-                    return;
-                }
+            if(!connectedAddress){
                 container.innerHTML = `
-                    <div class="section-card">
-                        <div class="section-title">Active Agents <span class="badge">${agents.length}</span></div>
-                        <table class="data-table">
-                            <thead><tr><th>Name</th><th>Address</th><th>Status</th><th>Last Heartbeat</th></tr></thead>
-                            <tbody>
-                                ${agents.map(a => `
-                                    <tr>
-                                        <td>${a.name}</td>
-                                        <td class="mono"><a href="${hive.explorerAddr(a.address)}" target="_blank" style="color:var(--accent-light)">${hive.shortAddr(a.address)}</a></td>
-                                        <td><span class="status-badge ${a.alive ? 'active' : 'pending'}">${a.alive ? 'Online' : 'Offline'}</span></td>
-                                        <td style="color:var(--text-muted)">${hive.timeAgo(Number(a.lastHeartbeat))}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
+                    <div style="text-align:center;padding:4rem 2rem">
+                        <div style="font-size:.95rem;font-weight:600;margin-bottom:.5rem">Connect Your Wallet</div>
+                        <div style="color:var(--text-muted);font-size:.8rem;margin-bottom:1.5rem">Connect to view and manage your AI agents</div>
+                        <button onclick="connectFromDashboard()" style="padding:.75rem 2rem;border-radius:10px;background:var(--accent);border:none;color:#fff;font-weight:600;cursor:pointer;font-size:.8rem">Connect Wallet</button>
                     </div>
                 `;
+                return;
+            }
+
+            try {
+                // Fetch user agents from factory + registry agents
+                const factory = hive.getContract('HiveAgentFactory');
+                const registry = hive.getContract('HiveRegistry');
+                
+                let userAgents = [];
+                let registryAgents = [];
+                let deploymentFee = 0n;
+                
+                try {
+                    userAgents = await factory.getUserAgents(connectedAddress);
+                } catch(e) { console.warn('[Hive] Factory fetch:', e); }
+                
+                try {
+                    registryAgents = await registry.getActiveAgents();
+                } catch(e) { console.warn('[Hive] Registry fetch:', e); }
+                
+                try {
+                    deploymentFee = await factory.deploymentFee();
+                } catch(e) {}
+
+                const feeFormatted = hive.formatEther(deploymentFee);
+                const sectorNames = {
+                    '0x6465666900000000000000000000000000000000000000000000000000000000': 'DeFi',
+                    '0x74726164696e6700000000000000000000000000000000000000000000000000': 'Trading',
+                    '0x7265736561726368000000000000000000000000000000000000000000000000': 'Research',
+                    '0x676f7665726e616e636500000000000000000000000000000000000000000000': 'Governance',
+                    '0x7365637572697479000000000000000000000000000000000000000000000000': 'Security',
+                    '0x637573746f6d0000000000000000000000000000000000000000000000000000': 'Custom',
+                };
+                const sectorColors = {
+                    'DeFi': '#8b5cf6', 'Trading': '#22c55e', 'Research': '#3b82f6',
+                    'Governance': '#f59e0b', 'Security': '#ef4444', 'Custom': '#6b7280',
+                };
+
+                let html = '';
+
+                // Header
+                html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem">';
+                html += '<div><h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:800">AI Agents</h1>';
+                html += '<p style="font-size:.8rem;color:var(--text-dim);margin-top:.25rem">Summon and manage your sovereign AI agents</p></div>';
+                html += '<button onclick="showSummonModal()" style="padding:.65rem 1.5rem;border-radius:10px;background:var(--accent);border:none;color:#fff;font-weight:600;cursor:pointer;font-size:.8rem;display:flex;align-items:center;gap:.5rem">';
+                html += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+                html += 'Summon Agent</button>';
+                html += '</div>';
+
+                // Stats
+                html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:2rem">';
+                html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px">';
+                html += '<div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.25rem">Your Agents</div>';
+                html += '<div style="font-size:1.2rem;font-weight:700">' + userAgents.length + '</div></div>';
+                html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px">';
+                html += '<div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.25rem">Network Agents</div>';
+                html += '<div style="font-size:1.2rem;font-weight:700">' + registryAgents.length + '</div></div>';
+                html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px">';
+                html += '<div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.25rem">Summon Fee</div>';
+                html += '<div style="font-size:1.2rem;font-weight:700">' + feeFormatted + ' RITUAL</div></div>';
+                html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px">';
+                html += '<div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.25rem">Status</div>';
+                html += '<div style="font-size:1.2rem;font-weight:700;color:var(--green)">Active</div></div>';
+                html += '</div>';
+
+                // Your Agents
+                html += '<div style="margin-bottom:2rem">';
+                html += '<div style="font-size:.85rem;font-weight:600;margin-bottom:1rem">Your Agents</div>';
+                
+                if(userAgents.length === 0){
+                    html += '<div style="padding:3rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;text-align:center">';
+                    html += '<div style="font-size:.85rem;color:var(--text-muted);margin-bottom:1rem">No agents summoned yet</div>';
+                    html += '<button onclick="showSummonModal()" style="padding:.6rem 1.5rem;border-radius:8px;background:var(--accent);border:none;color:#fff;font-weight:600;cursor:pointer;font-size:.8rem">Summon Your First Agent</button>';
+                    html += '</div>';
+                } else {
+                    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:.75rem">';
+                    userAgents.forEach((a, i) => {
+                        const sector = sectorNames[a.sector] || 'Custom';
+                        const color = sectorColors[sector] || '#6b7280';
+                        const isActive = a.active;
+                        const deployedAgo = hive.timeAgo(Number(a.deployedAt));
+                        
+                        html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;transition:all .2s">';
+                        html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">';
+                        html += '<div style="display:flex;align-items:center;gap:.75rem">';
+                        html += '<div style="width:40px;height:40px;border-radius:10px;background:' + color + '20;display:flex;align-items:center;justify-content:center">';
+                        html += '<svg viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="2" width="20" height="20"><path d="M12 2a7 7 0 0 1 7 7c0 2.4-1.2 4.5-3 5.7V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.3C6.2 13.5 5 11.4 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg>';
+                        html += '</div>';
+                        html += '<div><div style="font-weight:600;font-size:.9rem">' + a.name + '</div>';
+                        html += '<div style="font-size:.65rem;color:' + color + '">' + sector + '</div></div></div>';
+                        html += '<span style="font-size:.6rem;padding:.2rem .5rem;border-radius:4px;background:' + (isActive ? 'rgba(34,197,94,.1);color:var(--green)' : 'rgba(136,136,136,.1);color:var(--text-dim)') + '">' + (isActive ? 'Active' : 'Paused') + '</span>';
+                        html += '</div>';
+                        
+                        // Agent info
+                        html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1rem">';
+                        html += '<div><div style="font-size:.55rem;color:var(--text-muted);text-transform:uppercase">Agent</div>';
+                        html += '<div style="font-size:.75rem;font-family:var(--font-mono);color:var(--accent-light)">' + hive.shortAddr(a.agent) + '</div></div>';
+                        html += '<div><div style="font-size:.55rem;color:var(--text-muted);text-transform:uppercase">Governor</div>';
+                        html += '<div style="font-size:.75rem;font-family:var(--font-mono);color:var(--accent-light)">' + hive.shortAddr(a.governor) + '</div></div>';
+                        html += '<div><div style="font-size:.55rem;color:var(--text-muted);text-transform:uppercase">Deployed</div>';
+                        html += '<div style="font-size:.75rem;color:var(--text-dim)">' + deployedAgo + '</div></div>';
+                        html += '<div><div style="font-size:.55rem;color:var(--text-muted);text-transform:uppercase">Owner</div>';
+                        html += '<div style="font-size:.75rem;font-family:var(--font-mono);color:var(--text-dim)">' + hive.shortAddr(connectedAddress) + '</div></div>';
+                        html += '</div>';
+                        
+                        // Actions
+                        html += '<div style="display:flex;gap:.5rem">';
+                        if(isActive){
+                            html += '<button onclick="pauseAgent(\'' + a.agent + '\')" style="flex:1;padding:.5rem;border-radius:6px;border:1px solid var(--yellow);background:rgba(245,158,11,.1);color:var(--yellow);font-weight:600;cursor:pointer;font-size:.7rem">Pause</button>';
+                            html += '<button onclick="deactivateAgent(\'' + a.agent + '\')" style="flex:1;padding:.5rem;border-radius:6px;border:1px solid var(--red);background:rgba(239,68,68,.1);color:var(--red);font-weight:600;cursor:pointer;font-size:.7rem">Deactivate</button>';
+                        } else {
+                            html += '<button onclick="startAgent(\'' + a.agent + '\')" style="flex:1;padding:.5rem;border-radius:6px;border:1px solid var(--green);background:rgba(34,197,94,.1);color:var(--green);font-weight:600;cursor:pointer;font-size:.7rem">Start</button>';
+                        }
+                        html += '<button onclick="viewAgentConfig(\'' + a.agent + '\')" style="flex:1;padding:.5rem;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-weight:600;cursor:pointer;font-size:.7rem">Config</button>';
+                        html += '</div>';
+                        
+                        html += '</div>';
+                    });
+                    html += '</div>';
+                }
+                html += '</div>';
+
+                // Network Agents (from registry)
+                if(registryAgents.length > 0){
+                    html += '<div>';
+                    html += '<div style="font-size:.85rem;font-weight:600;margin-bottom:1rem">Network Agents <span style="font-size:.65rem;color:var(--text-dim);font-weight:400">(' + registryAgents.length + ' registered)</span></div>';
+                    html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden">';
+                    html += '<table style="width:100%;border-collapse:collapse">';
+                    html += '<thead><tr style="border-bottom:1px solid var(--border)">';
+                    html += '<th style="padding:.75rem 1rem;text-align:left;font-size:.65rem;color:var(--text-dim);text-transform:uppercase;font-weight:500">Name</th>';
+                    html += '<th style="padding:.75rem 1rem;text-align:left;font-size:.65rem;color:var(--text-dim);text-transform:uppercase;font-weight:500">Address</th>';
+                    html += '<th style="padding:.75rem 1rem;text-align:left;font-size:.65rem;color:var(--text-dim);text-transform:uppercase;font-weight:500">Status</th>';
+                    html += '<th style="padding:.75rem 1rem;text-align:left;font-size:.65rem;color:var(--text-dim);text-transform:uppercase;font-weight:500">Last Heartbeat</th>';
+                    html += '</tr></thead><tbody>';
+                    
+                    registryAgents.slice(0, 10).forEach(a => {
+                        html += '<tr style="border-bottom:1px solid var(--border)">';
+                        html += '<td style="padding:.75rem 1rem;font-size:.8rem;font-weight:500">' + a.name + '</td>';
+                        html += '<td style="padding:.75rem 1rem"><a href="' + hive.explorerAddr(a.address) + '" target="_blank" style="color:var(--accent-light);font-family:var(--font-mono);font-size:.75rem">' + hive.shortAddr(a.address) + '</a></td>';
+                        html += '<td style="padding:.75rem 1rem"><span style="font-size:.6rem;padding:.2rem .5rem;border-radius:4px;background:' + (a.alive ? 'rgba(34,197,94,.1);color:var(--green)' : 'rgba(136,136,136,.1);color:var(--text-dim)') + '">' + (a.alive ? 'Online' : 'Offline') + '</span></td>';
+                        html += '<td style="padding:.75rem 1rem;font-size:.75rem;color:var(--text-dim)">' + hive.timeAgo(Number(a.lastHeartbeat)) + '</td>';
+                        html += '</tr>';
+                    });
+                    
+                    html += '</tbody></table></div>';
+                    html += '</div>';
+                }
+
+                container.innerHTML = html;
             } catch(e){
+                console.error('[Hive] Agents page error:', e);
                 container.innerHTML = '<div style="color:var(--red);text-align:center;padding:2rem">Error loading agents</div>';
             }
+        }
+
+        // ═══ AGENT ACTIONS ═══
+        function showSummonModal(){
+            // TODO: Build summon modal
+            alert('Summon Agent modal — coming soon');
+        }
+        
+        function pauseAgent(agentAddr){
+            alert('Pause agent ' + agentAddr + ' — tx would be sent');
+        }
+        
+        function deactivateAgent(agentAddr){
+            if(!confirm('Deactivate this agent? This cannot be undone.')) return;
+            const factory = hive.getWriteContract('HiveAgentFactory');
+            factory.deactivateAgent(agentAddr).then(() => loadAgentsPage()).catch(e => alert('Error: ' + e.message));
+        }
+        
+        function startAgent(agentAddr){
+            alert('Start agent ' + agentAddr + ' — tx would be sent');
+        }
+        
+        function viewAgentConfig(agentAddr){
+            alert('Agent config for ' + agentAddr + ' — coming soon');
         }
 
         // ═══ POINTS PAGE ═══
