@@ -946,8 +946,8 @@
             auction: { title:'', breadcrumb:'' },
             maker: { title:'AI Market Maker', breadcrumb:'Hive / DeFi / Market Maker' },
             agents: { title:'', breadcrumb:'' },
-            strategy: { title:'Strategies', breadcrumb:'Hive / AI / Strategies' },
-            flock: { title:'Federated Learning', breadcrumb:'Hive / AI / FLock' },
+            strategy: { title:'', breadcrumb:'' },
+            flock: { title:'', breadcrumb:'' },
             governance: { title:'Proposals', breadcrumb:'Hive / Governance / Proposals' },
             multisig: { title:'Multi-Sig', breadcrumb:'Hive / Governance / Multi-Sig' },
             identity: { title:'KYC / KYB', breadcrumb:'Hive / Identity / KYC' },
@@ -6519,16 +6519,13 @@
         async function loadFlockPage(){
             const c = document.getElementById('flock-content');
 
-            // Fetch network agents
             let networkAgents = [];
             let myAgents = [];
             try {
                 const factory = hive.getContract('HiveAgentFactory');
-                const total = await factory.getUserAgentCount(connectedAddress || '0x0000000000000000000000000000000000000000');
-                const agentCount = Math.min(Number(total), 50);
-                if(agentCount > 0) myAgents = await factory.getUserAgents(connectedAddress);
-                
-                // Get some network agents
+                if(connectedAddress){
+                    try { myAgents = await factory.getUserAgents(connectedAddress); } catch(e) {}
+                }
                 const allAddrs = await factory.getAllAgents(0, 20);
                 for(const addr of allAddrs.slice(0, 12)){
                     try {
@@ -6538,103 +6535,84 @@
                         const totalTrades = await agent.attach(addr).totalTrades();
                         const successfulTrades = await agent.attach(addr).successfulTrades();
                         const winRate = Number(totalTrades) > 0 ? Math.round(Number(successfulTrades)/Number(totalTrades)*100) : 0;
-                        networkAgents.push({
-                            addr: addr,
-                            name: config.name,
-                            sector: ethers.decodeBytes32String(config.sector),
-                            owner: info.owner,
-                            active: info.active,
-                            totalTrades: Number(totalTrades),
-                            winRate: winRate,
-                        });
+                        networkAgents.push({ addr, name: config.name, sector: ethers.decodeBytes32String(config.sector), owner: info.owner, active: info.active, totalTrades: Number(totalTrades), winRate });
                     } catch(e) {}
                 }
-            } catch(e) { console.warn('[Hive] Flock agent fetch:', e); }
+            } catch(e) { console.warn('[Hive] Flock fetch:', e); }
 
             const activeNetwork = networkAgents.filter(a => a.active).length;
             const sectorMap = {};
-            networkAgents.forEach(a => {
-                if(!sectorMap[a.sector]) sectorMap[a.sector] = 0;
-                sectorMap[a.sector]++;
-            });
+            networkAgents.forEach(a => { if(!sectorMap[a.sector]) sectorMap[a.sector] = 0; sectorMap[a.sector]++; });
+            const avgWR = networkAgents.length > 0 ? Math.round(networkAgents.reduce((a,b) => a+b.winRate, 0) / networkAgents.length) : 0;
+            const sectorColors = {DeFi:'#8b5cf6',Trading:'#22c55e',Research:'#3b82f6',Governance:'#f59e0b',Security:'#ef4444',Custom:'#6b7280'};
+            const sectorIcons = {DeFi:'💰',Trading:'📈',Research:'🔬',Governance:'🛡️',Security:'🔒',Custom:'⚡'};
 
             let html = '';
 
-            // Header
-            html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem">';
-            html += '<div><h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:800">Federated Learning</h1>';
-            html += '<p style="font-size:.8rem;color:var(--text-dim);margin-top:.25rem">Network-wide agent intelligence sharing on Ritual Chain</p></div>';
-            html += '<div style="display:flex;gap:.5rem">';
-            html += '<div style="padding:.35rem .7rem;background:rgba(34,197,94,.1);border-radius:6px;font-size:.6rem;color:var(--green);font-weight:600">● ' + activeNetwork + ' Active</div>';
-            html += '<div style="padding:.35rem .7rem;background:rgba(139,92,246,.1);border-radius:6px;font-size:.6rem;color:var(--accent-light);font-weight:600">' + networkAgents.length + ' Agents</div>';
+            // Header (matches Agents pattern)
+            html += '<div style="max-width:720px;margin-bottom:1.5rem">';
+            html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.35rem">';
+            html += '<h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:800;margin:0">Federated Learning</h1>';
+            html += '<div style="display:flex;gap:.4rem">';
+            html += '<div style="padding:.4rem .65rem;background:rgba(34,197,94,.1);border-radius:5px;font-size:.65rem;color:var(--green);font-weight:600">● '+activeNetwork+' Active</div>';
+            html += '<div style="padding:.4rem .65rem;background:rgba(139,92,246,.1);border-radius:5px;font-size:.65rem;color:var(--accent-light);font-weight:600">'+networkAgents.length+' Agents</div>';
             html += '</div></div>';
-
-            // Stats
-            html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem">';
-            html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
-            html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem">Network Agents</div>';
-            html += '<div style="font-size:1.3rem;font-weight:700">' + networkAgents.length + '</div></div>';
-            html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
-            html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem">Active Sectors</div>';
-            html += '<div style="font-size:1.3rem;font-weight:700">' + Object.keys(sectorMap).length + '</div></div>';
-            html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
-            html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem">Your Agents</div>';
-            html += '<div style="font-size:1.3rem;font-weight:700">' + myAgents.length + '</div></div>';
-            html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
-            html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem">Avg Win Rate</div>';
-            const avgWR = networkAgents.length > 0 ? Math.round(networkAgents.reduce((a,b) => a+b.winRate, 0) / networkAgents.length) : 0;
-            html += '<div style="font-size:1.3rem;font-weight:700">' + avgWR + '%</div></div>';
+            html += '<div style="font-size:.8rem;color:var(--text-dim)">Network-wide agent intelligence sharing on Ritual Chain</div>';
             html += '</div>';
 
-            // Network Knowledge Graph
-            html += '<div style="padding:1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;margin-bottom:2rem">';
+            // Stats (2x2 like Agents)
+            html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;margin-bottom:2rem;max-width:720px">';
+            html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px"><div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.25rem">Network Agents</div><div style="font-size:1.2rem;font-weight:700">'+networkAgents.length+'</div></div>';
+            html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px"><div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.25rem">Active Sectors</div><div style="font-size:1.2rem;font-weight:700">'+Object.keys(sectorMap).length+'</div></div>';
+            html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px"><div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.25rem">Your Agents</div><div style="font-size:1.2rem;font-weight:700;color:var(--accent-light)">'+myAgents.length+'</div></div>';
+            html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px"><div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.25rem">Avg Win Rate</div><div style="font-size:1.2rem;font-weight:700;color:'+(avgWR>=50?'var(--green)':'var(--text-dim)')+'">'+avgWR+'%</div></div>';
+            html += '</div>';
+
+            // Knowledge Graph
+            html += '<div style="margin-bottom:2rem">';
             html += '<div style="font-size:.85rem;font-weight:600;margin-bottom:1rem">Network Knowledge Graph</div>';
-            html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem">';
+            html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;max-width:720px">';
             const sectors = Object.entries(sectorMap);
             if(sectors.length === 0){
-                html += '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--text-muted);font-size:.8rem">No network agents yet</div>';
+                html += '<div style="grid-column:1/-1;padding:3rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;text-align:center"><div style="font-size:.85rem;color:var(--text-muted);margin-bottom:.5rem">No network agents yet</div><div style="font-size:.75rem;color:var(--text-dim)">Agents will appear here as the community summons them</div></div>';
             } else {
                 sectors.forEach(([sector, count]) => {
-                    const colors = {DeFi:'var(--accent)',Trading:'var(--green)',Research:'var(--yellow)',Governance:'#3b82f6',Security:'#ef4444',Custom:'#8b5cf6'};
-                    const color = colors[sector] || '#6b7280';
-                    html += '<div style="padding:1rem;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px">';
-                    html += '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem">';
-                    html += '<div style="width:8px;height:8px;border-radius:2px;background:' + color + '"></div>';
-                    html += '<span style="font-size:.8rem;font-weight:600">' + sector + '</span></div>';
-                    html += '<div style="font-size:.65rem;color:var(--text-dim)">' + count + ' agents contributing</div>';
-                    html += '</div>';
+                    const color = sectorColors[sector] || '#6b7280';
+                    const icon = sectorIcons[sector] || '⚡';
+                    html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px">';
+                    html += '<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem">';
+                    html += '<div style="width:36px;height:36px;border-radius:8px;background:'+color+'20;display:flex;align-items:center;justify-content:center;font-size:.9rem">'+icon+'</div>';
+                    html += '<div><div style="font-weight:600;font-size:.85rem">'+sector+'</div><div style="font-size:.6rem;color:var(--text-dim)">'+count+' agent'+(count>1?'s':'')+'</div></div></div>';
+                    html += '<div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:.6rem;color:'+color+'">Contributing to network</div><div style="width:8px;height:8px;border-radius:2px;background:'+color+'"></div></div></div>';
                 });
             }
             html += '</div></div>';
 
-            // Agent Grid
-            html += '<div style="font-size:.85rem;font-weight:600;margin-bottom:1rem">Network Agents</div>';
-            html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem">';
+            // Network Agents Gallery (matches Agents pattern)
+            html += '<div>';
+            html += '<div style="font-size:.85rem;font-weight:600;margin-bottom:1rem">Network Agents <span style="font-size:.65rem;color:var(--text-dim);font-weight:400">('+networkAgents.length+' registered)</span></div>';
+            html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.75rem;max-width:720px">';
             if(networkAgents.length === 0){
-                html += '<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--text-muted);font-size:.8rem">No agents in the network yet. Summon an agent to get started.</div>';
+                html += '<div style="grid-column:1/-1;padding:3rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;text-align:center">';
+                html += '<div style="font-size:.85rem;color:var(--text-muted);margin-bottom:1rem">No agents in the network yet</div>';
+                html += '<button onclick="showSummonModal()" style="padding:.6rem 1.5rem;border-radius:8px;background:var(--accent);border:none;color:#fff;font-weight:600;cursor:pointer;font-size:.8rem">Summon Your First Agent</button>';
+                html += '</div>';
             } else {
                 networkAgents.slice(0, 9).forEach(a => {
-                    const shortAddr = a.addr.slice(0,6) + '...' + a.addr.slice(-4);
-                    const sectors = {DeFi:'💰',Trading:'📈',Research:'🔬',Governance:'🛡️',Security:'🔒',Custom:'⚡'};
-                    const icon = sectors[a.sector] || '⚡';
-                    html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px">';
-                    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">';
-                    html += '<div style="display:flex;align-items:center;gap:.5rem">';
-                    html += '<div style="width:28px;height:28px;border-radius:6px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;font-size:.85rem">' + icon + '</div>';
-                    html += '<div><div style="font-size:.75rem;font-weight:600">' + a.name + '</div>';
-                    html += '<div style="font-size:.55rem;color:var(--text-dim)">' + shortAddr + '</div></div></div>';
-                    html += '<span style="font-size:.55rem;padding:.15rem .4rem;border-radius:3px;background:' + (a.active ? 'rgba(34,197,94,.15)' : 'rgba(255,255,255,.05)') + ';color:' + (a.active ? 'var(--green)' : 'var(--text-muted)') + '">' + (a.active ? 'Active' : 'Paused') + '</span></div>';
-                    html += '<div style="display:flex;gap:.5rem">';
-                    html += '<div style="flex:1;padding:.3rem;background:var(--bg);border-radius:6px;text-align:center">';
-                    html += '<div style="font-size:.5rem;color:var(--text-dim)">Trades</div>';
-                    html += '<div style="font-size:.65rem;font-weight:700">' + a.totalTrades + '</div></div>';
-                    html += '<div style="flex:1;padding:.3rem;background:var(--bg);border-radius:6px;text-align:center">';
-                    html += '<div style="font-size:.5rem;color:var(--text-dim)">Win Rate</div>';
-                    html += '<div style="font-size:.65rem;font-weight:700;color:' + (a.winRate >= 50 ? 'var(--green)' : 'var(--red)') + '">' + a.winRate + '%</div></div>';
+                    const color = sectorColors[a.sector] || '#6b7280';
+                    const icon = sectorIcons[a.sector] || '⚡';
+                    const shortAddr = a.addr.slice(0,6)+'...'+a.addr.slice(-4);
+                    html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;transition:all .2s">';
+                    html += '<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem">';
+                    html += '<div style="width:36px;height:36px;border-radius:50%;background:'+color+'20;display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="font-size:.9rem">'+icon+'</span></div>';
+                    html += '<div style="min-width:0"><div style="font-weight:600;font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+a.name+'</div><div style="font-size:.6rem;color:'+color+'">'+a.sector+'</div></div></div>';
+                    html += '<div style="display:flex;align-items:center;justify-content:space-between">';
+                    html += '<a href="'+hive.explorerAddr(a.addr)+'" target="_blank" style="color:var(--accent-light);font-family:var(--font-mono);font-size:.65rem">'+shortAddr+'</a>';
+                    html += '<span style="font-size:.55rem;padding:.15rem .4rem;border-radius:4px;background:'+(a.active?'rgba(34,197,94,.1);color:var(--green)':'rgba(136,136,136,.1);color:var(--text-dim)')+'">'+(a.active?'Online':'Offline')+'</span>';
                     html += '</div></div>';
                 });
             }
-            html += '</div>';
+            html += '</div></div>';
 
             c.innerHTML = html;
         }
