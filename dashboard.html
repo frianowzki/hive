@@ -746,6 +746,56 @@
             </div>
         </div>
 
+        <!-- PAGE: Strategy -->
+        <div class="content page-content" id="page-strategy" style="display:none">
+            <div id="strategy-content">
+                <div style="color:var(--text-muted);text-align:center;padding:4rem">Loading strategies...</div>
+            </div>
+        </div>
+
+        <!-- Strategy Create Modal -->
+        <div id="strategyModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);overflow-y:auto">
+            <div style="max-width:520px;margin:2rem auto;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:2rem;position:relative">
+                <button onclick="closeStrategyModal()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1.2rem">×</button>
+                <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:.25rem" id="stratModalTitle">Create Strategy</h2>
+                <p style="font-size:.75rem;color:var(--text-dim);margin-bottom:1.5rem">Configure your automated DeFi strategy</p>
+
+                <div style="margin-bottom:1rem">
+                    <label style="font-size:.7rem;color:var(--text-dim);display:block;margin-bottom:.35rem">Strategy Name</label>
+                    <input id="stratName" type="text" placeholder="e.g. HIVE DCA Accumulator" style="width:100%;padding:.6rem .8rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.8rem;box-sizing:border-box" />
+                </div>
+
+                <div style="margin-bottom:1rem">
+                    <label style="font-size:.7rem;color:var(--text-dim);display:block;margin-bottom:.35rem">Type</label>
+                    <div id="stratTypeGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem"></div>
+                </div>
+
+                <div style="margin-bottom:1rem">
+                    <label style="font-size:.7rem;color:var(--text-dim);display:block;margin-bottom:.35rem">Assign Agent</label>
+                    <select id="stratAgent" style="width:100%;padding:.6rem .8rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.8rem">
+                        <option value="">Select an agent...</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom:1rem">
+                    <label style="font-size:.7rem;color:var(--text-dim);display:block;margin-bottom:.35rem">Risk Level</label>
+                    <div id="stratRiskGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem"></div>
+                </div>
+
+                <div id="stratParams"></div>
+
+                <div style="margin-bottom:1rem">
+                    <label style="font-size:.7rem;color:var(--text-dim);display:block;margin-bottom:.35rem">Budget (hiveUSD)</label>
+                    <input id="stratBudget" type="number" placeholder="1000" style="width:100%;padding:.6rem .8rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.8rem;box-sizing:border-box" />
+                </div>
+
+                <div style="display:flex;gap:.75rem;margin-top:1.5rem">
+                    <button onclick="closeStrategyModal()" style="flex:1;padding:.7rem;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-weight:600;cursor:pointer;font-size:.8rem">Cancel</button>
+                    <button onclick="saveStrategy()" style="flex:1;padding:.7rem;border-radius:8px;background:var(--accent);border:none;color:#fff;font-weight:600;cursor:pointer;font-size:.8rem">Save Strategy</button>
+                </div>
+            </div>
+        </div>
+
         <!-- PAGE: Points -->
         <div class="content page-content" id="page-points" style="display:none">
             <div class="content-header">
@@ -919,6 +969,9 @@
             } else if(page === 'agents'){
                 document.getElementById('page-agents').style.display = '';
                 loadAgentsPage();
+            } else if(page === 'strategy'){
+                document.getElementById('page-strategy').style.display = '';
+                loadStrategyPage();
             } else if(page === 'points'){
                 document.getElementById('page-points').style.display = '';
                 loadPointsPage();
@@ -2107,6 +2160,511 @@
             } catch(e) {
                 container.innerHTML = '<div style="font-size:.75rem;color:var(--text-dim);text-align:center">Unable to load activity</div>';
             }
+        }
+
+        // ═══ STRATEGIES PAGE ═══
+        const STRAT_STORE = 'hive_strategies';
+        const STRAT_TYPES = {
+            dca: { label:'DCA', color:'#8b5cf6', icon:'📈', desc:'Dollar-cost average into tokens on a schedule' },
+            yield: { label:'Yield Farm', color:'#22c55e', icon:'🌾', desc:'Auto-move funds to highest yielding protocols' },
+            arb: { label:'Arbitrage', color:'#3b82f6', icon:'⚡', desc:'Cross-DEX price difference exploitation' },
+            liquidation: { label:'Liquidation', color:'#ef4444', icon:'💥', desc:'Liquidate undercollateralized positions' },
+            grid: { label:'Grid Trading', color:'#f59e0b', icon:'📊', desc:'Range-bound buy/sell grid strategy' },
+            custom: { label:'Custom', color:'#6b7280', icon:'⚙️', desc:'Custom strategy logic' }
+        };
+        const RISK_LEVELS = { low:{ label:'Conservative', color:'var(--green)' }, med:{ label:'Moderate', color:'var(--yellow)' }, high:{ label:'Aggressive', color:'var(--red)' } };
+        const STRAT_TEMPLATES = [
+            { name:'DCA into HIVE', type:'dca', risk:'low', desc:'Buy HIVE every 6 hours with fixed amount', params:{ token:'HIVE', frequency:'6h', amountPerBuy:50, totalBudget:5000 }, estAPY:'12-18%' },
+            { name:'Yield Optimizer', type:'yield', risk:'low', desc:'Auto-rebalance to highest APY pools on Ritual Chain', params:{ minAPY:5, rebalanceThreshold:2, protocols:['HiveStaking'] }, estAPY:'8-15%' },
+            { name:'HIVE/hiveUSD LP Arb', type:'arb', risk:'med', desc:'Exploit price differences between DEXs for HIVE/hiveUSD pair', params:{ pair:'HIVE/hiveUSD', minProfitBps:30, maxGasPerTrade:500000 }, estAPY:'15-30%' },
+            { name:'Grid Trading Bot', type:'grid', risk:'med', desc:'Place buy/sell orders in a grid around current price', params:{ pair:'HIVE/hiveUSD', gridLevels:10, gridSpacing:1, orderSize:100 }, estAPY:'10-25%' },
+            { name:'Liquidation Sniper', type:'liquidation', risk:'high', desc:'Monitor and liquidate undercollateralized positions', params:{ minHealthFactor:1.1, maxCollateral:10000, protocols:['HiveLending'] }, estAPY:'20-50%' }
+        ];
+
+        function getStrategies(){ try { return JSON.parse(localStorage.getItem(STRAT_STORE) || '[]'); } catch(e){ return []; } }
+        function saveStrategies(strats){ localStorage.setItem(STRAT_STORE, JSON.stringify(strats)); }
+
+        function getStrategyStats(){
+            const strats = getStrategies();
+            const active = strats.filter(s => s.status === 'active').length;
+            const totalRuns = strats.reduce((s, x) => s + (x.totalRuns || 0), 0);
+            const avgWin = strats.length > 0 ? Math.round(strats.reduce((s, x) => s + (x.winRate || 0), 0) / strats.length) : 0;
+            const totalPnl = strats.reduce((s, x) => s + (x.pnl || 0), 0);
+            return { active, totalRuns, avgWin, totalPnl, total: strats.length };
+        }
+
+        let _stratTab = 'my';
+        let _stratEditId = null;
+
+        async function loadStrategyPage(){
+            const container = document.getElementById('strategy-content');
+            if(!connectedAddress){
+                container.innerHTML = '<div style="text-align:center;padding:4rem 2rem"><div style="font-size:.95rem;font-weight:600;margin-bottom:.5rem">Connect Your Wallet</div><div style="color:var(--text-muted);font-size:.8rem;margin-bottom:1.5rem">Connect to view and manage strategies</div><button onclick="connectFromDashboard()" style="padding:.75rem 2rem;border-radius:10px;background:var(--accent);border:none;color:#fff;font-weight:600;cursor:pointer;font-size:.8rem">Connect Wallet</button></div>';
+                return;
+            }
+
+            // Seed demo strategies if empty
+            if(getStrategies().length === 0){
+                const now = Date.now();
+                saveStrategies([
+                    { id:'s1', name:'HIVE DCA Accumulator', type:'dca', status:'active', agent:'Alpha Scout', agentAddr:'0x'+'a'.repeat(40), risk:'low', params:{ token:'HIVE', frequency:'6h', amountPerBuy:50 }, budget:5000, totalRuns:47, winRate:81, pnl:342.5, createdAt:now-86400000*7, lastRun:now-3600000 },
+                    { id:'s2', name:'Yield Optimizer', type:'yield', status:'active', agent:'Yield Max', agentAddr:'0x'+'b'.repeat(40), risk:'low', params:{ minAPY:5, rebalanceThreshold:2 }, budget:10000, totalRuns:23, winRate:95, pnl:891.2, createdAt:now-86400000*14, lastRun:now-7200000 },
+                    { id:'s3', name:'HIVE/hiveUSD Arb Bot', type:'arb', status:'paused', agent:'Sentinel', agentAddr:'0x'+'c'.repeat(40), risk:'med', params:{ pair:'HIVE/hiveUSD', minProfitBps:30 }, budget:2000, totalRuns:89, winRate:67, pnl:-156.8, createdAt:now-86400000*3, lastRun:now-86400000 }
+                ]);
+            }
+
+            const stats = getStrategyStats();
+            const strats = getStrategies();
+
+            let html = '';
+
+            // Header
+            html += '<div style="max-width:720px;margin-bottom:1.5rem">';
+            html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.35rem">';
+            html += '<h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:800;margin:0">Strategies</h1>';
+            html += '<button onclick="openCreateStrategy()" style="padding:.5rem .75rem;background:var(--accent);border:none;color:#fff;font-weight:600;cursor:pointer;font-size:.75rem;border-radius:6px">+ Create Strategy</button>';
+            html += '</div>';
+            html += '<div style="font-size:.8rem;color:var(--text-dim)">Automated DeFi strategies powered by your AI agents</div>';
+            html += '</div>';
+
+            // Stats
+            html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:2rem;max-width:720px">';
+            html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px"><div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.25rem">Active</div><div style="font-size:1.2rem;font-weight:700;color:var(--accent-light)">' + stats.active + '</div></div>';
+            html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px"><div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.25rem">Total Runs</div><div style="font-size:1.2rem;font-weight:700">' + stats.totalRuns + '</div></div>';
+            html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px"><div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.25rem">Avg Win Rate</div><div style="font-size:1.2rem;font-weight:700;color:var(--green)">' + stats.avgWin + '%</div></div>';
+            html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px"><div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.25rem">Total PnL</div><div style="font-size:1.2rem;font-weight:700;color:' + (stats.totalPnl >= 0 ? 'var(--green)' : 'var(--red)') + '">' + (stats.totalPnl >= 0 ? '+' : '') + stats.totalPnl.toFixed(2) + ' USD</div></div>';
+            html += '</div>';
+
+            // Tabs
+            html += '<div style="display:flex;gap:.25rem;margin-bottom:2rem;border-bottom:1px solid var(--border);padding-bottom:.75rem;max-width:720px">';
+            ['my','templates','backtest'].forEach(t => {
+                const labels = {my:'My Strategies',templates:'Templates',backtest:'Backtest'};
+                const active = _stratTab === t;
+                html += '<div onclick="switchStratTab(\''+t+'\')" style="padding:.5rem 1rem;font-size:.75rem;font-weight:600;cursor:pointer;border-radius:6px 6px 0 0;transition:all .15s;color:'+(active?'var(--accent-light)':'var(--text-dim))+';border-bottom:2px solid '+(active?'var(--accent)':'transparent')+'">'+labels[t]+'</div>';
+            });
+            html += '</div>';
+
+            // Tab content
+            if(_stratTab === 'my'){
+                html += renderMyStrategies(strats);
+            } else if(_stratTab === 'templates'){
+                html += renderTemplates();
+            } else if(_stratTab === 'backtest'){
+                html += renderBacktest();
+            }
+
+            container.innerHTML = html;
+
+            // Init backtest chart if on that tab
+            if(_stratTab === 'backtest'){
+                setTimeout(() => initBacktestChart(), 100);
+            }
+        }
+
+        function switchStratTab(tab){
+            _stratTab = tab;
+            loadStrategyPage();
+        }
+
+        function renderMyStrategies(strats){
+            if(strats.length === 0){
+                return '<div style="padding:3rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;text-align:center;max-width:720px"><div style="font-size:.85rem;color:var(--text-muted);margin-bottom:1rem">No strategies created yet</div><button onclick="openCreateStrategy()" style="padding:.6rem 1.5rem;border-radius:8px;background:var(--accent);border:none;color:#fff;font-weight:600;cursor:pointer;font-size:.8rem">Create Your First Strategy</button></div>';
+            }
+            let html = '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;max-width:720px">';
+            strats.forEach(s => {
+                const type = STRAT_TYPES[s.type] || STRAT_TYPES.custom;
+                const risk = RISK_LEVELS[s.risk] || RISK_LEVELS.med;
+                const isActive = s.status === 'active';
+                const lastRunStr = s.lastRun ? timeAgoJS(s.lastRun) : 'Never';
+                const pnlColor = s.pnl >= 0 ? 'var(--green)' : 'var(--red)';
+                const pnlPrefix = s.pnl >= 0 ? '+' : '';
+
+                html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;transition:all .2s">';
+                // Header
+                html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">';
+                html += '<div style="display:flex;align-items:center;gap:.5rem">';
+                html += '<span style="font-size:1rem">' + type.icon + '</span>';
+                html += '<div><div style="font-weight:600;font-size:.85rem">' + s.name + '</div>';
+                html += '<div style="font-size:.6rem;color:' + type.color + '">' + type.label + '</div></div>';
+                html += '</div>';
+                html += '<span style="font-size:.55rem;padding:.15rem .45rem;border-radius:4px;background:' + (isActive ? 'rgba(34,197,94,.1);color:var(--green)' : 'rgba(136,136,136,.1);color:var(--text-dim)') + '">' + (isActive ? 'Active' : 'Paused') + '</span>';
+                html += '</div>';
+                // Stats row
+                html += '<div style="display:flex;gap:1rem;margin-bottom:.75rem">';
+                html += '<div><div style="font-size:.55rem;color:var(--text-dim)">Win Rate</div><div style="font-size:.85rem;font-weight:700">' + (s.winRate || 0) + '%</div></div>';
+                html += '<div><div style="font-size:.55rem;color:var(--text-dim)">Runs</div><div style="font-size:.85rem;font-weight:700">' + (s.totalRuns || 0) + '</div></div>';
+                html += '<div><div style="font-size:.55rem;color:var(--text-dim)">PnL</div><div style="font-size:.85rem;font-weight:700;color:' + pnlColor + '">' + pnlPrefix + (s.pnl || 0).toFixed(2) + '</div></div>';
+                html += '</div>';
+                // Meta
+                html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">';
+                html += '<div style="font-size:.6rem;color:var(--text-dim)">Agent: <span style="color:var(--text)">' + (s.agent || 'None') + '</span></div>';
+                html += '<div style="display:flex;align-items:center;gap:.35rem"><span style="font-size:.55rem;padding:.1rem .35rem;border-radius:3px;background:' + risk.color + '20;color:' + risk.color + '">' + risk.label + '</span></div>';
+                html += '</div>';
+                html += '<div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.75rem">Last run: ' + lastRunStr + '</div>';
+                // Actions
+                html += '<div style="display:flex;gap:.4rem">';
+                if(isActive){
+                    html += '<button onclick="toggleStrategy(\'' + s.id + '\')" style="flex:1;padding:.4rem;border-radius:6px;border:1px solid var(--yellow);background:rgba(245,158,11,.1);color:var(--yellow);font-weight:600;cursor:pointer;font-size:.65rem">Pause</button>';
+                } else {
+                    html += '<button onclick="toggleStrategy(\'' + s.id + '\')" style="flex:1;padding:.4rem;border-radius:6px;border:1px solid var(--green);background:rgba(34,197,94,.1);color:var(--green);font-weight:600;cursor:pointer;font-size:.65rem">Resume</button>';
+                }
+                html += '<button onclick="editStrategy(\'' + s.id + '\')" style="flex:1;padding:.4rem;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-weight:600;cursor:pointer;font-size:.65rem">Edit</button>';
+                html += '<button onclick="deleteStrategy(\'' + s.id + '\')" style="flex:1;padding:.4rem;border-radius:6px;border:1px solid var(--red);background:rgba(239,68,68,.1);color:var(--red);font-weight:600;cursor:pointer;font-size:.65rem">Delete</button>';
+                html += '</div>';
+                html += '</div>';
+            });
+            html += '</div>';
+            return html;
+        }
+
+        function renderTemplates(){
+            let html = '<div style="max-width:720px">';
+            html += '<div style="font-size:.8rem;color:var(--text-dim);margin-bottom:1rem">Pre-built strategy templates. Clone and customize to deploy.</div>';
+            html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem">';
+            STRAT_TEMPLATES.forEach((t, i) => {
+                const type = STRAT_TYPES[t.type] || STRAT_TYPES.custom;
+                const risk = RISK_LEVELS[t.risk] || RISK_LEVELS.med;
+                html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
+                html += '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem"><span style="font-size:1rem">' + type.icon + '</span><div><div style="font-weight:600;font-size:.85rem">' + t.name + '</div><div style="font-size:.6rem;color:' + type.color + '">' + type.label + '</div></div></div>';
+                html += '<div style="font-size:.7rem;color:var(--text-dim);margin-bottom:.75rem;line-height:1.5">' + t.desc + '</div>';
+                html += '<div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem">';
+                html += '<span style="font-size:.55rem;padding:.1rem .35rem;border-radius:3px;background:' + risk.color + '20;color:' + risk.color + '">' + risk.label + '</span>';
+                html += '<span style="font-size:.6rem;color:var(--text-dim)">Est. APY: <span style="color:var(--green)">' + t.estAPY + '</span></span>';
+                html += '</div>';
+                html += '<button onclick="cloneTemplate(' + i + ')" style="width:100%;padding:.5rem;border-radius:6px;background:var(--accent);border:none;color:#fff;font-weight:600;cursor:pointer;font-size:.7rem">Use Template</button>';
+                html += '</div>';
+            });
+            html += '</div></div>';
+            return html;
+        }
+
+        function renderBacktest(){
+            let html = '<div style="max-width:720px">';
+            html += '<div style="font-size:.8rem;color:var(--text-dim);margin-bottom:1rem">Simulate strategy performance against historical data.</div>';
+            // Controls
+            html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.5rem">';
+            html += '<div><label style="font-size:.65rem;color:var(--text-dim);display:block;margin-bottom:.3rem">Strategy Type</label><select id="btType" style="width:100%;padding:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.75rem">';
+            Object.entries(STRAT_TYPES).forEach(([k,v]) => { html += '<option value="'+k+'">'+v.label+'</option>'; });
+            html += '</select></div>';
+            html += '<div><label style="font-size:.65rem;color:var(--text-dim);display:block;margin-bottom:.3rem">Time Range</label><select id="btRange" style="width:100%;padding:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.75rem"><option value="7">7 Days</option><option value="30" selected>30 Days</option><option value="90">90 Days</option></select></div>';
+            html += '<div><label style="font-size:.65rem;color:var(--text-dim);display:block;margin-bottom:.3rem">Budget (USD)</label><input id="btBudget" type="number" value="5000" style="width:100%;padding:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.75rem;box-sizing:border-box" /></div>';
+            html += '<div style="display:flex;align-items:flex-end"><button onclick="runBacktest()" style="width:100%;padding:.5rem;border-radius:6px;background:var(--accent);border:none;color:#fff;font-weight:600;cursor:pointer;font-size:.75rem">Run Backtest</button></div>';
+            html += '</div>';
+            // Results
+            html += '<div id="btResults" style="display:none">';
+            html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-bottom:1rem">';
+            html += '<div style="padding:.75rem;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;text-align:center"><div style="font-size:.55rem;color:var(--text-dim)">Return</div><div id="btReturn" style="font-size:1rem;font-weight:700">—</div></div>';
+            html += '<div style="padding:.75rem;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;text-align:center"><div style="font-size:.55rem;color:var(--text-dim)">Win Rate</div><div id="btWinRate" style="font-size:1rem;font-weight:700">—</div></div>';
+            html += '<div style="padding:.75rem;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;text-align:center"><div style="font-size:.55rem;color:var(--text-dim)">Max Drawdown</div><div id="btDrawdown" style="font-size:1rem;font-weight:700">—</div></div>';
+            html += '<div style="padding:.75rem;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;text-align:center"><div style="font-size:.55rem;color:var(--text-dim)">Trades</div><div id="btTrades" style="font-size:1rem;font-weight:700">—</div></div>';
+            html += '</div>';
+            html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;margin-bottom:1rem"><canvas id="btChart" height="200"></canvas></div>';
+            html += '<button onclick="deployFromBacktest()" style="width:100%;padding:.7rem;border-radius:8px;background:var(--accent);border:none;color:#fff;font-weight:600;cursor:pointer;font-size:.8rem">Deploy This Strategy Live</button>';
+            html += '</div>';
+            html += '</div>';
+            return html;
+        }
+
+        function runBacktest(){
+            const type = document.getElementById('btType').value;
+            const range = parseInt(document.getElementById('btRange').value);
+            const budget = parseFloat(document.getElementById('btBudget').value) || 5000;
+
+            // Simulate backtest results
+            const typeMultiplier = { dca:1.2, yield:1.1, arb:1.4, liquidation:1.6, grid:1.3, custom:1.0 }[type] || 1.0;
+            const returnPct = (Math.random() * 30 * typeMultiplier - 5).toFixed(2);
+            const winRate = Math.round(55 + Math.random() * 30);
+            const maxDD = (Math.random() * 15 + 3).toFixed(1);
+            const trades = Math.round(range * (1 + Math.random() * 3));
+
+            const retEl = document.getElementById('btReturn');
+            retEl.textContent = (returnPct >= 0 ? '+' : '') + returnPct + '%';
+            retEl.style.color = returnPct >= 0 ? 'var(--green)' : 'var(--red)';
+            document.getElementById('btWinRate').textContent = winRate + '%';
+            document.getElementById('btDrawdown').textContent = '-' + maxDD + '%';
+            document.getElementById('btTrades').textContent = trades;
+
+            document.getElementById('btResults').style.display = '';
+
+            // Generate chart data
+            const days = [];
+            const values = [];
+            let val = budget;
+            for(let i = 0; i <= range; i++){
+                days.push('Day ' + i);
+                val += val * (returnPct / 100 / range) + (Math.random() - 0.45) * budget * 0.02;
+                values.push(Math.round(val));
+            }
+
+            setTimeout(() => {
+                const canvas = document.getElementById('btChart');
+                if(!canvas || typeof Chart === 'undefined') return;
+                const existing = Chart.getChart(canvas);
+                if(existing) existing.destroy();
+                new Chart(canvas.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: days,
+                        datasets: [{ label: 'Portfolio Value (USD)', data: values, borderColor: returnPct >= 0 ? '#22c55e' : '#ef4444', backgroundColor: (returnPct >= 0 ? '#22c55e' : '#ef4444') + '15', fill: true, tension: 0.3, pointRadius: 0, borderWidth: 2 }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { ticks: { color: '#666', maxTicksLimit: 8, font: { size: 10 } }, grid: { color: 'rgba(255,255,255,.03)' } },
+                            y: { ticks: { color: '#666', font: { size: 10 }, callback: v => '$' + v.toLocaleString() }, grid: { color: 'rgba(255,255,255,.05)' } }
+                        }
+                    }
+                });
+            }, 200);
+        }
+
+        function deployFromBacktest(){
+            const type = document.getElementById('btType').value;
+            _stratEditId = null;
+            openCreateStrategy();
+            setTimeout(() => {
+                // Pre-fill type
+                document.querySelectorAll('.strat-type-pill').forEach(p => {
+                    p.style.borderColor = p.dataset.type === type ? 'var(--accent)' : 'var(--border)';
+                    p.style.background = p.dataset.type === type ? 'rgba(139,92,246,.1)' : 'transparent';
+                });
+            }, 100);
+        }
+
+        function initBacktestChart(){
+            // Pre-populate with default chart
+            const canvas = document.getElementById('btChart');
+            if(!canvas || typeof Chart === 'undefined') return;
+            const days = [];
+            const values = [];
+            let val = 5000;
+            for(let i = 0; i <= 30; i++){
+                days.push('Day ' + i);
+                val += val * 0.004 + (Math.random() - 0.45) * 100;
+                values.push(Math.round(val));
+            }
+            new Chart(canvas.getContext('2d'), {
+                type: 'line',
+                data: { labels: days, datasets: [{ label: 'Portfolio Value', data: values, borderColor: '#8b5cf6', backgroundColor: '#8b5cf615', fill: true, tension: 0.3, pointRadius: 0, borderWidth: 2 }] },
+                options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#666', maxTicksLimit: 8, font: { size: 10 } }, grid: { color: 'rgba(255,255,255,.03)' } }, y: { ticks: { color: '#666', font: { size: 10 }, callback: v => '$' + v.toLocaleString() }, grid: { color: 'rgba(255,255,255,.05)' } } } }
+            });
+        }
+
+        function timeAgoJS(ts){
+            const diff = Math.floor((Date.now() - ts) / 1000);
+            if(diff < 60) return diff + 's ago';
+            if(diff < 3600) return Math.floor(diff/60) + 'm ago';
+            if(diff < 86400) return Math.floor(diff/3600) + 'h ago';
+            return Math.floor(diff/86400) + 'd ago';
+        }
+
+        // ═══ STRATEGY CRUD ═══
+        function toggleStrategy(id){
+            const strats = getStrategies();
+            const s = strats.find(x => x.id === id);
+            if(s){
+                s.status = s.status === 'active' ? 'paused' : 'active';
+                saveStrategies(strats);
+                loadStrategyPage();
+            }
+        }
+
+        function deleteStrategy(id){
+            if(!confirm('Delete this strategy?')) return;
+            const strats = getStrategies().filter(x => x.id !== id);
+            saveStrategies(strats);
+            loadStrategyPage();
+        }
+
+        function editStrategy(id){
+            _stratEditId = id;
+            openCreateStrategy();
+            setTimeout(() => {
+                const s = getStrategies().find(x => x.id === id);
+                if(!s) return;
+                document.getElementById('stratName').value = s.name;
+                document.getElementById('stratBudget').value = s.budget;
+                // Select type
+                document.querySelectorAll('.strat-type-pill').forEach(p => {
+                    p.style.borderColor = p.dataset.type === s.type ? 'var(--accent)' : 'var(--border)';
+                    p.style.background = p.dataset.type === s.type ? 'rgba(139,92,246,.1)' : 'transparent';
+                });
+                // Select risk
+                document.querySelectorAll('.strat-risk-pill').forEach(p => {
+                    p.style.borderColor = p.dataset.risk === s.risk ? 'var(--accent)' : 'var(--border)';
+                    p.style.background = p.dataset.risk === s.risk ? 'rgba(139,92,246,.1)' : 'transparent';
+                });
+                document.getElementById('stratModalTitle').textContent = 'Edit Strategy';
+            }, 100);
+        }
+
+        function cloneTemplate(idx){
+            const t = STRAT_TEMPLATES[idx];
+            if(!t) return;
+            _stratEditId = null;
+            openCreateStrategy();
+            setTimeout(() => {
+                document.getElementById('stratName').value = t.name;
+                document.getElementById('stratBudget').value = t.params.totalBudget || 5000;
+                // Select type
+                document.querySelectorAll('.strat-type-pill').forEach(p => {
+                    p.style.borderColor = p.dataset.type === t.type ? 'var(--accent)' : 'var(--border)';
+                    p.style.background = p.dataset.type === t.type ? 'rgba(139,92,246,.1)' : 'transparent';
+                });
+                // Select risk
+                document.querySelectorAll('.strat-risk-pill').forEach(p => {
+                    p.style.borderColor = p.dataset.risk === t.risk ? 'var(--accent)' : 'var(--border)';
+                    p.style.background = p.dataset.risk === t.risk ? 'rgba(139,92,246,.1)' : 'transparent';
+                });
+            }, 100);
+        }
+
+        let _selectedStratType = 'dca';
+        let _selectedStratRisk = 'low';
+
+        function openCreateStrategy(){
+            _selectedStratType = 'dca';
+            _selectedStratRisk = 'low';
+            document.getElementById('stratModalTitle').textContent = _stratEditId ? 'Edit Strategy' : 'Create Strategy';
+            document.getElementById('stratName').value = '';
+            document.getElementById('stratBudget').value = '';
+            document.getElementById('strategyModal').style.display = 'flex';
+
+            // Type pills
+            let typeHTML = '';
+            Object.entries(STRAT_TYPES).forEach(([k, v]) => {
+                const sel = k === _selectedStratType;
+                typeHTML += '<div class="strat-type-pill" data-type="'+k+'" onclick="selectStratType(\''+k+'\')" style="padding:.5rem;text-align:center;border:1px solid '+(sel?'var(--accent)':'var(--border)')+';border-radius:8px;cursor:pointer;font-size:.7rem;background:'+(sel?'rgba(139,92,246,.1)':'transparent')+';transition:all .15s">';
+                typeHTML += '<div style="font-size:.9rem;margin-bottom:.15rem">'+v.icon+'</div>';
+                typeHTML += '<div style="font-weight:600">'+v.label+'</div>';
+                typeHTML += '</div>';
+            });
+            document.getElementById('stratTypeGrid').innerHTML = typeHTML;
+
+            // Risk pills
+            let riskHTML = '';
+            Object.entries(RISK_LEVELS).forEach(([k, v]) => {
+                const sel = k === _selectedStratRisk;
+                riskHTML += '<div class="strat-risk-pill" data-risk="'+k+'" onclick="selectStratRisk(\''+k+'\')" style="padding:.5rem;text-align:center;border:1px solid '+(sel?'var(--accent)':'var(--border)')+';border-radius:8px;cursor:pointer;font-size:.7rem;background:'+(sel?'rgba(139,92,246,.1)':'transparent')+';transition:all .15s;color:'+v.color+'">';
+                riskHTML += '<div style="font-weight:600">'+v.label+'</div>';
+                riskHTML += '</div>';
+            });
+            document.getElementById('stratRiskGrid').innerHTML = riskHTML;
+
+            // Agent dropdown
+            const agentSelect = document.getElementById('stratAgent');
+            agentSelect.innerHTML = '<option value="">Select an agent...</option>';
+            try {
+                const factory = hive.getContract('HiveAgentFactory');
+                factory.getUserAgents(connectedAddress).then(agents => {
+                    agents.forEach(a => {
+                        if(a.active) agentSelect.innerHTML += '<option value="'+a.agent+'">'+a.name+'</option>';
+                    });
+                }).catch(() => {});
+            } catch(e) {}
+
+            // Dynamic params
+            updateStratParams();
+        }
+
+        function closeStrategyModal(){
+            document.getElementById('strategyModal').style.display = 'none';
+            _stratEditId = null;
+        }
+
+        function selectStratType(type){
+            _selectedStratType = type;
+            document.querySelectorAll('.strat-type-pill').forEach(p => {
+                p.style.borderColor = p.dataset.type === type ? 'var(--accent)' : 'var(--border)';
+                p.style.background = p.dataset.type === type ? 'rgba(139,92,246,.1)' : 'transparent';
+            });
+            updateStratParams();
+        }
+
+        function selectStratRisk(risk){
+            _selectedStratRisk = risk;
+            document.querySelectorAll('.strat-risk-pill').forEach(p => {
+                p.style.borderColor = p.dataset.risk === risk ? 'var(--accent)' : 'var(--border)';
+                p.style.background = p.dataset.risk === risk ? 'rgba(139,92,246,.1)' : 'transparent';
+            });
+        }
+
+        function updateStratParams(){
+            const params = document.getElementById('stratParams');
+            let html = '';
+            if(_selectedStratType === 'dca'){
+                html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem">';
+                html += '<div><label style="font-size:.65rem;color:var(--text-dim);display:block;margin-bottom:.3rem">Token</label><input id="spToken" type="text" value="HIVE" style="width:100%;padding:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.75rem;box-sizing:border-box" /></div>';
+                html += '<div><label style="font-size:.65rem;color:var(--text-dim);display:block;margin-bottom:.3rem">Frequency</label><select id="spFreq" style="width:100%;padding:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.75rem"><option>1h</option><option>4h</option><option selected>6h</option><option>12h</option><option>24h</option></select></div>';
+                html += '<div><label style="font-size:.65rem;color:var(--text-dim);display:block;margin-bottom:.3rem">Amount/Buy (USD)</label><input id="spAmount" type="number" value="50" style="width:100%;padding:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.75rem;box-sizing:border-box" /></div>';
+                html += '</div>';
+            } else if(_selectedStratType === 'yield'){
+                html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem">';
+                html += '<div><label style="font-size:.65rem;color:var(--text-dim);display:block;margin-bottom:.3rem">Min APY (%)</label><input id="spMinAPY" type="number" value="5" style="width:100%;padding:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.75rem;box-sizing:border-box" /></div>';
+                html += '<div><label style="font-size:.65rem;color:var(--text-dim);display:block;margin-bottom:.3rem">Rebalance Threshold (%)</label><input id="spRebal" type="number" value="2" style="width:100%;padding:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.75rem;box-sizing:border-box" /></div>';
+                html += '</div>';
+            } else if(_selectedStratType === 'arb'){
+                html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem">';
+                html += '<div><label style="font-size:.65rem;color:var(--text-dim);display:block;margin-bottom:.3rem">Pair</label><input id="spPair" type="text" value="HIVE/hiveUSD" style="width:100%;padding:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.75rem;box-sizing:border-box" /></div>';
+                html += '<div><label style="font-size:.65rem;color:var(--text-dim);display:block;margin-bottom:.3rem">Min Profit (bps)</label><input id="spMinProfit" type="number" value="30" style="width:100%;padding:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.75rem;box-sizing:border-box" /></div>';
+                html += '</div>';
+            } else if(_selectedStratType === 'grid'){
+                html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;margin-bottom:1rem">';
+                html += '<div><label style="font-size:.65rem;color:var(--text-dim);display:block;margin-bottom:.3rem">Pair</label><input id="spPair" type="text" value="HIVE/hiveUSD" style="width:100%;padding:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.75rem;box-sizing:border-box" /></div>';
+                html += '<div><label style="font-size:.65rem;color:var(--text-dim);display:block;margin-bottom:.3rem">Grid Levels</label><input id="spLevels" type="number" value="10" style="width:100%;padding:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.75rem;box-sizing:border-box" /></div>';
+                html += '<div><label style="font-size:.65rem;color:var(--text-dim);display:block;margin-bottom:.3rem">Order Size (USD)</label><input id="spOrderSize" type="number" value="100" style="width:100%;padding:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.75rem;box-sizing:border-box" /></div>';
+                html += '</div>';
+            } else if(_selectedStratType === 'liquidation'){
+                html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem">';
+                html += '<div><label style="font-size:.65rem;color:var(--text-dim);display:block;margin-bottom:.3rem">Min Health Factor</label><input id="spHF" type="number" value="1.1" step="0.1" style="width:100%;padding:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.75rem;box-sizing:border-box" /></div>';
+                html += '<div><label style="font-size:.65rem;color:var(--text-dim);display:block;margin-bottom:.3rem">Max Collateral (USD)</label><input id="spMaxColl" type="number" value="10000" style="width:100%;padding:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.75rem;box-sizing:border-box" /></div>';
+                html += '</div>';
+            }
+            params.innerHTML = html;
+        }
+
+        function saveStrategy(){
+            const name = document.getElementById('stratName').value.trim();
+            if(!name){ alert('Enter a strategy name'); return; }
+            const budget = parseFloat(document.getElementById('stratBudget').value) || 0;
+            const agentSelect = document.getElementById('stratAgent');
+            const agentName = agentSelect.options[agentSelect.selectedIndex]?.text || '';
+            const agentAddr = agentSelect.value || '';
+
+            // Collect params
+            let params = {};
+            if(_selectedStratType === 'dca'){
+                params = { token: document.getElementById('spToken')?.value || 'HIVE', frequency: document.getElementById('spFreq')?.value || '6h', amountPerBuy: parseFloat(document.getElementById('spAmount')?.value) || 50 };
+            } else if(_selectedStratType === 'yield'){
+                params = { minAPY: parseFloat(document.getElementById('spMinAPY')?.value) || 5, rebalanceThreshold: parseFloat(document.getElementById('spRebal')?.value) || 2 };
+            } else if(_selectedStratType === 'arb'){
+                params = { pair: document.getElementById('spPair')?.value || 'HIVE/hiveUSD', minProfitBps: parseInt(document.getElementById('spMinProfit')?.value) || 30 };
+            } else if(_selectedStratType === 'grid'){
+                params = { pair: document.getElementById('spPair')?.value || 'HIVE/hiveUSD', gridLevels: parseInt(document.getElementById('spLevels')?.value) || 10, orderSize: parseFloat(document.getElementById('spOrderSize')?.value) || 100 };
+            } else if(_selectedStratType === 'liquidation'){
+                params = { minHealthFactor: parseFloat(document.getElementById('spHF')?.value) || 1.1, maxCollateral: parseFloat(document.getElementById('spMaxColl')?.value) || 10000 };
+            }
+
+            const strats = getStrategies();
+            if(_stratEditId){
+                const s = strats.find(x => x.id === _stratEditId);
+                if(s){
+                    s.name = name; s.type = _selectedStratType; s.risk = _selectedStratRisk;
+                    s.agent = agentName; s.agentAddr = agentAddr; s.params = params; s.budget = budget;
+                }
+            } else {
+                strats.push({
+                    id: 's' + Date.now(),
+                    name, type: _selectedStratType, status: 'active', risk: _selectedStratRisk,
+                    agent: agentName, agentAddr, params, budget,
+                    totalRuns: 0, winRate: 0, pnl: 0,
+                    createdAt: Date.now(), lastRun: null
+                });
+            }
+            saveStrategies(strats);
+            closeStrategyModal();
+            loadStrategyPage();
         }
 
         // ═══ AGENT CONFIG MODAL ═══
