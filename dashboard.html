@@ -896,6 +896,27 @@
             </div>
         </div>
 
+        <!-- PAGE: Federated Learning -->
+        <div class="content page-content" id="page-flock" style="display:none">
+            <div id="flock-content">
+                <div style="color:var(--text-muted);text-align:center;padding:4rem">Loading...</div>
+            </div>
+        </div>
+
+        <!-- PAGE: Oracle Feeds -->
+        <div class="content page-content" id="page-oracle" style="display:none">
+            <div id="oracle-content">
+                <div style="color:var(--text-muted);text-align:center;padding:4rem">Loading...</div>
+            </div>
+        </div>
+
+        <!-- PAGE: Multi-Sig -->
+        <div class="content page-content" id="page-multisig" style="display:none">
+            <div id="multisig-content">
+                <div style="color:var(--text-muted);text-align:center;padding:4rem">Loading...</div>
+            </div>
+        </div>
+
         <!-- PAGE: Generic placeholder for other pages -->
         <div class="content page-content" id="page-generic" style="display:none">
             <div class="content-header">
@@ -1008,6 +1029,15 @@
             } else if(page === 'referral'){
                 document.getElementById('page-referral').style.display = '';
                 loadReferralPage();
+            } else if(page === 'flock'){
+                document.getElementById('page-flock').style.display = '';
+                loadFlockPage();
+            } else if(page === 'oracle'){
+                document.getElementById('page-oracle').style.display = '';
+                loadOraclePage();
+            } else if(page === 'multisig'){
+                document.getElementById('page-multisig').style.display = '';
+                loadMultiSigPage();
             } else {
                 document.getElementById('page-generic').style.display = '';
                 document.getElementById('generic-title').textContent = config.title;
@@ -6414,6 +6444,370 @@
         }
 
         // Helper
+        
+        // ═══ FEDERATED LEARNING PAGE ═══
+        async function loadFlockPage(){
+            const c = document.getElementById('flock-content');
+
+            // Fetch network agents
+            let networkAgents = [];
+            let myAgents = [];
+            try {
+                const factory = hive.getContract('HiveAgentFactory');
+                const total = await factory.getUserAgentCount(connectedAddress || '0x0000000000000000000000000000000000000000');
+                const agentCount = Math.min(Number(total), 50);
+                if(agentCount > 0) myAgents = await factory.getUserAgents(connectedAddress);
+                
+                // Get some network agents
+                const allAddrs = await factory.getAllAgents(0, 20);
+                for(const addr of allAddrs.slice(0, 12)){
+                    try {
+                        const info = await factory.getAgentInfo(addr);
+                        const agent = hive.getWriteContract('HiveSovereignAgent');
+                        const config = await agent.attach(addr).config();
+                        const totalTrades = await agent.attach(addr).totalTrades();
+                        const successfulTrades = await agent.attach(addr).successfulTrades();
+                        const winRate = Number(totalTrades) > 0 ? Math.round(Number(successfulTrades)/Number(totalTrades)*100) : 0;
+                        networkAgents.push({
+                            addr: addr,
+                            name: config.name,
+                            sector: ethers.decodeBytes32String(config.sector),
+                            owner: info.owner,
+                            active: info.active,
+                            totalTrades: Number(totalTrades),
+                            winRate: winRate,
+                        });
+                    } catch(e) {}
+                }
+            } catch(e) { console.warn('[Hive] Flock agent fetch:', e); }
+
+            const activeNetwork = networkAgents.filter(a => a.active).length;
+            const sectorMap = {};
+            networkAgents.forEach(a => {
+                if(!sectorMap[a.sector]) sectorMap[a.sector] = 0;
+                sectorMap[a.sector]++;
+            });
+
+            let html = '';
+
+            // Header
+            html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem">';
+            html += '<div><h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:800">Federated Learning</h1>';
+            html += '<p style="font-size:.8rem;color:var(--text-dim);margin-top:.25rem">Network-wide agent intelligence sharing on Ritual Chain</p></div>';
+            html += '<div style="display:flex;gap:.5rem">';
+            html += '<div style="padding:.35rem .7rem;background:rgba(34,197,94,.1);border-radius:6px;font-size:.6rem;color:var(--green);font-weight:600">● ' + activeNetwork + ' Active</div>';
+            html += '<div style="padding:.35rem .7rem;background:rgba(139,92,246,.1);border-radius:6px;font-size:.6rem;color:var(--accent-light);font-weight:600">' + networkAgents.length + ' Agents</div>';
+            html += '</div></div>';
+
+            // Stats
+            html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem">';
+            html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
+            html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem">Network Agents</div>';
+            html += '<div style="font-size:1.3rem;font-weight:700">' + networkAgents.length + '</div></div>';
+            html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
+            html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem">Active Sectors</div>';
+            html += '<div style="font-size:1.3rem;font-weight:700">' + Object.keys(sectorMap).length + '</div></div>';
+            html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
+            html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem">Your Agents</div>';
+            html += '<div style="font-size:1.3rem;font-weight:700">' + myAgents.length + '</div></div>';
+            html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
+            html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem">Avg Win Rate</div>';
+            const avgWR = networkAgents.length > 0 ? Math.round(networkAgents.reduce((a,b) => a+b.winRate, 0) / networkAgents.length) : 0;
+            html += '<div style="font-size:1.3rem;font-weight:700">' + avgWR + '%</div></div>';
+            html += '</div>';
+
+            // Network Knowledge Graph
+            html += '<div style="padding:1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;margin-bottom:2rem">';
+            html += '<div style="font-size:.85rem;font-weight:600;margin-bottom:1rem">Network Knowledge Graph</div>';
+            html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem">';
+            const sectors = Object.entries(sectorMap);
+            if(sectors.length === 0){
+                html += '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--text-muted);font-size:.8rem">No network agents yet</div>';
+            } else {
+                sectors.forEach(([sector, count]) => {
+                    const colors = {DeFi:'var(--accent)',Trading:'var(--green)',Research:'var(--yellow)',Governance:'#3b82f6',Security:'#ef4444',Custom:'#8b5cf6'};
+                    const color = colors[sector] || '#6b7280';
+                    html += '<div style="padding:1rem;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px">';
+                    html += '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem">';
+                    html += '<div style="width:8px;height:8px;border-radius:2px;background:' + color + '"></div>';
+                    html += '<span style="font-size:.8rem;font-weight:600">' + sector + '</span></div>';
+                    html += '<div style="font-size:.65rem;color:var(--text-dim)">' + count + ' agents contributing</div>';
+                    html += '</div>';
+                });
+            }
+            html += '</div></div>';
+
+            // Agent Grid
+            html += '<div style="font-size:.85rem;font-weight:600;margin-bottom:1rem">Network Agents</div>';
+            html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem">';
+            if(networkAgents.length === 0){
+                html += '<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--text-muted);font-size:.8rem">No agents in the network yet. Summon an agent to get started.</div>';
+            } else {
+                networkAgents.slice(0, 9).forEach(a => {
+                    const shortAddr = a.addr.slice(0,6) + '...' + a.addr.slice(-4);
+                    const sectors = {DeFi:'💰',Trading:'📈',Research:'🔬',Governance:'🛡️',Security:'🔒',Custom:'⚡'};
+                    const icon = sectors[a.sector] || '⚡';
+                    html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px">';
+                    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">';
+                    html += '<div style="display:flex;align-items:center;gap:.5rem">';
+                    html += '<div style="width:28px;height:28px;border-radius:6px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;font-size:.85rem">' + icon + '</div>';
+                    html += '<div><div style="font-size:.75rem;font-weight:600">' + a.name + '</div>';
+                    html += '<div style="font-size:.55rem;color:var(--text-dim)">' + shortAddr + '</div></div></div>';
+                    html += '<span style="font-size:.55rem;padding:.15rem .4rem;border-radius:3px;background:' + (a.active ? 'rgba(34,197,94,.15)' : 'rgba(255,255,255,.05)') + ';color:' + (a.active ? 'var(--green)' : 'var(--text-muted)') + '">' + (a.active ? 'Active' : 'Paused') + '</span></div>';
+                    html += '<div style="display:flex;gap:.5rem">';
+                    html += '<div style="flex:1;padding:.3rem;background:var(--bg);border-radius:6px;text-align:center">';
+                    html += '<div style="font-size:.5rem;color:var(--text-dim)">Trades</div>';
+                    html += '<div style="font-size:.65rem;font-weight:700">' + a.totalTrades + '</div></div>';
+                    html += '<div style="flex:1;padding:.3rem;background:var(--bg);border-radius:6px;text-align:center">';
+                    html += '<div style="font-size:.5rem;color:var(--text-dim)">Win Rate</div>';
+                    html += '<div style="font-size:.65rem;font-weight:700;color:' + (a.winRate >= 50 ? 'var(--green)' : 'var(--red)') + '">' + a.winRate + '%</div></div>';
+                    html += '</div></div>';
+                });
+            }
+            html += '</div>';
+
+            c.innerHTML = html;
+        }
+
+        // ═══ ORACLE FEEDS PAGE ═══
+        async function loadOraclePage(){
+            const c = document.getElementById('oracle-content');
+            let html = '';
+
+            // Header
+            html += '<div style="margin-bottom:2rem"><h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:800">Oracle Feeds</h1>';
+            html += '<p style="font-size:.8rem;color:var(--text-dim);margin-top:.25rem">Live price feeds from HiveOracle on Ritual Chain</p></div>';
+
+            // Get tracked tokens
+            let tokens = [];
+            try {
+                const oracle = hive.getContract('HiveOracle');
+                const count = await oracle.getTrackedTokensCount();
+                const tokenCount = Number(count);
+                
+                for(let i = 0; i < tokenCount; i++){
+                    try {
+                        const addr = await oracle.trackedTokens(i);
+                        const [priceData, config] = await Promise.all([
+                            oracle.prices(addr),
+                            oracle.tokenConfigs(addr),
+                        ]);
+                        tokens.push({
+                            addr: addr,
+                            symbol: config.symbol,
+                            coingeckoId: config.coingeckoId,
+                            active: config.active,
+                            price: priceData.price,
+                            timestamp: Number(priceData.timestamp),
+                            confidence: Number(priceData.confidence),
+                            source: priceData.source,
+                            valid: priceData.valid,
+                        });
+                    } catch(e) {}
+                }
+            } catch(e) { console.warn('[Hive] Oracle fetch:', e); }
+
+            const activeFeeds = tokens.filter(t => t.valid).length;
+            const avgConfidence = tokens.length > 0 ? Math.round(tokens.reduce((a,b) => a+b.confidence, 0) / tokens.length) : 0;
+
+            // Stats
+            html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem">';
+            html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
+            html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem">Tracked Tokens</div>';
+            html += '<div style="font-size:1.3rem;font-weight:700">' + tokens.length + '</div></div>';
+            html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
+            html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem">Active Feeds</div>';
+            html += '<div style="font-size:1.3rem;font-weight:700;color:var(--green)">' + activeFeeds + '</div></div>';
+            html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
+            html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem">Avg Confidence</div>';
+            html += '<div style="font-size:1.3rem;font-weight:700">' + avgConfidence + '%</div></div>';
+            html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
+            html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem">Update Frequency</div>';
+            html += '<div style="font-size:1.3rem;font-weight:700">5 min</div></div>';
+            html += '</div>';
+
+            // Price Feeds Table
+            html += '<div style="padding:1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;margin-bottom:2rem">';
+            html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">';
+            html += '<div style="font-size:.85rem;font-weight:600">Live Price Feeds</div>';
+            html += '<button onclick="loadOraclePage()" style="padding:.35rem .75rem;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-dim);cursor:pointer;font-size:.7rem">↻ Refresh</button></div>';
+            
+            if(tokens.length === 0){
+                html += '<div style="text-align:center;padding:3rem;color:var(--text-muted);font-size:.8rem">No tokens tracked yet</div>';
+            } else {
+                html += '<table style="width:100%;border-collapse:collapse">';
+                html += '<thead><tr style="border-bottom:1px solid var(--border)">';
+                html += '<th style="text-align:left;padding:.75rem .5rem;font-size:.65rem;color:var(--text-dim);text-transform:uppercase;font-weight:500">Token</th>';
+                html += '<th style="text-align:right;padding:.75rem .5rem;font-size:.65rem;color:var(--text-dim);text-transform:uppercase;font-weight:500">Price</th>';
+                html += '<th style="text-align:center;padding:.75rem .5rem;font-size:.65rem;color:var(--text-dim);text-transform:uppercase;font-weight:500">Confidence</th>';
+                html += '<th style="text-align:center;padding:.75rem .5rem;font-size:.65rem;color:var(--text-dim);text-transform:uppercase;font-weight:500">Source</th>';
+                html += '<th style="text-align:center;padding:.75rem .5rem;font-size:.65rem;color:var(--text-dim);text-transform:uppercase;font-weight:500">Status</th>';
+                html += '<th style="text-align:right;padding:.75rem .5rem;font-size:.65rem;color:var(--text-dim);text-transform:uppercase;font-weight:500">Last Update</th>';
+                html += '</tr></thead><tbody>';
+                
+                tokens.forEach(t => {
+                    const price = Number(t.price) / 1e18;
+                    const ago = t.timestamp > 0 ? Math.round((Date.now()/1000 - t.timestamp) / 60) : null;
+                    const agoStr = ago === null ? 'Never' : ago < 1 ? 'Just now' : ago < 60 ? ago + 'm ago' : Math.round(ago/60) + 'h ago';
+                    
+                    html += '<tr style="border-bottom:1px solid rgba(255,255,255,.03)">';
+                    html += '<td style="padding:.75rem .5rem"><div style="display:flex;align-items:center;gap:.5rem">';
+                    html += '<div style="width:28px;height:28px;border-radius:6px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:var(--accent-light)">' + t.symbol.charAt(0) + '</div>';
+                    html += '<div><div style="font-size:.8rem;font-weight:600">' + t.symbol + '</div>';
+                    html += '<div style="font-size:.55rem;color:var(--text-dim)">' + hive.shortAddr(t.addr) + '</div></div></div></td>';
+                    html += '<td style="text-align:right;padding:.75rem .5rem;font-size:.85rem;font-weight:700;font-family:var(--font-mono)">$' + price.toFixed(6) + '</td>';
+                    html += '<td style="text-align:center;padding:.75rem .5rem">';
+                    html += '<div style="display:flex;align-items:center;justify-content:center;gap:.35rem">';
+                    html += '<div style="width:40px;height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden">';
+                    html += '<div style="height:100%;width:' + t.confidence + '%;background:' + (t.confidence >= 80 ? 'var(--green)' : t.confidence >= 50 ? 'var(--yellow)' : 'var(--red)') + ';border-radius:2px"></div></div>';
+                    html += '<span style="font-size:.65rem">' + t.confidence + '%</span></div></td>';
+                    html += '<td style="text-align:center;padding:.75rem .5rem;font-size:.65rem;color:var(--text-dim)">' + (t.source || 'CoinGecko') + '</td>';
+                    html += '<td style="text-align:center;padding:.75rem .5rem"><span style="font-size:.55rem;padding:.15rem .4rem;border-radius:3px;background:' + (t.valid ? 'rgba(34,197,94,.15)' : 'rgba(239,68,68,.15)') + ';color:' + (t.valid ? 'var(--green)' : 'var(--red)') + '">' + (t.valid ? 'Valid' : 'Stale') + '</span></td>';
+                    html += '<td style="text-align:right;padding:.75rem .5rem;font-size:.65rem;color:var(--text-dim)">' + agoStr + '</td>';
+                    html += '</tr>';
+                });
+                html += '</tbody></table>';
+            }
+            html += '</div>';
+
+            // Update History (placeholder — would come from PriceUpdated events)
+            html += '<div style="padding:1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
+            html += '<div style="font-size:.85rem;font-weight:600;margin-bottom:1rem">Recent Price Updates</div>';
+            if(tokens.length === 0){
+                html += '<div style="text-align:center;padding:2rem;color:var(--text-muted);font-size:.8rem">No recent updates</div>';
+            } else {
+                tokens.filter(t => t.timestamp > 0).sort((a,b) => b.timestamp - a.timestamp).slice(0, 5).forEach(t => {
+                    const ago = Math.round((Date.now()/1000 - t.timestamp) / 60);
+                    const agoStr = ago < 1 ? 'Just now' : ago < 60 ? ago + 'm ago' : Math.round(ago/60) + 'h ago';
+                    const price = Number(t.price) / 1e18;
+                    html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.03)">';
+                    html += '<div style="display:flex;align-items:center;gap:.5rem">';
+                    html += '<div style="width:6px;height:6px;border-radius:50%;background:var(--green)"></div>';
+                    html += '<span style="font-size:.75rem;font-weight:600">' + t.symbol + '</span>';
+                    html += '<span style="font-size:.65rem;color:var(--text-dim)">price updated</span></div>';
+                    html += '<div style="display:flex;align-items:center;gap:1rem">';
+                    html += '<span style="font-size:.75rem;font-weight:600;font-family:var(--font-mono)">$' + price.toFixed(6) + '</span>';
+                    html += '<span style="font-size:.6rem;color:var(--text-dim)">' + agoStr + '</span></div></div>';
+                });
+            }
+            html += '</div>';
+
+            c.innerHTML = html;
+        }
+
+        // ═══ MULTI-SIG PAGE ═══
+        async function loadMultiSigPage(){
+            const c = document.getElementById('multisig-content');
+            let html = '';
+
+            // Header
+            html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem">';
+            html += '<div><h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:800">Multi-Sig Wallet</h1>';
+            html += '<p style="font-size:.8rem;color:var(--text-dim);margin-top:.25rem">HiveDAO multi-signature governance wallet</p></div>';
+            html += '<button onclick="showSubmitTxModal()" style="padding:.5rem 1rem;border-radius:8px;border:none;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;font-size:.75rem">+ Submit Transaction</button>';
+            html += '</div>';
+
+            let txCount = 0;
+            let pendingTxs = [];
+            let executedTxs = [];
+
+            try {
+                const ms = hive.getContract('HiveMultiSig');
+                txCount = Number(await ms.getTransactionCount());
+                
+                for(let i = Math.max(0, txCount - 20); i < txCount; i++){
+                    try {
+                        const tx = await ms.getTransaction(i);
+                        const entry = {
+                            id: i,
+                            to: tx.to,
+                            value: parseFloat(ethers.formatEther(tx.value)),
+                            data: tx.data,
+                            executed: tx.executed,
+                            confirmations: Number(tx.confirmations),
+                        };
+                        if(tx.executed) executedTxs.push(entry);
+                        else pendingTxs.push(entry);
+                    } catch(e) {}
+                }
+            } catch(e) { console.warn('[Hive] MultiSig fetch:', e); }
+
+            // Stats
+            html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem">';
+            html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
+            html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem">Total Transactions</div>';
+            html += '<div style="font-size:1.3rem;font-weight:700">' + txCount + '</div></div>';
+            html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
+            html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem">Pending</div>';
+            html += '<div style="font-size:1.3rem;font-weight:700;color:var(--yellow)">' + pendingTxs.length + '</div></div>';
+            html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
+            html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem">Executed</div>';
+            html += '<div style="font-size:1.3rem;font-weight:700;color:var(--green)">' + executedTxs.length + '</div></div>';
+            html += '</div>';
+
+            // Pending Transactions
+            html += '<div style="padding:1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;margin-bottom:2rem">';
+            html += '<div style="font-size:.85rem;font-weight:600;margin-bottom:1rem">Pending Transactions</div>';
+            if(pendingTxs.length === 0){
+                html += '<div style="text-align:center;padding:2rem;color:var(--text-muted);font-size:.8rem">No pending transactions</div>';
+            } else {
+                pendingTxs.forEach(tx => {
+                    html += '<div style="padding:1rem;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:8px;margin-bottom:.5rem">';
+                    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">';
+                    html += '<div style="display:flex;align-items:center;gap:.5rem">';
+                    html += '<span style="font-size:.75rem;font-weight:600">TX #' + tx.id + '</span>';
+                    html += '<span style="font-size:.6rem;color:var(--text-dim)">' + hive.shortAddr(tx.to) + '</span></div>';
+                    html += '<span style="font-size:.6rem;padding:.15rem .4rem;border-radius:3px;background:rgba(234,179,8,.15);color:var(--yellow)">' + tx.confirmations + ' confirmations</span></div>';
+                    html += '<div style="display:flex;align-items:center;justify-content:space-between">';
+                    html += '<span style="font-size:.7rem;color:var(--text-dim)">Value: ' + tx.value.toFixed(4) + ' RITUAL</span>';
+                    html += '<button onclick="confirmMultiSigTx(' + tx.id + ')" style="padding:.35rem .75rem;border-radius:6px;border:1px solid var(--green);background:rgba(34,197,94,.1);color:var(--green);font-weight:600;cursor:pointer;font-size:.7rem">Confirm</button></div>';
+                    html += '</div>';
+                });
+            }
+            html += '</div>';
+
+            // Executed Transactions
+            html += '<div style="padding:1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
+            html += '<div style="font-size:.85rem;font-weight:600;margin-bottom:1rem">Executed Transactions</div>';
+            if(executedTxs.length === 0){
+                html += '<div style="text-align:center;padding:2rem;color:var(--text-muted);font-size:.8rem">No executed transactions</div>';
+            } else {
+                html += '<table style="width:100%;border-collapse:collapse">';
+                html += '<thead><tr style="border-bottom:1px solid var(--border)">';
+                html += '<th style="text-align:left;padding:.5rem;font-size:.65rem;color:var(--text-dim);text-transform:uppercase;font-weight:500">ID</th>';
+                html += '<th style="text-align:left;padding:.5rem;font-size:.65rem;color:var(--text-dim);text-transform:uppercase;font-weight:500">To</th>';
+                html += '<th style="text-align:right;padding:.5rem;font-size:.65rem;color:var(--text-dim);text-transform:uppercase;font-weight:500">Value</th>';
+                html += '<th style="text-align:center;padding:.5rem;font-size:.65rem;color:var(--text-dim);text-transform:uppercase;font-weight:500">Status</th>';
+                html += '</tr></thead><tbody>';
+                executedTxs.slice(-10).reverse().forEach(tx => {
+                    html += '<tr style="border-bottom:1px solid rgba(255,255,255,.03)">';
+                    html += '<td style="padding:.5rem;font-size:.75rem;font-weight:600">#' + tx.id + '</td>';
+                    html += '<td style="padding:.5rem;font-size:.7rem;font-family:var(--font-mono)">' + hive.shortAddr(tx.to) + '</td>';
+                    html += '<td style="text-align:right;padding:.5rem;font-size:.75rem">' + tx.value.toFixed(4) + ' RITUAL</td>';
+                    html += '<td style="text-align:center;padding:.5rem"><span style="font-size:.55rem;padding:.15rem .4rem;border-radius:3px;background:rgba(34,197,94,.15);color:var(--green)">Executed</span></td>';
+                    html += '</tr>';
+                });
+                html += '</tbody></table>';
+            }
+            html += '</div>';
+
+            c.innerHTML = html;
+        }
+
+        async function confirmMultiSigTx(id){
+            try {
+                const ms = hive.getWriteContract('HiveMultiSig');
+                const tx = await ms.confirmTransaction(id);
+                await tx.wait();
+                loadMultiSigPage();
+            } catch(e){ alert('Confirm failed: ' + (e.reason || e.message)); }
+        }
+
+        function showSubmitTxModal(){
+            alert('Submit Transaction modal — connect your multisig owners to submit new transactions');
+        }
+
+
         function formatNum(n){
             if(n >= 1e6) return (n/1e6).toFixed(1) + 'M';
             if(n >= 1e3) return (n/1e3).toFixed(1) + 'K';
