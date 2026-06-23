@@ -363,6 +363,23 @@ const HIVE = {
       'event AgentSummoned(address indexed user, address indexed agent, address indexed governor, string name, bytes32 sector)',
       'event AgentDeactivated(address indexed user, address indexed agent)',
     ],
+
+    // HiveSovereignAgent (individual agent contract)
+    HiveSovereignAgent: [
+      'function config() view returns (string name, string cliType, string soul, uint32 wakeDelay, bool isRunning, uint256 wakeCount, uint256 lastWakeBlock, bytes32 sector)',
+      'function governor() view returns (address)',
+      'function owner() view returns (address)',
+      'function paused() view returns (bool)',
+      'function start()',
+      'function stop()',
+      'function pause()',
+      'function unpause()',
+      'function totalTrades() view returns (uint256)',
+      'function successfulTrades() view returns (uint256)',
+      'event AgentStarted(string name, uint32 wakeDelay)',
+      'event AgentStopped(string name)',
+      'event AgentWokeUp(uint256 indexed wakeCount, uint256 blockNumber)',
+    ],
   },
 };
 
@@ -415,11 +432,21 @@ class HiveProvider {
     return true;
   }
 
-  getContract(name) {
+  getContract(name, addr) {
+    if(addr){
+      const abi = CONTRACTS.abi[name];
+      if(!abi) return null;
+      return new ethers.Contract(addr, abi, this.provider);
+    }
     return this.contracts[name] || null;
   }
 
-  getWriteContract(name) {
+  getWriteContract(name, addr) {
+    if(addr){
+      const abi = CONTRACTS.abi[name];
+      if(!abi) return null;
+      return new ethers.Contract(addr, abi, this.signer);
+    }
     return this.contracts[name + '_write'] || this.contracts[name] || null;
   }
 

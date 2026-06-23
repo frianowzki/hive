@@ -1479,11 +1479,12 @@
                         html += '<div style="display:flex;gap:.5rem">';
                         if(isActive){
                             html += '<button onclick="pauseAgent(\'' + a.agent + '\')" style="flex:1;padding:.5rem;border-radius:6px;border:1px solid var(--yellow);background:rgba(245,158,11,.1);color:var(--yellow);font-weight:600;cursor:pointer;font-size:.7rem">Pause</button>';
+                            html += '<button onclick="viewAgentConfig(\'' + a.agent + '\')" style="flex:1;padding:.5rem;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-weight:600;cursor:pointer;font-size:.7rem">Config</button>';
                             html += '<button onclick="deactivateAgent(\'' + a.agent + '\')" style="flex:1;padding:.5rem;border-radius:6px;border:1px solid var(--red);background:rgba(239,68,68,.1);color:var(--red);font-weight:600;cursor:pointer;font-size:.7rem">Deactivate</button>';
                         } else {
                             html += '<button onclick="startAgent(\'' + a.agent + '\')" style="flex:1;padding:.5rem;border-radius:6px;border:1px solid var(--green);background:rgba(34,197,94,.1);color:var(--green);font-weight:600;cursor:pointer;font-size:.7rem">Start</button>';
+                            html += '<button onclick="viewAgentConfig(\'' + a.agent + '\')" style="flex:1;padding:.5rem;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-weight:600;cursor:pointer;font-size:.7rem">Config</button>';
                         }
-                        html += '<button onclick="viewAgentConfig(\'' + a.agent + '\')" style="flex:1;padding:.5rem;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-weight:600;cursor:pointer;font-size:.7rem">Config</button>';
                         html += '</div>';
                         
                         html += '</div>';
@@ -1881,21 +1882,94 @@
         }
         
         function pauseAgent(agentAddr){
-            alert('Pause agent ' + agentAddr + ' — tx would be sent');
+            if(!confirm('Pause this agent? It will stop executing.')) return;
+            const agent = hive.getWriteContract('HiveSovereignAgent', agentAddr);
+            agent.pause().then(() => loadAgentsPage()).catch(e => alert('Error: ' + (e.reason || e.message)));
         }
-        
+
         function deactivateAgent(agentAddr){
             if(!confirm('Deactivate this agent? This cannot be undone.')) return;
             const factory = hive.getWriteContract('HiveAgentFactory');
-            factory.deactivateAgent(agentAddr).then(() => loadAgentsPage()).catch(e => alert('Error: ' + e.message));
+            factory.deactivateAgent(agentAddr).then(() => loadAgentsPage()).catch(e => alert('Error: ' + (e.reason || e.message)));
         }
-        
+
         function startAgent(agentAddr){
-            alert('Start agent ' + agentAddr + ' — tx would be sent');
+            const agent = hive.getWriteContract('HiveSovereignAgent', agentAddr);
+            agent.unpause().then(() => loadAgentsPage()).catch(e => alert('Error: ' + (e.reason || e.message)));
         }
-        
+
         function viewAgentConfig(agentAddr){
-            alert('Agent config for ' + agentAddr + ' — coming soon');
+            showAgentConfigModal(agentAddr);
+        }
+
+        // ═══ AGENT CONFIG MODAL ═══
+        async function showAgentConfigModal(agentAddr){
+            const modal = document.getElementById('summon-modal');
+            const inner = document.getElementById('summon-inner');
+            inner.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-dim)">Loading config...</div>';
+            modal.style.display = 'flex';
+
+            try {
+                const agent = hive.getContract('HiveSovereignAgent', agentAddr);
+                const cfg = await agent.config();
+                const isPaused = await agent.paused();
+                const totalT = await agent.totalTrades();
+                const successT = await agent.successfulTrades();
+                const sectorNames = {'0x6465666900000000000000000000000000000000000000000000000000000000':'DeFi','0x74726164696e6700000000000000000000000000000000000000000000000000':'Trading','0x7265736561726368000000000000000000000000000000000000000000000000':'Research','0x676f7665726e616e636500000000000000000000000000000000000000000000':'Governance','0x7365637572697479000000000000000000000000000000000000000000000000':'Security','0x637573746f6d0000000000000000000000000000000000000000000000000000':'Custom'};
+                const sector = sectorNames[cfg.sector] || 'Custom';
+                const successRate = Number(totalT) > 0 ? ((Number(successT) / Number(totalT)) * 100).toFixed(1) : '0.0';
+
+                inner.innerHTML = `
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+                        <div style="font-size:1.1rem;font-weight:700;font-family:var(--font-display)">Agent Config</div>
+                        <button onclick="closeSummonModal()" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1.2rem;padding:.25rem">✕</button>
+                    </div>
+
+                    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;padding:.85rem;background:var(--bg-input,#111);border-radius:10px">
+                        <div style="width:44px;height:44px;border-radius:8px;background:var(--accent)20;display:flex;align-items:center;justify-content:center">
+                            <span style="font-weight:700;font-size:1.1rem;color:var(--accent)">${cfg.name[0]}</span>
+                        </div>
+                        <div>
+                            <div style="font-weight:700;font-size:.95rem">${cfg.name}</div>
+                            <div style="font-size:.65rem;color:var(--text-dim)">${sector} · ${cfg.cliType}</div>
+                        </div>
+                        <span style="margin-left:auto;font-size:.6rem;padding:.25rem .6rem;border-radius:4px;background:${isPaused ? 'rgba(245,158,11,.1);color:var(--yellow)' : 'rgba(34,197,94,.1);color:var(--green)'}">${isPaused ? 'Paused' : 'Running'}</span>
+                    </div>
+
+                    <div style="margin-bottom:1.25rem">
+                        <div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.4rem">Soul</div>
+                        <div style="padding:.75rem;background:var(--bg-input,#111);border-radius:8px;font-size:.8rem;line-height:1.5;color:var(--text);max-height:120px;overflow-y:auto">${cfg.soul || 'No soul defined'}</div>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem;margin-bottom:1.25rem">
+                        <div style="padding:.65rem;background:var(--bg-input,#111);border-radius:8px">
+                            <div style="font-size:.55rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Wake Delay</div>
+                            <div style="font-size:.85rem;font-weight:600">${cfg.wakeDelay} blocks</div>
+                        </div>
+                        <div style="padding:.65rem;background:var(--bg-input,#111);border-radius:8px">
+                            <div style="font-size:.55rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Wake Count</div>
+                            <div style="font-size:.85rem;font-weight:600">${Number(cfg.wakeCount)}</div>
+                        </div>
+                        <div style="padding:.65rem;background:var(--bg-input,#111);border-radius:8px">
+                            <div style="font-size:.55rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Total Trades</div>
+                            <div style="font-size:.85rem;font-weight:600">${Number(totalT)}</div>
+                        </div>
+                        <div style="padding:.65rem;background:var(--bg-input,#111);border-radius:8px">
+                            <div style="font-size:.55rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Success Rate</div>
+                            <div style="font-size:.85rem;font-weight:600;color:var(--green)">${successRate}%</div>
+                        </div>
+                    </div>
+
+                    <div style="padding:.65rem;background:var(--bg-input,#111);border-radius:8px;margin-bottom:1.25rem">
+                        <div style="font-size:.55rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.2rem">Contract Address</div>
+                        <a href="${hive.explorerAddr(agentAddr)}" target="_blank" style="color:var(--accent-light);font-family:var(--font-mono);font-size:.8rem">${agentAddr}</a>
+                    </div>
+
+                    <button onclick="closeSummonModal()" style="width:100%;padding:.7rem;background:transparent;border:1px solid var(--border);color:var(--text-dim);font-weight:600;cursor:pointer;font-size:.8rem;border-radius:8px">Close</button>
+                `;
+            } catch(e) {
+                inner.innerHTML = '<div style="text-align:center;padding:2rem"><div style="color:var(--red);margin-bottom:1rem">Error loading config</div><div style="font-size:.75rem;color:var(--text-dim)">' + e.message + '</div><button onclick="closeSummonModal()" style="margin-top:1rem;padding:.5rem 1.5rem;background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:6px;cursor:pointer">Close</button></div>';
+            }
         }
 
         // ═══ POINTS PAGE ═══
