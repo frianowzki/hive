@@ -1884,18 +1884,18 @@
         function pauseAgent(agentAddr){
             if(!confirm('Pause this agent? It will stop executing.')) return;
             const agent = hive.getWriteContract('HiveSovereignAgent', agentAddr);
-            agent.pause().then(() => loadAgentsPage()).catch(e => alert('Error: ' + (e.reason || e.message)));
+            agent.pause().then(tx => tx.wait()).then(() => loadAgentsPage()).catch(e => alert('Error: ' + (e.reason || e.message)));
         }
 
         function deactivateAgent(agentAddr){
             if(!confirm('Deactivate this agent? This cannot be undone.')) return;
             const factory = hive.getWriteContract('HiveAgentFactory');
-            factory.deactivateAgent(agentAddr).then(() => loadAgentsPage()).catch(e => alert('Error: ' + (e.reason || e.message)));
+            factory.deactivateAgent(agentAddr).then(tx => tx.wait()).then(() => loadAgentsPage()).catch(e => alert('Error: ' + (e.reason || e.message)));
         }
 
         function startAgent(agentAddr){
             const agent = hive.getWriteContract('HiveSovereignAgent', agentAddr);
-            agent.unpause().then(() => loadAgentsPage()).catch(e => alert('Error: ' + (e.reason || e.message)));
+            agent.unpause().then(tx => tx.wait()).then(() => loadAgentsPage()).catch(e => alert('Error: ' + (e.reason || e.message)));
         }
 
         function viewAgentConfig(agentAddr){
