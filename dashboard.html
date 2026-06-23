@@ -806,6 +806,11 @@
             <div id="auction-buy-inner" style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;width:420px;max-height:80vh;overflow-y:auto;padding:0"></div>
         </div>
 
+        <!-- Summon Agent Modal -->
+        <div id="summon-modal" style="display:none;position:fixed;inset:0;z-index:10002;backdrop-filter:blur(12px);background:rgba(0,0,0,.6);align-items:center;justify-content:center">
+            <div id="summon-inner" style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;width:460px;max-height:85vh;overflow-y:auto;padding:1.75rem"></div>
+        </div>
+
         <!-- PAGE: AI Market Maker -->
         <div class="content page-content" id="page-maker" style="display:none">
             <div id="maker-content">
@@ -1517,8 +1522,164 @@
 
         // ═══ AGENT ACTIONS ═══
         function showSummonModal(){
-            // TODO: Build summon modal
-            alert('Summon Agent modal — coming soon');
+            const inner = document.getElementById('summon-inner');
+            inner.innerHTML = `
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+                    <div style="font-size:1.1rem;font-weight:700;font-family:var(--font-display)">Summon Agent</div>
+                    <button onclick="closeSummonModal()" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1.2rem;padding:.25rem">✕</button>
+                </div>
+
+                <div style="margin-bottom:1rem">
+                    <div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.4rem">Agent Name</div>
+                    <input id="summon-name" type="text" placeholder="e.g., Queen, AlphaBot, Scout" style="width:100%;padding:.65rem .85rem;background:var(--bg-input,#111);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.85rem;outline:none;box-sizing:border-box" />
+                </div>
+
+                <div style="margin-bottom:1rem">
+                    <div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.4rem">Sector</div>
+                    <div id="summon-sectors" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem">
+                        ${['DeFi','Trading','Research','Governance','Security','Custom'].map((s,i) => {
+                            const colors = {DeFi:'#8b5cf6',Trading:'#22c55e',Research:'#3b82f6',Governance:'#f59e0b',Security:'#ef4444',Custom:'#6b7280'};
+                            return '<div onclick="selectSector(this,\'' + s + '\')" style="padding:.55rem;border-radius:8px;border:1px solid ' + (i===0 ? colors[s] : 'var(--border)') + ';background:' + (i===0 ? colors[s]+'15' : 'transparent') + ';color:' + (i===0 ? colors[s] : 'var(--text-dim)') + ';font-size:.75rem;font-weight:600;text-align:center;cursor:pointer;transition:all .2s" data-sector="' + s + '" data-color="' + colors[s] + '">' + s + '</div>';
+                        }).join('')}
+                    </div>
+                    <input type="hidden" id="summon-sector" value="DeFi" />
+                </div>
+
+                <div style="margin-bottom:1rem">
+                    <div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.4rem">Soul</div>
+                    <textarea id="summon-soul" rows="4" placeholder="Define the agent's identity, purpose, and behavioral constraints..." style="width:100%;padding:.65rem .85rem;background:var(--bg-input,#111);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.8rem;outline:none;resize:vertical;box-sizing:border-box;font-family:inherit"></textarea>
+                </div>
+
+                <div style="margin-bottom:1rem">
+                    <div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.4rem">Wake Delay (blocks)</div>
+                    <div style="display:flex;align-items:center;gap:.5rem">
+                        <input id="summon-wake" type="number" value="10" min="1" style="flex:1;padding:.65rem .85rem;background:var(--bg-input,#111);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.85rem;outline:none;box-sizing:border-box" />
+                        <div style="display:flex;gap:.35rem">
+                            ${[5,10,50,100].map(v => '<button onclick="document.getElementById(\'summon-wake\').value=' + v + '" style="padding:.4rem .6rem;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-size:.65rem;cursor:pointer">' + v + '</button>').join('')}
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:10px">
+                    <div>
+                        <div style="font-size:.75rem;font-weight:600;color:var(--text)">Custom Limits</div>
+                        <div style="font-size:.65rem;color:var(--text-dim)">Override default spending limits (2x fee)</div>
+                    </div>
+                    <label style="position:relative;display:inline-block;width:40px;height:22px;cursor:pointer">
+                        <input type="checkbox" id="summon-custom" onchange="toggleCustomLimits()" style="opacity:0;width:0;height:0" />
+                        <span style="position:absolute;inset:0;background:var(--border);border-radius:11px;transition:.3s"></span>
+                        <span style="position:absolute;top:2px;left:2px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.3s"></span>
+                    </label>
+                </div>
+
+                <div id="custom-limits-section" style="display:none;margin-bottom:1rem;padding:.85rem;border:1px solid var(--border);border-radius:10px">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.65rem">
+                        <div>
+                            <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Per-Tx Max (RITUAL)</div>
+                            <input id="summon-perTx" type="number" value="100" style="width:100%;padding:.5rem .65rem;background:var(--bg-input,#111);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;outline:none;box-sizing:border-box" />
+                        </div>
+                        <div>
+                            <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Daily Max (RITUAL)</div>
+                            <input id="summon-daily" type="number" value="5000" style="width:100%;padding:.5rem .65rem;background:var(--bg-input,#111);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;outline:none;box-sizing:border-box" />
+                        </div>
+                        <div>
+                            <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Max Tx/Hour</div>
+                            <input id="summon-rate" type="number" value="10" style="width:100%;padding:.5rem .65rem;background:var(--bg-input,#111);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;outline:none;box-sizing:border-box" />
+                        </div>
+                        <div>
+                            <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Max Gas/Tx</div>
+                            <input id="summon-gas" type="number" value="500000" style="width:100%;padding:.5rem .65rem;background:var(--bg-input,#111);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;outline:none;box-sizing:border-box" />
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:1.25rem">
+                    <div style="font-size:.75rem;color:var(--text-dim)">Deployment Fee</div>
+                    <div id="summon-fee-display" style="font-size:.95rem;font-weight:700;font-family:var(--font-display)">Loading...</div>
+                </div>
+
+                <button id="summon-submit-btn" onclick="executeSummon()" style="width:100%;padding:.75rem;background:var(--accent);border:none;color:#fff;font-weight:700;cursor:pointer;font-size:.85rem;border-radius:10px;transition:all .2s">
+                    Summon Agent
+                </button>
+            `;
+            document.getElementById('summon-modal').style.display = 'flex';
+            loadSummonFee();
+        }
+
+        function closeSummonModal(){
+            document.getElementById('summon-modal').style.display = 'none';
+        }
+
+        function selectSector(el, sector){
+            document.querySelectorAll('#summon-sectors > div').forEach(d => {
+                d.style.borderColor = 'var(--border)';
+                d.style.background = 'transparent';
+                d.style.color = 'var(--text-dim)';
+            });
+            el.style.borderColor = el.dataset.color;
+            el.style.background = el.dataset.color + '15';
+            el.style.color = el.dataset.color;
+            document.getElementById('summon-sector').value = sector;
+        }
+
+        function toggleCustomLimits(){
+            const checked = document.getElementById('summon-custom').checked;
+            document.getElementById('custom-limits-section').style.display = checked ? 'block' : 'none';
+        }
+
+        async function loadSummonFee(){
+            try {
+                const factory = hive.getContract('HiveAgentFactory');
+                const fee = await factory.deploymentFee();
+                const formatted = hive.formatEther(fee);
+                document.getElementById('summon-fee-display').textContent = formatted + ' RITUAL';
+            } catch(e) {
+                document.getElementById('summon-fee-display').textContent = '0 RITUAL';
+            }
+        }
+
+        async function executeSummon(){
+            const name = document.getElementById('summon-name').value.trim();
+            const sector = document.getElementById('summon-sector').value;
+            const soul = document.getElementById('summon-soul').value.trim();
+            const wakeDelay = parseInt(document.getElementById('summon-wake').value) || 10;
+            const useCustom = document.getElementById('summon-custom').checked;
+
+            if(!name){ alert('Please enter an agent name'); return; }
+            if(!soul){ alert('Please define the agent soul'); return; }
+
+            const btn = document.getElementById('summon-submit-btn');
+            btn.textContent = 'Summoning...';
+            btn.style.opacity = '.6';
+            btn.disabled = true;
+
+            try {
+                const factory = hive.getWriteContract('HiveAgentFactory');
+                let tx;
+
+                if(useCustom){
+                    const perTx = document.getElementById('summon-perTx').value;
+                    const daily = document.getElementById('summon-daily').value;
+                    const rate = document.getElementById('summon-rate').value;
+                    const gas = document.getElementById('summon-gas').value;
+                    const fee = await factory.deploymentFee();
+                    tx = await factory.summonAgentCustom(name, sector, soul, wakeDelay, ethers.parseEther(String(perTx)), ethers.parseEther(String(daily)), rate, gas, { value: fee * 2n });
+                } else {
+                    const fee = await factory.deploymentFee();
+                    tx = await factory.summonAgent(name, sector, soul, wakeDelay, { value: fee });
+                }
+
+                btn.textContent = 'Confirming...';
+                await tx.wait();
+                closeSummonModal();
+                loadAgentsPage();
+            } catch(e) {
+                alert('Error: ' + (e.reason || e.message));
+            }
+
+            btn.textContent = 'Summon Agent';
+            btn.style.opacity = '1';
+            btn.disabled = false;
         }
         
         function pauseAgent(agentAddr){
@@ -2892,6 +3053,10 @@
         });
         document.getElementById('auction-buy-modal').addEventListener('click', function(e){
             if(e.target === this) closeAuctionBuy();
+        });
+
+        document.getElementById('summon-modal').addEventListener('click', function(e){
+            if(e.target === this) closeSummonModal();
         });
 
         // ═══ REAL-TIME PRICE UPDATES ═══
