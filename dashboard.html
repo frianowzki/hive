@@ -873,7 +873,7 @@
             tokenlaunch: { title:'', breadcrumb:'' },
             auction: { title:'', breadcrumb:'' },
             maker: { title:'AI Market Maker', breadcrumb:'Hive / DeFi / Market Maker' },
-            agents: { title:'AI Agents', breadcrumb:'Hive / AI / Agents' },
+            agents: { title:'AI Agents', breadcrumb:'' },
             strategy: { title:'Strategies', breadcrumb:'Hive / AI / Strategies' },
             flock: { title:'Federated Learning', breadcrumb:'Hive / AI / FLock' },
             governance: { title:'Proposals', breadcrumb:'Hive / Governance / Proposals' },
@@ -1404,15 +1404,14 @@
 
                 // Header
                 html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem">';
-                html += '<div><h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:800">AI Agents</h1>';
-                html += '<p style="font-size:.8rem;color:var(--text-dim);margin-top:.25rem">Summon and manage your sovereign AI agents</p></div>';
+                html += '<div><h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:800">AI Agents</h1></div>';
                 html += '<button onclick="showSummonModal()" style="padding:.65rem 1.5rem;border-radius:10px;background:var(--accent);border:none;color:#fff;font-weight:600;cursor:pointer;font-size:.8rem;display:flex;align-items:center;gap:.5rem">';
                 html += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
                 html += 'Summon Agent</button>';
                 html += '</div>';
 
                 // Stats
-                html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:2rem">';
+                html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;margin-bottom:2rem;max-width:600px">';
                 html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px">';
                 html += '<div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.25rem">Your Agents</div>';
                 html += '<div style="font-size:1.2rem;font-weight:700">' + userAgents.length + '</div></div>';
@@ -1432,12 +1431,12 @@
                 html += '<div style="font-size:.85rem;font-weight:600;margin-bottom:1rem">Your Agents</div>';
                 
                 if(userAgents.length === 0){
-                    html += '<div style="padding:3rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;text-align:center">';
+                    html += '<div style="padding:3rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;text-align:center;max-width:600px">';
                     html += '<div style="font-size:.85rem;color:var(--text-muted);margin-bottom:1rem">No agents summoned yet</div>';
                     html += '<button onclick="showSummonModal()" style="padding:.6rem 1.5rem;border-radius:8px;background:var(--accent);border:none;color:#fff;font-weight:600;cursor:pointer;font-size:.8rem">Summon Your First Agent</button>';
                     html += '</div>';
                 } else {
-                    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:.75rem">';
+                    html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;max-width:600px">';
                     userAgents.forEach((a, i) => {
                         const sector = sectorNames[a.sector] || 'Custom';
                         const color = sectorColors[sector] || '#6b7280';
@@ -1488,7 +1487,7 @@
                 if(registryAgents.length > 0){
                     html += '<div>';
                     html += '<div style="font-size:.85rem;font-weight:600;margin-bottom:1rem">Network Agents <span style="font-size:.65rem;color:var(--text-dim);font-weight:400">(' + registryAgents.length + ' registered)</span></div>';
-                    html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden">';
+                    html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden;max-width:600px">';
                     html += '<table style="width:100%;border-collapse:collapse">';
                     html += '<thead><tr style="border-bottom:1px solid var(--border)">';
                     html += '<th style="padding:.75rem 1rem;text-align:left;font-size:.65rem;color:var(--text-dim);text-transform:uppercase;font-weight:500">Name</th>';
