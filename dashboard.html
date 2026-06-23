@@ -1450,8 +1450,13 @@
                         html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;transition:all .2s">';
                         html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">';
                         html += '<div style="display:flex;align-items:center;gap:.75rem">';
-                        html += '<div style="width:40px;height:40px;border-radius:10px;background:' + color + '20;display:flex;align-items:center;justify-content:center">';
-                        html += '<svg viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="2" width="20" height="20"><path d="M12 2a7 7 0 0 1 7 7c0 2.4-1.2 4.5-3 5.7V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.3C6.2 13.5 5 11.4 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg>';
+                        html += '<div style="width:40px;height:40px;border-radius:10px;background:' + color + '20;display:flex;align-items:center;justify-content:center;overflow:hidden">';
+                        const avatar = getAgentAvatar(a.agent);
+                        if(avatar){
+                            html += '<img src="' + avatar + '" style="width:100%;height:100%;object-fit:cover" />';
+                        } else {
+                            html += '<svg viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="2" width="20" height="20"><path d="M12 2a7 7 0 0 1 7 7c0 2.4-1.2 4.5-3 5.7V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.3C6.2 13.5 5 11.4 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg>';
+                        }
                         html += '</div>';
                         html += '<div><div style="font-weight:600;font-size:.9rem">' + a.name + '</div>';
                         html += '<div style="font-size:.65rem;color:' + color + '">' + sector + '</div></div></div>';
@@ -1487,29 +1492,35 @@
                 }
                 html += '</div>';
 
-                // Network Agents (from registry)
+                // Network Agents Gallery
                 if(registryAgents.length > 0){
                     html += '<div>';
                     html += '<div style="font-size:.85rem;font-weight:600;margin-bottom:1rem">Network Agents <span style="font-size:.65rem;color:var(--text-dim);font-weight:400">(' + registryAgents.length + ' registered)</span></div>';
-                    html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden;max-width:720px">';
-                    html += '<table style="width:100%;border-collapse:collapse">';
-                    html += '<thead><tr style="border-bottom:1px solid var(--border)">';
-                    html += '<th style="padding:.75rem 1rem;text-align:left;font-size:.65rem;color:var(--text-dim);text-transform:uppercase;font-weight:500">Name</th>';
-                    html += '<th style="padding:.75rem 1rem;text-align:left;font-size:.65rem;color:var(--text-dim);text-transform:uppercase;font-weight:500">Address</th>';
-                    html += '<th style="padding:.75rem 1rem;text-align:left;font-size:.65rem;color:var(--text-dim);text-transform:uppercase;font-weight:500">Status</th>';
-                    html += '<th style="padding:.75rem 1rem;text-align:left;font-size:.65rem;color:var(--text-dim);text-transform:uppercase;font-weight:500">Last Heartbeat</th>';
-                    html += '</tr></thead><tbody>';
-                    
-                    registryAgents.slice(0, 10).forEach(a => {
-                        html += '<tr style="border-bottom:1px solid var(--border)">';
-                        html += '<td style="padding:.75rem 1rem;font-size:.8rem;font-weight:500">' + a.name + '</td>';
-                        html += '<td style="padding:.75rem 1rem"><a href="' + hive.explorerAddr(a.address) + '" target="_blank" style="color:var(--accent-light);font-family:var(--font-mono);font-size:.75rem">' + hive.shortAddr(a.address) + '</a></td>';
-                        html += '<td style="padding:.75rem 1rem"><span style="font-size:.6rem;padding:.2rem .5rem;border-radius:4px;background:' + (a.alive ? 'rgba(34,197,94,.1);color:var(--green)' : 'rgba(136,136,136,.1);color:var(--text-dim)') + '">' + (a.alive ? 'Online' : 'Offline') + '</span></td>';
-                        html += '<td style="padding:.75rem 1rem;font-size:.75rem;color:var(--text-dim)">' + hive.timeAgo(Number(a.lastHeartbeat)) + '</td>';
-                        html += '</tr>';
+                    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.75rem;max-width:720px">';
+                    registryAgents.slice(0, 9).forEach(a => {
+                        const avatar = getAgentAvatar(a.address);
+                        const sectorColor = a.sector ? SECTOR_DATA[sectorNames[a.sector]]?.color || '#6b7280' : '#6b7280';
+                        const sectorLabel = a.sector ? sectorNames[a.sector] || 'Custom' : 'Custom';
+                        const sectorIcon = SECTOR_DATA[sectorLabel]?.icon || '⚙️';
+                        html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;transition:all .2s">';
+                        html += '<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem">';
+                        html += '<div style="width:36px;height:36px;border-radius:50%;background:' + sectorColor + '20;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">';
+                        if(avatar){
+                            html += '<img src="' + avatar + '" style="width:100%;height:100%;object-fit:cover" />';
+                        } else {
+                            html += '<span style="font-size:.9rem">' + sectorIcon + '</span>';
+                        }
+                        html += '</div>';
+                        html += '<div style="min-width:0"><div style="font-weight:600;font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + a.name + '</div>';
+                        html += '<div style="font-size:.6rem;color:' + sectorColor + '">' + sectorLabel + '</div></div>';
+                        html += '</div>';
+                        html += '<div style="display:flex;align-items:center;justify-content:space-between">';
+                        html += '<a href="' + hive.explorerAddr(a.address) + '" target="_blank" style="color:var(--accent-light);font-family:var(--font-mono);font-size:.65rem">' + hive.shortAddr(a.address) + '</a>';
+                        html += '<span style="font-size:.55rem;padding:.15rem .4rem;border-radius:4px;background:' + (a.alive ? 'rgba(34,197,94,.1);color:var(--green)' : 'rgba(136,136,136,.1);color:var(--text-dim)') + '">' + (a.alive ? 'Online' : 'Offline') + '</span>';
+                        html += '</div>';
+                        html += '</div>';
                     });
-                    
-                    html += '</tbody></table></div>';
+                    html += '</div>';
                     html += '</div>';
                 }
 
@@ -1520,82 +1531,264 @@
             }
         }
 
-        // ═══ AGENT ACTIONS ═══
+        // ═══ AGENT AVATAR STORAGE ═══
+        const AVATAR_STORE = 'hive_agent_avatars';
+        function getAgentAvatars(){ try { return JSON.parse(localStorage.getItem(AVATAR_STORE) || '{}'); } catch(e){ return {}; } }
+        function saveAgentAvatar(agentAddr, base64){ const avatars = getAgentAvatars(); avatars[agentAddr] = base64; localStorage.setItem(AVATAR_STORE, JSON.stringify(avatars)); }
+        function getAgentAvatar(agentAddr){ return getAgentAvatars()[agentAddr] || null; }
+
+        // ═══ SECTOR DATA ═══
+        const SECTOR_DATA = {
+            DeFi: { color:'#8b5cf6', icon:'💎', desc:'Automated yield farming, liquidity management, and DeFi protocol interactions' },
+            Trading: { color:'#22c55e', icon:'📈', desc:'Market analysis, order execution, and portfolio rebalancing across DEXs' },
+            Research: { color:'#3b82f6', icon:'🔬', desc:'On-chain data analysis, protocol research, and alpha discovery' },
+            Governance: { color:'#f59e0b', icon:'🏛️', desc:'Proposal analysis, voting, and DAO participation automation' },
+            Security: { color:'#ef4444', icon:'🛡️', desc:'Vulnerability scanning, exploit monitoring, and threat detection' },
+            Custom: { color:'#6b7280', icon:'⚙️', desc:'Build your own agent behavior from scratch' }
+        };
+
+        // ═══ PRESET SOULS ═══
+        const PRESET_SOULS = [
+            { name:'Conservative Trader', sector:'Trading', soul:'You are a conservative trading agent. Only execute trades with >80% confidence. Never risk more than 2% of portfolio per trade. Prefer stable pairs. Always set stop-losses. Focus on capital preservation over profit maximization.' },
+            { name:'Yield Maximizer', sector:'DeFi', soul:'You are a yield optimization agent. Scan for highest APY opportunities across DeFi protocols. Auto-compound rewards. Rebalance when yield drops below threshold. Never chase unsustainable yields. Prioritize audited protocols.' },
+            { name:'Alpha Hunter', sector:'Research', soul:'You are a research agent focused on discovering alpha. Monitor new protocol launches, track smart money wallets, analyze on-chain metrics. Report findings with conviction score. Never FOMO into positions.' },
+            { name:'Governance Voter', sector:'Governance', soul:'You are a governance participation agent. Analyze proposals for alignment with protocol long-term interests. Vote based on technical merit, not short-term price impact. Delegate wisely.' },
+            { name:'Sentinel', sector:'Security', soul:'You are a security monitoring agent. Watch for unusual transactions, exploit patterns, and protocol anomalies. Alert immediately on detection. Never interact with suspicious contracts.' }
+        ];
+
+        // ═══ AVATAR HANDLER ═══
+        let _summonAvatarBase64 = null;
+        function handleAvatarUpload(input){
+            const file = input.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e){
+                const img = new Image();
+                img.onload = function(){
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 128; canvas.height = 128;
+                    const ctx = canvas.getContext('2d');
+                    ctx.beginPath(); ctx.arc(64, 64, 64, 0, Math.PI * 2); ctx.closePath(); ctx.clip();
+                    ctx.drawImage(img, 0, 0, 128, 128);
+                    _summonAvatarBase64 = canvas.toDataURL('image/png');
+                    document.getElementById('summon-avatar-preview').src = _summonAvatarBase64;
+                    document.getElementById('summon-avatar-preview').style.display = 'block';
+                    document.getElementById('summon-avatar-placeholder').style.display = 'none';
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ═══ SOUL EDITOR PREVIEW ═══
+        function toggleSoulPreview(){
+            const textarea = document.getElementById('summon-soul');
+            const preview = document.getElementById('summon-soul-preview');
+            const btn = document.getElementById('soul-preview-btn');
+            if(preview.style.display === 'none'){
+                preview.innerHTML = renderMarkdown(textarea.value);
+                preview.style.display = 'block';
+                textarea.style.display = 'none';
+                btn.textContent = 'Edit';
+            } else {
+                preview.style.display = 'none';
+                textarea.style.display = 'block';
+                btn.textContent = 'Preview';
+            }
+        }
+        function renderMarkdown(text){
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/`(.*?)`/g, '<code style="background:rgba(139,92,246,.15);padding:.1rem .3rem;border-radius:3px;font-size:.8em">$1</code>')
+                .replace(/\n/g, '<br>');
+        }
+
+        // ═══ WAKE TIMELINE ═══
+        function updateWakeTimeline(){
+            const blocks = parseInt(document.getElementById('summon-wake').value) || 10;
+            const seconds = blocks * 12; // ~12s per block
+            const mins = Math.round(seconds / 60);
+            const hours = (mins / 60).toFixed(1);
+            let label = mins < 60 ? mins + ' min' : hours + ' hr';
+            const el = document.getElementById('wake-timeline');
+            if(!el) return;
+            const ticks = Math.min(blocks, 20);
+            const step = blocks / ticks;
+            let html = '<div style="display:flex;align-items:flex-end;gap:2px;height:32px;margin-bottom:.35rem">';
+            for(let i = 0; i < ticks; i++){
+                const h = 8 + Math.random() * 20;
+                html += '<div style="flex:1;height:' + h + 'px;background:var(--accent);border-radius:2px;opacity:' + (0.3 + (i/ticks)*0.7) + '"></div>';
+            }
+            html += '</div>';
+            html += '<div style="display:flex;justify-content:space-between;font-size:.55rem;color:var(--text-dim)">';
+            html += '<span>Now</span><span>~' + label + '/wakeup</span><span>' + blocks + ' blocks</span>';
+            html += '</div>';
+            el.innerHTML = html;
+        }
+
+        // ═══ SIMULATION ═══
+        function updateSimulation(){
+            const useCustom = document.getElementById('summon-custom')?.checked;
+            const baseFee = parseFloat(document.getElementById('summon-fee-display')?.textContent) || 0;
+            const fee = useCustom ? baseFee * 2 : baseFee;
+            const wakeBlocks = parseInt(document.getElementById('summon-wake')?.value) || 10;
+            const wakeHours = (wakeBlocks * 12 / 3600).toFixed(2);
+            const wakeDay = (24 / wakeHours).toFixed(1);
+            let limitsText = 'Default limits';
+            if(useCustom){
+                const perTx = document.getElementById('summon-perTx')?.value || '100';
+                const daily = document.getElementById('summon-daily')?.value || '5000';
+                limitsText = perTx + ' RITUAL/tx · ' + daily + ' RITUAL/day';
+            }
+            const el = document.getElementById('summon-sim');
+            if(!el) return;
+            el.innerHTML = `
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+                    <div><span style="color:var(--text-dim);font-size:.65rem">Deploy Fee</span><br><span style="font-weight:600;font-size:.8rem">${fee.toFixed(2)} RITUAL</span></div>
+                    <div><span style="color:var(--text-dim);font-size:.65rem">Wake Freq</span><br><span style="font-weight:600;font-size:.8rem">~${wakeDay}/day</span></div>
+                    <div><span style="color:var(--text-dim);font-size:.65rem">Limits</span><br><span style="font-weight:600;font-size:.8rem">${limitsText}</span></div>
+                    <div><span style="color:var(--text-dim);font-size:.65rem">Gas Cost</span><br><span style="font-weight:600;font-size:.8rem">Varies</span></div>
+                </div>
+            `;
+        }
+
+        // ═══ PRESET SOUL SELECT ═══
+        function applyPreset(idx){
+            const p = PRESET_SOULS[idx];
+            document.getElementById('summon-name').value = p.name;
+            document.getElementById('summon-soul').value = p.soul;
+            selectSectorByName(p.sector);
+        }
+        function selectSectorByName(sector){
+            document.querySelectorAll('#summon-sectors > div').forEach(d => {
+                d.style.borderColor = 'var(--border)';
+                d.style.background = 'transparent';
+                d.style.color = 'var(--text-dim)';
+            });
+            const el = document.querySelector('[data-sector="' + sector + '"]');
+            if(el){
+                el.style.borderColor = el.dataset.color;
+                el.style.background = el.dataset.color + '15';
+                el.style.color = el.dataset.color;
+            }
+            document.getElementById('summon-sector').value = sector;
+            const descEl = document.getElementById('sector-desc');
+            if(descEl && SECTOR_DATA[sector]) descEl.textContent = SECTOR_DATA[sector].desc;
+        }
+
+        // ═══ SHOW SUMMON MODAL ═══
         function showSummonModal(){
+            _summonAvatarBase64 = null;
             const inner = document.getElementById('summon-inner');
             inner.innerHTML = `
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
                     <div style="font-size:1.1rem;font-weight:700;font-family:var(--font-display)">Summon Agent</div>
                     <button onclick="closeSummonModal()" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1.2rem;padding:.25rem">✕</button>
                 </div>
 
-                <div style="margin-bottom:1rem">
-                    <div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.4rem">Agent Name</div>
-                    <input id="summon-name" type="text" placeholder="e.g., Queen, AlphaBot, Scout" style="width:100%;padding:.65rem .85rem;background:var(--bg-input,#111);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.85rem;outline:none;box-sizing:border-box" />
+                <!-- Avatar + Name -->
+                <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem">
+                    <div onclick="document.getElementById('avatar-file-input').click()" style="width:56px;height:56px;border-radius:50%;border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;overflow:hidden;transition:border-color .2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                        <img id="summon-avatar-preview" src="" style="display:none;width:100%;height:100%;object-fit:cover" />
+                        <span id="summon-avatar-placeholder" style="font-size:1.2rem;color:var(--text-dim)">📷</span>
+                    </div>
+                    <input type="file" id="avatar-file-input" accept="image/*" style="display:none" onchange="handleAvatarUpload(this)" />
+                    <div style="flex:1">
+                        <div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.35rem">Agent Name</div>
+                        <input id="summon-name" type="text" placeholder="e.g., Queen, AlphaBot, Scout" style="width:100%;padding:.6rem .75rem;background:var(--bg-input,#111);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.85rem;outline:none;box-sizing:border-box" />
+                    </div>
                 </div>
 
+                <!-- Sector -->
                 <div style="margin-bottom:1rem">
-                    <div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.4rem">Sector</div>
-                    <div id="summon-sectors" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem">
-                        ${['DeFi','Trading','Research','Governance','Security','Custom'].map((s,i) => {
-                            const colors = {DeFi:'#8b5cf6',Trading:'#22c55e',Research:'#3b82f6',Governance:'#f59e0b',Security:'#ef4444',Custom:'#6b7280'};
-                            return '<div onclick="selectSector(this,\'' + s + '\')" style="padding:.55rem;border-radius:8px;border:1px solid ' + (i===0 ? colors[s] : 'var(--border)') + ';background:' + (i===0 ? colors[s]+'15' : 'transparent') + ';color:' + (i===0 ? colors[s] : 'var(--text-dim)') + ';font-size:.75rem;font-weight:600;text-align:center;cursor:pointer;transition:all .2s" data-sector="' + s + '" data-color="' + colors[s] + '">' + s + '</div>';
+                    <div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.4rem">Sector</div>
+                    <div id="summon-sectors" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem">
+                        ${Object.entries(SECTOR_DATA).map(([s, d], i) => {
+                            return '<div onclick="selectSectorByName(\'' + s + '\')" style="padding:.5rem;border-radius:8px;border:1px solid ' + (i===0 ? d.color : 'var(--border)') + ';background:' + (i===0 ? d.color+'15' : 'transparent') + ';color:' + (i===0 ? d.color : 'var(--text-dim)') + ';font-size:.7rem;font-weight:600;text-align:center;cursor:pointer;transition:all .2s" data-sector="' + s + '" data-color="' + d.color + '">' + d.icon + ' ' + s + '</div>';
                         }).join('')}
                     </div>
+                    <div id="sector-desc" style="font-size:.65rem;color:var(--text-dim);margin-top:.4rem;padding:.4rem .6rem;background:rgba(139,92,246,.05);border-radius:6px">${SECTOR_DATA.DeFi.desc}</div>
                     <input type="hidden" id="summon-sector" value="DeFi" />
                 </div>
 
+                <!-- Preset Souls -->
                 <div style="margin-bottom:1rem">
-                    <div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.4rem">Soul</div>
-                    <textarea id="summon-soul" rows="4" placeholder="Define the agent's identity, purpose, and behavioral constraints..." style="width:100%;padding:.65rem .85rem;background:var(--bg-input,#111);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.8rem;outline:none;resize:vertical;box-sizing:border-box;font-family:inherit"></textarea>
+                    <div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.4rem">Quick Presets</div>
+                    <div style="display:flex;gap:.35rem;overflow-x:auto;padding-bottom:.25rem">
+                        ${PRESET_SOULS.map((p, i) => {
+                            const c = SECTOR_DATA[p.sector]?.color || '#6b7280';
+                            return '<button onclick="applyPreset(' + i + ')" style="padding:.4rem .65rem;border-radius:6px;border:1px solid ' + c + '40;background:' + c + '10;color:' + c + ';font-size:.6rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s">' + p.name + '</button>';
+                        }).join('')}
+                    </div>
                 </div>
 
+                <!-- Soul Editor -->
                 <div style="margin-bottom:1rem">
-                    <div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.4rem">Wake Delay (blocks)</div>
-                    <div style="display:flex;align-items:center;gap:.5rem">
-                        <input id="summon-wake" type="number" value="10" min="1" style="flex:1;padding:.65rem .85rem;background:var(--bg-input,#111);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.85rem;outline:none;box-sizing:border-box" />
-                        <div style="display:flex;gap:.35rem">
-                            ${[5,10,50,100].map(v => '<button onclick="document.getElementById(\'summon-wake\').value=' + v + '" style="padding:.4rem .6rem;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-size:.65rem;cursor:pointer">' + v + '</button>').join('')}
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem">
+                        <div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase">Soul</div>
+                        <button id="soul-preview-btn" onclick="toggleSoulPreview()" style="background:none;border:1px solid var(--border);color:var(--text-dim);font-size:.6rem;padding:.2rem .5rem;border-radius:4px;cursor:pointer">Preview</button>
+                    </div>
+                    <textarea id="summon-soul" rows="5" placeholder="Define identity, purpose, and behavioral constraints...&#10;&#10;Supports **bold**, *italic*, and \`code\`" style="width:100%;padding:.65rem .85rem;background:var(--bg-input,#111);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.8rem;outline:none;resize:vertical;box-sizing:border-box;font-family:inherit;line-height:1.5"></textarea>
+                    <div id="summon-soul-preview" style="display:none;width:100%;padding:.65rem .85rem;background:var(--bg-input,#111);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.8rem;line-height:1.6;min-height:100px;box-sizing:border-box"></div>
+                </div>
+
+                <!-- Wake Delay + Timeline -->
+                <div style="margin-bottom:1rem">
+                    <div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.4rem">Wake Delay (blocks)</div>
+                    <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem">
+                        <input id="summon-wake" type="number" value="10" min="1" oninput="updateWakeTimeline();updateSimulation()" style="flex:1;padding:.6rem .75rem;background:var(--bg-input,#111);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.85rem;outline:none;box-sizing:border-box" />
+                        <div style="display:flex;gap:.3rem">
+                            ${[5,10,50,100].map(v => '<button onclick="document.getElementById(\'summon-wake\').value=' + v + ';updateWakeTimeline();updateSimulation()" style="padding:.35rem .55rem;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-size:.6rem;cursor:pointer">' + v + '</button>').join('')}
                         </div>
                     </div>
+                    <div id="wake-timeline" style="padding:.5rem;background:var(--bg-input,#111);border-radius:8px"></div>
                 </div>
 
-                <div style="margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:10px">
+                <!-- Custom Limits -->
+                <div style="margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;padding:.65rem .85rem;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.15);border-radius:8px">
                     <div>
                         <div style="font-size:.75rem;font-weight:600;color:var(--text)">Custom Limits</div>
-                        <div style="font-size:.65rem;color:var(--text-dim)">Override default spending limits (2x fee)</div>
+                        <div style="font-size:.6rem;color:var(--text-dim)">Override defaults — 2x fee</div>
                     </div>
-                    <label style="position:relative;display:inline-block;width:40px;height:22px;cursor:pointer">
-                        <input type="checkbox" id="summon-custom" onchange="toggleCustomLimits()" style="opacity:0;width:0;height:0" />
-                        <span style="position:absolute;inset:0;background:var(--border);border-radius:11px;transition:.3s"></span>
-                        <span style="position:absolute;top:2px;left:2px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.3s"></span>
+                    <label style="position:relative;display:inline-block;width:38px;height:20px;cursor:pointer">
+                        <input type="checkbox" id="summon-custom" onchange="toggleCustomLimits();updateSimulation()" style="opacity:0;width:0;height:0" />
+                        <span style="position:absolute;inset:0;background:var(--border);border-radius:10px;transition:.3s"></span>
+                        <span style="position:absolute;top:2px;left:2px;width:16px;height:16px;background:#fff;border-radius:50%;transition:.3s"></span>
                     </label>
                 </div>
 
-                <div id="custom-limits-section" style="display:none;margin-bottom:1rem;padding:.85rem;border:1px solid var(--border);border-radius:10px">
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.65rem">
+                <div id="custom-limits-section" style="display:none;margin-bottom:1rem;padding:.75rem;border:1px solid var(--border);border-radius:8px">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
                         <div>
-                            <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Per-Tx Max (RITUAL)</div>
-                            <input id="summon-perTx" type="number" value="100" style="width:100%;padding:.5rem .65rem;background:var(--bg-input,#111);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;outline:none;box-sizing:border-box" />
+                            <div style="font-size:.55rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.25rem">Per-Tx Max (RITUAL)</div>
+                            <input id="summon-perTx" type="number" value="100" oninput="updateSimulation()" style="width:100%;padding:.45rem .6rem;background:var(--bg-input,#111);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;outline:none;box-sizing:border-box" />
                         </div>
                         <div>
-                            <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Daily Max (RITUAL)</div>
-                            <input id="summon-daily" type="number" value="5000" style="width:100%;padding:.5rem .65rem;background:var(--bg-input,#111);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;outline:none;box-sizing:border-box" />
+                            <div style="font-size:.55rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.25rem">Daily Max (RITUAL)</div>
+                            <input id="summon-daily" type="number" value="5000" oninput="updateSimulation()" style="width:100%;padding:.45rem .6rem;background:var(--bg-input,#111);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;outline:none;box-sizing:border-box" />
                         </div>
                         <div>
-                            <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Max Tx/Hour</div>
-                            <input id="summon-rate" type="number" value="10" style="width:100%;padding:.5rem .65rem;background:var(--bg-input,#111);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;outline:none;box-sizing:border-box" />
+                            <div style="font-size:.55rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.25rem">Max Tx/Hour</div>
+                            <input id="summon-rate" type="number" value="10" style="width:100%;padding:.45rem .6rem;background:var(--bg-input,#111);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;outline:none;box-sizing:border-box" />
                         </div>
                         <div>
-                            <div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.3rem">Max Gas/Tx</div>
-                            <input id="summon-gas" type="number" value="500000" style="width:100%;padding:.5rem .65rem;background:var(--bg-input,#111);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;outline:none;box-sizing:border-box" />
+                            <div style="font-size:.55rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.25rem">Max Gas/Tx</div>
+                            <input id="summon-gas" type="number" value="500000" style="width:100%;padding:.45rem .6rem;background:var(--bg-input,#111);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;outline:none;box-sizing:border-box" />
                         </div>
                     </div>
                 </div>
 
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:1.25rem">
-                    <div style="font-size:.75rem;color:var(--text-dim)">Deployment Fee</div>
-                    <div id="summon-fee-display" style="font-size:.95rem;font-weight:700;font-family:var(--font-display)">Loading...</div>
+                <!-- Simulation -->
+                <div style="margin-bottom:1rem">
+                    <div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.4rem">Simulation</div>
+                    <div id="summon-sim" style="padding:.75rem;background:var(--bg-input,#111);border:1px solid var(--border);border-radius:8px"></div>
+                </div>
+
+                <!-- Fee + Submit -->
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:.65rem .85rem;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;margin-bottom:1rem">
+                    <div style="font-size:.7rem;color:var(--text-dim)">Deployment Fee</div>
+                    <div id="summon-fee-display" style="font-size:.9rem;font-weight:700;font-family:var(--font-display)">Loading...</div>
                 </div>
 
                 <button id="summon-submit-btn" onclick="executeSummon()" style="width:100%;padding:.75rem;background:var(--accent);border:none;color:#fff;font-weight:700;cursor:pointer;font-size:.85rem;border-radius:10px;transition:all .2s">
@@ -1603,23 +1796,11 @@
                 </button>
             `;
             document.getElementById('summon-modal').style.display = 'flex';
-            loadSummonFee();
+            loadSummonFee().then(() => { updateWakeTimeline(); updateSimulation(); });
         }
 
         function closeSummonModal(){
             document.getElementById('summon-modal').style.display = 'none';
-        }
-
-        function selectSector(el, sector){
-            document.querySelectorAll('#summon-sectors > div').forEach(d => {
-                d.style.borderColor = 'var(--border)';
-                d.style.background = 'transparent';
-                d.style.color = 'var(--text-dim)';
-            });
-            el.style.borderColor = el.dataset.color;
-            el.style.background = el.dataset.color + '15';
-            el.style.color = el.dataset.color;
-            document.getElementById('summon-sector').value = sector;
         }
 
         function toggleCustomLimits(){
@@ -1670,7 +1851,25 @@
                 }
 
                 btn.textContent = 'Confirming...';
-                await tx.wait();
+                const receipt = await tx.wait();
+
+                // Save avatar if uploaded
+                if(_summonAvatarBase64){
+                    // Try to extract agent address from event logs
+                    try {
+                        const iface = factory.interface;
+                        for(const log of receipt.logs){
+                            try {
+                                const parsed = iface.parseLog(log);
+                                if(parsed && parsed.name === 'AgentSummoned'){
+                                    saveAgentAvatar(parsed.args.agentAddr, _summonAvatarBase64);
+                                    break;
+                                }
+                            } catch(e){}
+                        }
+                    } catch(e){}
+                }
+
                 closeSummonModal();
                 loadAgentsPage();
             } catch(e) {
