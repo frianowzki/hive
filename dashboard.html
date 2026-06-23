@@ -1403,14 +1403,17 @@
 
                 let html = '';
 
-                // Header
+                // Header with batch actions
                 html += '<div style="max-width:720px;margin-bottom:1.5rem">';
                 html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.35rem">';
                 html += '<h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:800;margin:0">AI Agents</h1>';
-                html += '<button onclick="showSummonModal()" style="padding:.5rem .75rem;background:var(--accent);border:none;color:#fff;font-weight:600;cursor:pointer;font-size:.75rem;border-radius:6px;display:flex;align-items:center;gap:.4rem;transition:all .2s">';
-                html += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
-                html += 'Summon Agent</button>';
-                html += '</div>';
+                html += '<div style="display:flex;gap:.4rem">';
+                if(userAgents.length > 1){
+                    html += '<button onclick="batchPauseAgents()" style="padding:.4rem .65rem;background:transparent;border:1px solid var(--yellow);color:var(--yellow);font-weight:600;cursor:pointer;font-size:.65rem;border-radius:5px">Pause All</button>';
+                    html += '<button onclick="batchStartAgents()" style="padding:.4rem .65rem;background:transparent;border:1px solid var(--green);color:var(--green);font-weight:600;cursor:pointer;font-size:.65rem;border-radius:5px">Start All</button>';
+                }
+                html += '<button onclick="showSummonModal()" style="padding:.5rem .75rem;background:var(--accent);border:none;color:#fff;font-weight:600;cursor:pointer;font-size:.75rem;border-radius:6px;display:flex;align-items:center;gap:.4rem">+ Summon Agent</button>';
+                html += '</div></div>';
                 html += '<div style="font-size:.8rem;color:var(--text-dim)">Summon and manage your sovereign AI agents on Ritual Chain</div>';
                 html += '</div>';
 
@@ -1525,7 +1528,38 @@
                     html += '</div>';
                 }
 
+                // Performance Chart + Activity Feed + Governor Limits
+                if(userAgents.length > 0){
+                    // Governor Limits
+                    html += '<div style="margin-top:2rem">';
+                    html += '<div style="font-size:.85rem;font-weight:600;margin-bottom:1rem">Governor Limits</div>';
+                    html += '<div id="governor-limits-container" style="display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;max-width:720px">';
+                    html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;text-align:center"><div style="font-size:.65rem;color:var(--text-dim)">Loading limits...</div></div>';
+                    html += '</div></div>';
+
+                    // Performance Chart
+                    html += '<div style="margin-top:2rem">';
+                    html += '<div style="font-size:.85rem;font-weight:600;margin-bottom:1rem">Performance</div>';
+                    html += '<div style="max-width:720px;padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
+                    html += '<canvas id="agent-perf-chart" height="180"></canvas>';
+                    html += '</div></div>';
+
+                    // Activity Feed
+                    html += '<div style="margin-top:2rem">';
+                    html += '<div style="font-size:.85rem;font-weight:600;margin-bottom:1rem">Activity Feed</div>';
+                    html += '<div id="activity-feed-container" style="max-width:720px;padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
+                    html += '<div style="font-size:.75rem;color:var(--text-dim);text-align:center">Loading activity...</div>';
+                    html += '</div></div>';
+                }
+
                 container.innerHTML = html;
+
+                // Load governor limits + chart + feed async
+                if(userAgents.length > 0){
+                    loadGovernorLimits(userAgents);
+                    loadAgentPerformanceChart(userAgents);
+                    loadActivityFeed(userAgents);
+                }
             } catch(e){
                 console.error('[Hive] Agents page error:', e);
                 container.innerHTML = '<div style="color:var(--red);text-align:center;padding:2rem">Error loading agents</div>';
@@ -1900,6 +1934,162 @@
 
         function viewAgentConfig(agentAddr){
             showAgentConfigModal(agentAddr);
+        }
+
+        // ═══ BATCH ACTIONS ═══
+        function batchPauseAgents(){
+            if(!confirm('Pause ALL your agents?')) return;
+            const factory = hive.getContract('HiveAgentFactory');
+            factory.getUserAgents(connectedAddress).then(agents => {
+                const activeAgents = agents.filter(a => a.active);
+                return Promise.all(activeAgents.map(a => {
+                    const agent = hive.getWriteContract('HiveSovereignAgent', a.agent);
+                    return agent.pause().then(tx => tx.wait());
+                }));
+            }).then(() => loadAgentsPage()).catch(e => alert('Error: ' + (e.reason || e.message)));
+        }
+
+        function batchStartAgents(){
+            const factory = hive.getContract('HiveAgentFactory');
+            factory.getUserAgents(connectedAddress).then(agents => {
+                return Promise.all(agents.filter(a => a.active).map(a => {
+                    const agent = hive.getWriteContract('HiveSovereignAgent', a.agent);
+                    return agent.unpause().then(tx => tx.wait());
+                }));
+            }).then(() => loadAgentsPage()).catch(e => alert('Error: ' + (e.reason || e.message)));
+        }
+
+        // ═══ GOVERNOR LIMITS ═══
+        async function loadGovernorLimits(userAgents){
+            const container = document.getElementById('governor-limits-container');
+            if(!container) return;
+            try {
+                let html = '';
+                for(const a of userAgents){
+                    const agent = hive.getContract('HiveSovereignAgent', a.agent);
+                    const govAddr = await agent.governor();
+                    const gov = hive.getContract('HiveGovernor', govAddr);
+                    const limits = await gov.agentLimits(a.agent);
+                    const sectorNames = {'0x6465666900000000000000000000000000000000000000000000000000000000':'DeFi','0x74726164696e6700000000000000000000000000000000000000000000000000':'Trading','0x7265736561726368000000000000000000000000000000000000000000000000':'Research','0x676f7665726e616e636500000000000000000000000000000000000000000000':'Governance','0x7365637572697479000000000000000000000000000000000000000000000000':'Security'};
+                    const sector = sectorNames[a.sector] || 'Custom';
+                    const dailyPct = limits.dailyMax > 0n ? Number(limits.dailySpent * 100n / limits.dailyMax) : 0;
+                    const hourlyPct = limits.maxTxPerHour > 0n ? Number(limits.txThisHour * 100n / limits.maxTxPerHour) : 0;
+                    const color = dailyPct > 80 ? 'var(--red)' : dailyPct > 50 ? 'var(--yellow)' : 'var(--green)';
+
+                    html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px">';
+                    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">';
+                    html += '<div style="font-weight:600;font-size:.85rem">' + a.name + ' <span style="font-size:.6rem;color:var(--text-dim);font-weight:400">' + sector + '</span></div>';
+                    html += '<a href="' + hive.explorerAddr(govAddr) + '" target="_blank" style="font-size:.6rem;color:var(--accent-light);font-family:var(--font-mono)">Governor</a>';
+                    html += '</div>';
+
+                    // Daily spending bar
+                    html += '<div style="margin-bottom:.6rem">';
+                    html += '<div style="display:flex;justify-content:space-between;font-size:.6rem;margin-bottom:.25rem"><span style="color:var(--text-dim)">Daily Spent</span><span>' + hive.formatEther(limits.dailySpent) + ' / ' + hive.formatEther(limits.dailyMax) + ' RITUAL</span></div>';
+                    html += '<div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:100%;width:' + Math.min(dailyPct, 100) + '%;background:' + color + ';border-radius:3px;transition:width .3s"></div></div>';
+                    html += '</div>';
+
+                    // Hourly rate bar
+                    html += '<div style="margin-bottom:.6rem">';
+                    html += '<div style="display:flex;justify-content:space-between;font-size:.6rem;margin-bottom:.25rem"><span style="color:var(--text-dim)">Tx This Hour</span><span>' + limits.txThisHour + ' / ' + limits.maxTxPerHour + '</span></div>';
+                    html += '<div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:100%;width:' + Math.min(hourlyPct, 100) + '%;background:var(--accent);border-radius:3px;transition:width .3s"></div></div>';
+                    html += '</div>';
+
+                    // Limits grid
+                    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem">';
+                    html += '<div style="font-size:.6rem;color:var(--text-dim)">Per-Tx Max: <span style="color:var(--text)">' + hive.formatEther(limits.perTxMax) + '</span></div>';
+                    html += '<div style="font-size:.6rem;color:var(--text-dim)">Gas Limit: <span style="color:var(--text)">' + Number(limits.maxGasPerTx).toLocaleString() + '</span></div>';
+                    html += '</div>';
+
+                    html += '</div>';
+                }
+                container.innerHTML = html;
+            } catch(e) {
+                container.innerHTML = '<div style="font-size:.75rem;color:var(--text-dim);padding:.5rem">Unable to load limits</div>';
+            }
+        }
+
+        // ═══ PERFORMANCE CHART ═══
+        async function loadAgentPerformanceChart(userAgents){
+            const canvas = document.getElementById('agent-perf-chart');
+            if(!canvas || typeof Chart === 'undefined') return;
+            try {
+                const labels = [];
+                const wakeData = [];
+                const tradeData = [];
+                for(const a of userAgents){
+                    const agent = hive.getContract('HiveSovereignAgent', a.agent);
+                    const cfg = await agent.config();
+                    const totalT = await agent.totalTrades();
+                    const successT = await agent.successfulTrades();
+                    labels.push(cfg.name);
+                    wakeData.push(Number(cfg.wakeCount));
+                    tradeData.push(Number(successT));
+                }
+                new Chart(canvas.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            { label: 'Wake Count', data: wakeData, backgroundColor: '#8b5cf680', borderColor: '#8b5cf6', borderWidth: 1 },
+                            { label: 'Successful Trades', data: tradeData, backgroundColor: '#22c55e80', borderColor: '#22c55e', borderWidth: 1 }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { labels: { color: '#888', font: { size: 11 } } } },
+                        scales: {
+                            x: { ticks: { color: '#666' }, grid: { color: 'rgba(255,255,255,.05)' } },
+                            y: { ticks: { color: '#666' }, grid: { color: 'rgba(255,255,255,.05)' } }
+                        }
+                    }
+                });
+            } catch(e) {
+                canvas.parentElement.innerHTML = '<div style="font-size:.75rem;color:var(--text-dim);text-align:center">Unable to load chart</div>';
+            }
+        }
+
+        // ═══ ACTIVITY FEED ═══
+        async function loadActivityFeed(userAgents){
+            const container = document.getElementById('activity-feed-container');
+            if(!container) return;
+            try {
+                let events = [];
+                for(const a of userAgents){
+                    const agent = hive.getContract('HiveSovereignAgent', a.agent);
+                    const cfg = await agent.config();
+                    // Get recent AgentWokeUp events
+                    try {
+                        const filter = agent.filters.AgentWokeUp();
+                        const logs = await agent.queryFilter(filter, -5000);
+                        logs.slice(-5).forEach(log => {
+                            events.push({
+                                type: 'wake',
+                                name: cfg.name,
+                                detail: 'Wake #' + log.args.wakeCount,
+                                block: log.blockNumber,
+                                time: 'Block ' + log.blockNumber
+                            });
+                        });
+                    } catch(e){}
+                }
+                if(events.length === 0){
+                    container.innerHTML = '<div style="font-size:.75rem;color:var(--text-dim);text-align:center">No recent activity</div>';
+                    return;
+                }
+                let html = '<div style="display:flex;flex-direction:column;gap:.5rem">';
+                events.sort((a,b) => b.block - a.block).slice(0, 10).forEach(ev => {
+                    const icon = ev.type === 'wake' ? '⚡' : ev.type === 'trade' ? '📊' : '📌';
+                    html += '<div style="display:flex;align-items:center;gap:.6rem;padding:.5rem .65rem;background:var(--bg-input,#111);border-radius:8px">';
+                    html += '<span style="font-size:.85rem">' + icon + '</span>';
+                    html += '<div style="flex:1"><span style="font-size:.75rem;font-weight:600">' + ev.name + '</span> <span style="font-size:.7rem;color:var(--text-dim)">' + ev.detail + '</span></div>';
+                    html += '<span style="font-size:.6rem;color:var(--text-dim)">' + ev.time + '</span>';
+                    html += '</div>';
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            } catch(e) {
+                container.innerHTML = '<div style="font-size:.75rem;color:var(--text-dim);text-align:center">Unable to load activity</div>';
+            }
         }
 
         // ═══ AGENT CONFIG MODAL ═══

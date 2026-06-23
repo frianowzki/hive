@@ -380,6 +380,24 @@ const HIVE = {
       'event AgentStopped(string name)',
       'event AgentWokeUp(uint256 indexed wakeCount, uint256 blockNumber)',
     ],
+
+    // HiveGovernor
+    HiveGovernor: [
+      'function agentLimits(address) view returns (uint256 perTxMax, uint256 dailyMax, uint256 dailySpent, uint256 dailyResetTime, uint256 maxTxPerHour, uint256 txThisHour, uint256 hourResetTime, uint256 maxGasPerTx, bool active)',
+      'function getDailySpent(address) view returns (uint256)',
+      'function getAgentCount() view returns (uint256)',
+      'function getTxHistoryCount() view returns (uint256)',
+      'function getRecentTxs(uint256) view returns (tuple(address agent, address destination, uint256 value, uint256 gasUsed, bool success, uint256 timestamp)[])',
+      'function killSwitched(address) view returns (bool)',
+      'function globalDailyMax() view returns (uint256)',
+      'function globalDailySpent() view returns (uint256)',
+      'function emergencyPause()',
+      'function emergencyUnpause()',
+      'function paused() view returns (bool)',
+      'event AgentRegistered(address indexed agent, bytes32 sector, uint256 perTxMax, uint256 dailyMax)',
+      'event TxExecuted(address indexed agent, address indexed destination, uint256 value, bool success)',
+      'event LimitsUpdated(address indexed agent, uint256 perTxMax, uint256 dailyMax)',
+    ],
   },
 };
 
