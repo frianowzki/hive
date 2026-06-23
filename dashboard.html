@@ -1398,15 +1398,15 @@
 
                 let html = '';
 
-                // Header + Summon button
-                html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">';
-                html += '<div>';
-                html += '<h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:800;margin-bottom:.35rem">AI Agents</h1>';
-                html += '<div style="font-size:.8rem;color:var(--text-dim)">Summon and manage your sovereign AI agents on Ritual Chain</div>';
-                html += '</div>';
+                // Header
+                html += '<div style="margin-bottom:1.5rem">';
+                html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.35rem">';
+                html += '<h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:800;margin:0">AI Agents</h1>';
                 html += '<button onclick="showSummonModal()" style="padding:.65rem 1.5rem;background:var(--accent);border:none;color:#fff;font-weight:600;cursor:pointer;font-size:.8rem;border-radius:8px;display:flex;align-items:center;gap:.5rem;transition:all .2s">';
                 html += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
                 html += 'Summon Agent</button>';
+                html += '</div>';
+                html += '<div style="font-size:.8rem;color:var(--text-dim)">Summon and manage your sovereign AI agents on Ritual Chain</div>';
                 html += '</div>';
 
                 // Stats grid
