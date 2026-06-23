@@ -5057,7 +5057,7 @@
         let simPositions = [];
         let simHistory = [];
 
-        const mockOrderBook = {
+        let mockOrderBook = {
             buys: [
                 { price: 0.0482, amount: 15000, total: 723 },
                 { price: 0.0480, amount: 22000, total: 1056 },
@@ -5088,7 +5088,7 @@
             { name:'Scout', type:'Research', status:'idle', uptime:'97.1%', decisions:567, lastAction:'Analyzed CNODE volume spike', lastTime:'15 min ago', pnl:'+3.1%' },
         ];
 
-        const mockOracleFeeds = [
+        let mockOracleFeeds = [
             { token:'HIVE', address:HIVE.addr.HiveToken, price:0.0485, confidence:98, source:'CoinGecko', lastUpdate:'12s ago', valid:true },
             { token:'hiveUSD', address:HIVE.addr.HiveUSD, price:1.0002, confidence:99, source:'CoinGecko', lastUpdate:'12s ago', valid:true },
             { token:'RITUAL', address:'0x0000...native', price:0.42, confidence:95, source:'CoinGecko', lastUpdate:'45s ago', valid:true },
@@ -5118,8 +5118,77 @@
                 return;
             }
 
-            renderMakerTab(makerTab);
+            // Fetch real data before rendering
+            loadMakerRealData().then(() => renderMakerTab(makerTab));
         }
+
+        async function loadMakerRealData(){
+            try {
+                const factory = hive.getContract('HiveAgentFactory');
+                const agents = await factory.getUserAgents(connectedAddress);
+                userSummonedAgents = agents.map(a => {
+                    const sector = ethers.decodeBytes32String(a.sector);
+                    const icons = {DeFi:'💰',Trading:'📈',Research:'🔬',Governance:'🛡️',Security:'🔒',Custom:'⚡'};
+                    return {
+                        name: a.name,
+                        icon: icons[sector] || '🤖',
+                        sector: sector,
+                        addr: a.agent,
+                        governor: a.governor,
+                        active: a.active,
+                        soul: 'Sovereign agent on Ritual Chain',
+                        perTxMax: '$100',
+                        dailyMax: '$5,000',
+                        wakeDelay: 10,
+                    };
+                });
+            } catch(e) { console.warn('[Hive] Maker data fetch:', e); }
+
+            // Fetch oracle prices for order book
+            try {
+                const oracle = hive.getContract('HiveOracle');
+                const hiveToken = hive.contracts.HIVE;
+                const priceData = await oracle.prices(hiveToken);
+                const price = Number(priceData.price) / 1e18;
+                if(price > 0){
+                    const spread = price * 0.012;
+                    mockOrderBook.buys = Array.from({length:5}, (_,i) => {
+                        const p = price - spread * (i+1) * 0.4;
+                        const amt = Math.round(8000 + Math.random() * 25000);
+                        return { price: p, amount: amt, total: Math.round(p * amt * 100) / 100 };
+                    });
+                    mockOrderBook.sells = Array.from({length:5}, (_,i) => {
+                        const p = price + spread * (i+1) * 0.4;
+                        const amt = Math.round(6000 + Math.random() * 20000);
+                        return { price: p, amount: amt, total: Math.round(p * amt * 100) / 100 };
+                    });
+                }
+            } catch(e) { console.warn('[Hive] Oracle price fetch:', e); }
+
+            // Fetch real oracle feeds
+            try {
+                const oracle = hive.getContract('HiveOracle');
+                const count = await oracle.getTrackedTokensCount();
+                const feeds = [];
+                for(let i = 0; i < Math.min(Number(count), 10); i++){
+                    try {
+                        const addr = await oracle.trackedTokens(i);
+                        const [pData, cfg] = await Promise.all([oracle.prices(addr), oracle.tokenConfigs(addr)]);
+                        const price = Number(pData.price) / 1e18;
+                        const ago = Number(pData.timestamp) > 0 ? Math.round(Date.now()/1000 - Number(pData.timestamp)) : null;
+                        feeds.push({
+                            token: cfg.symbol,
+                            address: addr,
+                            price: price,
+                            confidence: Number(pData.confidence),
+                            source: pData.source || 'CoinGecko',
+                            lastUpdate: ago === null ? 'Never' : ago < 60 ? ago + 's ago' : Math.round(ago/60) + 'm ago',
+                            valid: pData.valid,
+                        });
+                    } catch(e) {}
+                }
+                if(feeds.length > 0) mockOracleFeeds = feeds;
+            } catch(e) { console.warn('[Hive] Oracle feeds fetch:', e); }
 
         function switchMakerTab(tab){
             makerTab = tab;
