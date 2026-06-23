@@ -869,7 +869,7 @@
             tokenlaunch: { title:'', breadcrumb:'' },
             auction: { title:'', breadcrumb:'' },
             maker: { title:'AI Market Maker', breadcrumb:'Hive / DeFi / Market Maker' },
-            agents: { title:'AI Agents', breadcrumb:'' },
+            agents: { title:'', breadcrumb:'' },
             strategy: { title:'Strategies', breadcrumb:'Hive / AI / Strategies' },
             flock: { title:'Federated Learning', breadcrumb:'Hive / AI / FLock' },
             governance: { title:'Proposals', breadcrumb:'Hive / Governance / Proposals' },
@@ -1398,11 +1398,19 @@
 
                 let html = '';
 
-                // Header
-                html += '<h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:800;margin-bottom:1.5rem">AI Agents</h1>';
+                // Header + Summon button
+                html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">';
+                html += '<div>';
+                html += '<h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:800;margin-bottom:.35rem">AI Agents</h1>';
+                html += '<div style="font-size:.8rem;color:var(--text-dim)">Summon and manage your sovereign AI agents on Ritual Chain</div>';
+                html += '</div>';
+                html += '<button onclick="showSummonModal()" style="padding:.65rem 1.5rem;background:var(--accent);border:none;color:#fff;font-weight:600;cursor:pointer;font-size:.8rem;border-radius:8px;display:flex;align-items:center;gap:.5rem;transition:all .2s">';
+                html += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+                html += 'Summon Agent</button>';
+                html += '</div>';
 
-                // Stats + Summon button in same grid
-                html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;margin-bottom:2rem;max-width:600px">';
+                // Stats grid
+                html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;margin-bottom:2rem;max-width:720px">';
                 html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px">';
                 html += '<div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.25rem">Your Agents</div>';
                 html += '<div style="font-size:1.2rem;font-weight:700">' + userAgents.length + '</div></div>';
@@ -1415,9 +1423,6 @@
                 html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px">';
                 html += '<div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:.25rem">Status</div>';
                 html += '<div style="font-size:1.2rem;font-weight:700;color:var(--green)">Active</div></div>';
-                html += '<button onclick="showSummonModal()" style="padding:1rem;background:var(--accent);border:none;color:#fff;font-weight:600;cursor:pointer;font-size:.85rem;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:.5rem;transition:all .2s">';
-                html += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
-                html += 'Summon Agent</button>';
                 html += '</div>';
 
                 // Your Agents
@@ -1425,12 +1430,12 @@
                 html += '<div style="font-size:.85rem;font-weight:600;margin-bottom:1rem">Your Agents</div>';
                 
                 if(userAgents.length === 0){
-                    html += '<div style="padding:3rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;text-align:center;max-width:600px">';
+                    html += '<div style="padding:3rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;text-align:center;max-width:720px">';
                     html += '<div style="font-size:.85rem;color:var(--text-muted);margin-bottom:1rem">No agents summoned yet</div>';
                     html += '<button onclick="showSummonModal()" style="padding:.6rem 1.5rem;border-radius:8px;background:var(--accent);border:none;color:#fff;font-weight:600;cursor:pointer;font-size:.8rem">Summon Your First Agent</button>';
                     html += '</div>';
                 } else {
-                    html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;max-width:600px">';
+                    html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;max-width:720px">';
                     userAgents.forEach((a, i) => {
                         const sector = sectorNames[a.sector] || 'Custom';
                         const color = sectorColors[sector] || '#6b7280';
@@ -1481,7 +1486,7 @@
                 if(registryAgents.length > 0){
                     html += '<div>';
                     html += '<div style="font-size:.85rem;font-weight:600;margin-bottom:1rem">Network Agents <span style="font-size:.65rem;color:var(--text-dim);font-weight:400">(' + registryAgents.length + ' registered)</span></div>';
-                    html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden;max-width:600px">';
+                    html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden;max-width:720px">';
                     html += '<table style="width:100%;border-collapse:collapse">';
                     html += '<thead><tr style="border-bottom:1px solid var(--border)">';
                     html += '<th style="padding:.75rem 1rem;text-align:left;font-size:.65rem;color:var(--text-dim);text-transform:uppercase;font-weight:500">Name</th>';
