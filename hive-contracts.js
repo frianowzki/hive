@@ -784,13 +784,15 @@ class HiveProvider {
 
   // ═══ UTILITIES ═══
   formatEther(wei) {
-    if (!this.ethers) return '0';
-    return parseFloat(this.ethers.formatEther(wei)).toLocaleString('en-US', { maximumFractionDigits: 4 });
+    const eth = this.ethers || window.ethers;
+    if (!eth) return '0';
+    return parseFloat(eth.formatEther(wei)).toLocaleString('en-US', { maximumFractionDigits: 4 });
   }
 
   formatGwei(wei) {
-    if (!this.ethers) return '0';
-    return parseFloat(this.ethers.formatUnits(wei, 9)).toLocaleString('en-US', { maximumFractionDigits: 2 });
+    const eth = this.ethers || window.ethers;
+    if (!eth) return '0';
+    return parseFloat(eth.formatUnits(wei, 9)).toLocaleString('en-US', { maximumFractionDigits: 2 });
   }
 
   shortAddr(addr) {

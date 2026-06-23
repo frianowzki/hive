@@ -1380,7 +1380,24 @@
                 } catch(e) { console.warn('[Hive] Factory fetch:', e); }
                 
                 try {
-                    registryAgents = await registry.getActiveAgents();
+                    const agentAddrs = await registry.getActiveAgents();
+                    // Enrich each address with registry + factory data
+                    registryAgents = [];
+                    for(const addr of agentAddrs.slice(0, 9)){
+                        try {
+                            const info = await registry.getAgent(addr);
+                            const alive = await registry.isAlive(addr).catch(() => false);
+                            // Get sector from factory
+                            let sector = null;
+                            try {
+                                const agentInfo = await factory.getAgentInfo(addr);
+                                sector = agentInfo[3]; // bytes32 sector
+                            } catch(e) {}
+                            registryAgents.push({ address: addr, name: info[0] || 'Unknown', sector: sector, alive: alive });
+                        } catch(e) {
+                            registryAgents.push({ address: addr, name: 'Unknown', sector: null, alive: false });
+                        }
+                    }
                 } catch(e) { console.warn('[Hive] Registry fetch:', e); }
                 
                 try {
