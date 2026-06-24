@@ -15,12 +15,8 @@ REGISTRY="0x89Cff106458261b48597ee0307017504080182eE"
 STAKING="0x8D2A42Fe7845F165264d042267a3bD8EBae83d28"
 LAUNCHPAD="0x8eb73b9e2dD62EcFC9C61861638C45afe003d95b"
 GOVERNANCE="0xeadd2aB5D8f1Ead852927Dd56c34b365603c2702"
-TREASURY="0x90fbd495c888ae010e40FD299E143FabFcf08C18"
 PORTFOLIO="0x81E38ad29B869De5dd99bC5da1386b65Ef2Da066"
 MARKETMAKER="0x62C8AB145AA677792b7E7d1f0Bf64000D3DC637D"
-
-# Scheduler precompile (Ritual Chain)
-SCHEDULER="0x0000000000000000000000000000000000000808"
 
 # Check for private key
 if [ -z "$1" ]; then
@@ -42,18 +38,17 @@ fi
 echo -e "${GREEN}🐝 Deploying HiveSovereignAgentRitual to Ritual Chain${NC}"
 echo ""
 echo "Constructor args:"
-echo "  Scheduler:     $SCHEDULER"
 echo "  Registry:      $REGISTRY"
 echo "  HiveStaking:   $STAKING"
 echo "  HiveLaunchPad: $LAUNCHPAD"
 echo "  HiveGovernance: $GOVERNANCE"
-echo "  HiveTreasury:  $TREASURY"
 echo "  HivePortfolio: $PORTFOLIO"
 echo "  HiveMarketMaker: $MARKETMAKER"
 echo "  Budget:        $BUDGET RITUAL"
 echo ""
 
 # Check if forge is installed
+export PATH="$HOME/.foundry/bin:$PATH"
 if ! command -v forge &> /dev/null; then
   echo -e "${RED}Error: forge not found. Install Foundry first.${NC}"
   echo "Run: curl -L https://foundry.paradigm.xyz | bash"
@@ -65,26 +60,26 @@ echo -e "${YELLOW}Building contract...${NC}"
 cd "$(dirname "$0")"
 forge build --contracts src/agent/HiveSovereignAgentRitual.sol
 
-# Deploy
+# Deploy using forge script (not forge create — Ritual doesn't support legacy tx)
 echo -e "${YELLOW}Deploying...${NC}"
-forge create src/agent/HiveSovereignAgentRitual.sol:HiveSovereignAgent \
-  --constructor-args \
-    "$SCHEDULER" \
-    "$REGISTRY" \
-    "$STAKING" \
-    "$LAUNCHPAD" \
-    "$GOVERNANCE" \
-    "$TREASURY" \
-    "$PORTFOLIO" \
-    "$MARKETMAKER" \
+PRIVATE_KEY="$PRIVATE_KEY" forge script script/DeployHiveAgentRitual.s.sol \
   --rpc-url https://rpc.ritualfoundation.org \
-  --private-key "$PRIVATE_KEY" \
-  --value "${BUDGET}ether"
+  --broadcast \
+  --private-key "$PRIVATE_KEY"
 
-echo ""
-echo -e "${GREEN}✅ Agent deployed!${NC}"
-echo ""
-echo "Next steps:"
-echo "1. Start the agent: call start(200) on the deployed contract"
-echo "2. Fund the agent with RITUAL for gas (max 0.5 RITUAL)"
-echo "3. Monitor on: https://explorer.ritualfoundation.org/agents"
+# Get deployed address from broadcast
+BROADCAST_FILE="broadcast/DeployHiveAgentRitual.s.sol/1979/run-latest.json"
+if [ -f "$BROADCAST_FILE" ]; then
+  CONTRACT_ADDRESS=$(python3 -c "import json; data=json.load(open('$BROADCAST_FILE')); print([tx['contractAddress'] for tx in data['transactions'] if tx.get('contractAddress')][0])")
+  echo ""
+  echo -e "${GREEN}✅ Agent deployed at: $CONTRACT_ADDRESS${NC}"
+  echo ""
+  echo "Next steps:"
+  echo "1. Fund agent: cast send $CONTRACT_ADDRESS --value ${BUDGET}ether --rpc-url https://rpc.ritualfoundation.org --private-key \$PRIVATE_KEY"
+  echo "2. Register:   cast send $REGISTRY \"register(string,uint256)\" \"HiveAgent\" 200 --rpc-url https://rpc.ritualfoundation.org --private-key \$PRIVATE_KEY"
+  echo "3. Start:      cast send $CONTRACT_ADDRESS \"start(uint32)\" 200 --rpc-url https://rpc.ritualfoundation.org --private-key \$PRIVATE_KEY"
+  echo "4. Monitor:    https://explorer.ritualfoundation.org/address/$CONTRACT_ADDRESS"
+else
+  echo -e "${RED}Error: Broadcast file not found${NC}"
+  exit 1
+fi
