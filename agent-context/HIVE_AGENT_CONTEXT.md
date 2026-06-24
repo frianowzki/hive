@@ -6,8 +6,12 @@
 - **RPC:** https://rpc.ritualfoundation.org
 - **Explorer:** https://explorer.ritualfoundation.org
 - **Owner:** 0x63C5341454F66a32553CE598e06861E11095d39C
-- **Consumer Contract:** 0x3754D87e681f13db7E9b0EA98D5cabB1D2CD1764
+- **Consumer Contract:** 0x7536C8731426FE4d7987bcd99178400cca708Cf6
 - **Instance ID:** 0x3b5d754b63ee2BCf99E46c05C24be384a7088200
+- **Container ID:** 037fcd5ecb369f53bdc8b1d6ee573a6258a1e559548fdf617dd252cfc51fa027
+- **LLM Provider:** OpenRouter
+- **Model:** meta-llama/llama-3.1-8b-instruct:free
+- **DA Provider:** HuggingFace (frianowzki/frio-ritual)
 
 ## Mission
 Autonomous DeFi agent on Ritual Chain. Nine core capabilities:
