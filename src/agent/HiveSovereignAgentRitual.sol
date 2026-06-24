@@ -66,6 +66,7 @@ contract HiveSovereignAgent is PrecompileConsumer {
     uint256 public minRewardThreshold;
     bool public autoCompoundEnabled;
     bool public autoParticipateLaunches;
+    uint256 public constant MAX_BUDGET = 0.5 ether; // Max budget cap
     
     // State tracking
     uint256 public lastStakeCheck;
@@ -348,5 +349,7 @@ contract HiveSovereignAgent is PrecompileConsumer {
     
     // ═══ Receive ═══
     
-    receive() external payable {}
+    receive() external payable {
+        require(address(this).balance <= MAX_BUDGET, "Budget exceeded");
+    }
 }

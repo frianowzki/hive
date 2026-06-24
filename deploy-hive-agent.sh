@@ -1,6 +1,6 @@
 #!/bin/bash
 # Deploy HiveSovereignAgentRitual to Ritual Chain
-# Usage: ./deploy-hive-agent.sh [PRIVATE_KEY]
+# Usage: ./deploy-hive-agent.sh [PRIVATE_KEY] [BUDGET]
 
 set -e
 
@@ -25,12 +25,19 @@ SCHEDULER="0x0000000000000000000000000000000000000808"
 # Check for private key
 if [ -z "$1" ]; then
   echo -e "${RED}Error: Private key required${NC}"
-  echo "Usage: ./deploy-hive-agent.sh <PRIVATE_KEY>"
-  echo "   or: ./deploy-hive-agent.sh 0x..."
+  echo "Usage: ./deploy-hive-agent.sh <PRIVATE_KEY> [BUDGET]"
+  echo "   or: ./deploy-hive-agent.sh 0x... 0.5"
   exit 1
 fi
 
 PRIVATE_KEY="$1"
+BUDGET="${2:-0.5}" # Default 0.5 RITUAL
+
+# Validate budget
+if (( $(echo "$BUDGET > 0.5" | bc -l) )); then
+  echo -e "${RED}Error: Budget cannot exceed 0.5 RITUAL${NC}"
+  exit 1
+fi
 
 echo -e "${GREEN}🐝 Deploying HiveSovereignAgentRitual to Ritual Chain${NC}"
 echo ""
@@ -43,6 +50,7 @@ echo "  HiveGovernance: $GOVERNANCE"
 echo "  HiveTreasury:  $TREASURY"
 echo "  HivePortfolio: $PORTFOLIO"
 echo "  HiveMarketMaker: $MARKETMAKER"
+echo "  Budget:        $BUDGET RITUAL"
 echo ""
 
 # Check if forge is installed
@@ -71,12 +79,12 @@ forge create src/agent/HiveSovereignAgentRitual.sol:HiveSovereignAgent \
     "$MARKETMAKER" \
   --rpc-url https://rpc.ritualfoundation.org \
   --private-key "$PRIVATE_KEY" \
-  --value 0.05ether
+  --value "${BUDGET}ether"
 
 echo ""
 echo -e "${GREEN}✅ Agent deployed!${NC}"
 echo ""
 echo "Next steps:"
 echo "1. Start the agent: call start(200) on the deployed contract"
-echo "2. Fund the agent with RITUAL for gas"
+echo "2. Fund the agent with RITUAL for gas (max 0.5 RITUAL)"
 echo "3. Monitor on: https://explorer.ritualfoundation.org/agents"
