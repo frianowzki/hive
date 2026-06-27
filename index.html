@@ -164,19 +164,35 @@
             .feat-card{width:90%;max-width:580px}
         }
         @media(max-width:768px){
-            /* Kill full-page scroll, enable normal scroll */
+            /* Smooth scroll + perf */
+            html{scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+            *,*::before,*::after{will-change:auto}
+            .marquee-row,.warp-container,.feat-card{will-change:transform}
+
+            /* Kill expensive effects on mobile */
+            .bg-glow{display:none}
+            .bg-grid{display:none}
+            .warp-container{background:none!important;animation:none!important}
+            .warp-container::before{display:none}
+            .modal-overlay{backdrop-filter:none}
+            .modal-frosted{backdrop-filter:none;background:#0a0a0a}
+
+            /* Normal scroll layout */
             html,body{overflow:auto;height:auto}
             .pages-wrapper{height:auto;overflow:visible}
             .page{height:auto;min-height:auto;position:relative;transform:none!important;opacity:1!important;pointer-events:all!important;display:block;padding:3rem 1.25rem 2rem;overflow:visible}
             .page.active{transform:none!important}
             .page:not(.active){display:block!important;opacity:1!important;pointer-events:all!important}
 
+            /* Hero — full page */
+            .page.hero{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center}
+
             /* Navbar */
             .navbar{padding:0 1rem;height:52px}
             .nav-links{display:none}
 
             /* Hero */
-            .hero{padding-top:2rem;padding-bottom:2rem;align-items:flex-start}
+            .hero{padding-top:0;padding-bottom:0;align-items:center}
             .hero h1{font-size:1.65rem;line-height:1.12;letter-spacing:-.03em}
             .hero-desc{font-size:.82rem;line-height:1.55;margin-bottom:1.25rem}
             .hero-desc br{display:none}
@@ -228,8 +244,8 @@
             .contact-sub{font-size:.85rem;margin-bottom:1.5rem}
             .contact-actions{flex-direction:column;gap:.5rem}
             .contact-actions .btn{width:100%;justify-content:center}
-            .contact-info{flex-direction:column;gap:.6rem}
-            .contact-info-item{font-size:.75rem}
+            .contact-info{flex-direction:row;justify-content:center;gap:1rem}
+            .contact-info-item{width:36px;height:36px}
 
             /* Footer */
             .page-dots{display:none}
