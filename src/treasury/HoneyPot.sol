@@ -3,11 +3,101 @@ pragma solidity 0.8.20;
 
 import {RitualPrecompileConsumer} from "../libraries/RitualPrecompileConsumer.sol";
 
+interface IStaking {
+    function totalStaked() external view returns (uint256);
+    function stakedAmount(address user) external view returns (uint256);
+}
+
 /// @title HoneyPot — Hive Treasury Management
 /// @notice Holds capital, enforces allocation limits, rebalances via LLM
 
 contract HoneyPot is RitualPrecompileConsumer {
+    // ═══ Fee Distribution ═══
+
+    uint256 public constant STAKER_SHARE_BPS = 6000;   // 60%
+    uint256 public constant REFERRER_SHARE_BPS = 2500;  // 25%
+    uint256 public constant RESERVE_SHARE_BPS = 1500;   // 15%
+
+    uint256 public pendingStakerFees;
+    mapping(address => uint256) public pendingReferrerFees;
+    uint256 public totalFeesCollected;
+
+    event FeeCollected(address indexed from, uint256 amount, address indexed referrer);
+    event StakerRewardClaimed(address indexed staker, uint256 amount);
+    event ReferrerRewardClaimed(address indexed referrer, uint256 amount);
+
+    /// @notice Collect fee and distribute to stakers/referrer/reserve
+    function collectFee(address referrer) external payable whenNotPaused {
+        require(msg.value > 0, "HoneyPot: zero fee");
+
+        uint256 stakerShare = (msg.value * STAKER_SHARE_BPS) / 10_000;
+        uint256 referrerShare = (msg.value * REFERRER_SHARE_BPS) / 10_000;
+        uint256 reserveShare = msg.value - stakerShare - referrerShare;
+
+        // If no stakers, staker share goes to reserve
+        if (IStaking(staking).totalStaked() == 0) {
+            reserveBalance += stakerShare + reserveShare;
+        } else {
+            pendingStakerFees += stakerShare;
+            reserveBalance += reserveShare;
+        }
+
+        pendingReferrerFees[referrer] += referrerShare;
+        totalFeesCollected += msg.value;
+
+        emit FeeCollected(msg.sender, msg.value, referrer);
+    }
+
+    /// @notice Claim staker reward (proportional to stake)
+    function claimStakerReward() external {
+        uint256 reward = pendingStakerReward(msg.sender);
+        require(reward > 0, "HoneyPot: no reward");
+
+        pendingStakerFees -= reward;
+        // Update user's share in storage
+        _updateStakerReward(msg.sender, reward);
+
+        (bool success, ) = msg.sender.call{value: reward}("");
+        require(success, "HoneyPot: transfer failed");
+
+        emit StakerRewardClaimed(msg.sender, reward);
+    }
+
+    /// @notice Claim referrer reward
+    function claimReferrerReward() external {
+        uint256 reward = pendingReferrerFees[msg.sender];
+        require(reward > 0, "HoneyPot: no reward");
+
+        pendingReferrerFees[msg.sender] = 0;
+
+        (bool success, ) = msg.sender.call{value: reward}("");
+        require(success, "HoneyPot: transfer failed");
+
+        emit ReferrerRewardClaimed(msg.sender, reward);
+    }
+
+    /// @notice Get pending staker reward for a user
+    function pendingStakerReward(address user) public view returns (uint256) {
+        uint256 totalStaked = IStaking(staking).totalStaked();
+        if (totalStaked == 0) return 0;
+
+        uint256 userStaked = IStaking(staking).stakedAmount(user);
+        if (userStaked == 0) return 0;
+
+        return (pendingStakerFees * userStaked) / totalStaked;
+    }
+
+    // ═══ Internal ═══
+
+    mapping(address => uint256) public stakerRewardClaimed;
+
+    function _updateStakerReward(address user, uint256 amount) internal {
+        stakerRewardClaimed[user] += amount;
+    }
+
     // ═══ State ═══
+
+    address public staking;
 
     address public queen;
     bool public paused;
@@ -60,8 +150,9 @@ contract HoneyPot is RitualPrecompileConsumer {
 
     // ═══ Constructor ═══
 
-    constructor(address _queen) {
+    constructor(address _queen, address _staking) {
         queen = _queen;
+        staking = _staking;
 
         // Default allocation: 40/40/10/10
         allocation = Allocation({
