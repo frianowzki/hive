@@ -622,27 +622,27 @@
                         Quick Actions
                     </div>
                     <div class="actions-grid">
-                        <div class="action-btn" onclick="switchPage('staking')">
+                        <div class="action-btn" onclick="switchPage('staking', true)">
                             <div class="action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
                             <span class="action-text">Stake</span>
                         </div>
-                        <div class="action-btn" onclick="switchPage('launch')">
+                        <div class="action-btn" onclick="switchPage('launch', true)">
                             <div class="action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
                             <span class="action-text">Launch</span>
                         </div>
-                        <div class="action-btn" onclick="switchPage('governance')">
+                        <div class="action-btn" onclick="switchPage('governance', true)">
                             <div class="action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
                             <span class="action-text">Vote</span>
                         </div>
-                        <div class="action-btn" onclick="switchPage('portfolio')">
+                        <div class="action-btn" onclick="switchPage('portfolio', true)">
                             <div class="action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg></div>
                             <span class="action-text">Portfolio</span>
                         </div>
-                        <div class="action-btn" onclick="switchPage('agents')">
+                        <div class="action-btn" onclick="switchPage('agents', true)">
                             <div class="action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 2.4-1.2 4.5-3 5.7V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.3C6.2 13.5 5 11.4 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg></div>
                             <span class="action-text">Agents</span>
                         </div>
-                        <div class="action-btn" onclick="switchPage('identity')">
+                        <div class="action-btn" onclick="switchPage('identity', true)">
                             <div class="action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
                             <span class="action-text">KYC</span>
                         </div>
@@ -973,7 +973,12 @@
         let userRole = localStorage.getItem('hive_role') || 'user'; // 'user' or 'retail'
 
         // ═══ PAGE SWITCHING ═══
-        function switchPage(page){
+        let fromQuickShortcut = false;
+
+        function switchPage(page, fromShortcut = false){
+            // Track if coming from quick shortcut
+            if(fromShortcut) fromQuickShortcut = true;
+            if(page === 'dashboard') fromQuickShortcut = false;
             // Close sidebar on mobile
             if(window.innerWidth <= 768) closeSidebar();
             document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -984,9 +989,9 @@
             document.getElementById('pageTitle').textContent = config.title;
             document.getElementById('breadcrumb').textContent = config.breadcrumb;
 
-            // Show/hide back button (only on non-dashboard pages)
+            // Show/hide back button (only when coming from quick shortcuts)
             const backBtn = document.getElementById('backBtn');
-            if(backBtn) backBtn.style.display = page === 'dashboard' ? 'none' : 'flex';
+            if(backBtn) backBtn.style.display = fromQuickShortcut ? 'flex' : 'none';
 
             // Hide all pages
             document.querySelectorAll('.page-content').forEach(p => p.style.display = 'none');
