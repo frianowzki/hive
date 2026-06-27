@@ -88,6 +88,7 @@
             cursor:pointer;transition:all .15s;
         }
         .sidebar-toggle:hover{background:rgba(139,92,246,.1)}
+        .hamburger{display:none}
         .toggle-arrow{
             font-size:1rem;color:var(--text-dim);transition:transform .2s;
             display:block;line-height:1;
@@ -288,10 +289,31 @@
             .actions-grid{grid-template-columns:repeat(2,1fr)}
         }
         @media(max-width:768px){
-            .sidebar{width:0;border:none;position:fixed;z-index:1000}
-            .sidebar.expanded{width:var(--sidebar-width);border-right:1px solid var(--border)}
+            .sidebar{width:0;border:none;position:fixed;z-index:1000;transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1),width .3s}
+            .sidebar.expanded{width:var(--sidebar-width);border-right:1px solid var(--border);transform:translateX(0)}
+            .sidebar.expanded .sidebar-top{padding:0 1rem}
+            .sidebar.expanded .sidebar-logo{gap:0}
+            .sidebar.expanded .logo-icon-img{display:none!important}
+            .sidebar.expanded .logo-text{opacity:1}
+            .sidebar.expanded .nav-section-label{opacity:1}
+            .sidebar.expanded .nav-label{opacity:1}
+            .sidebar.expanded .nav-item{padding:0 1rem}
+            .sidebar.expanded .toggle-arrow{transform:rotate(180deg)}
             .main{margin-left:0!important}
             .sidebar.expanded~.main{margin-left:0!important}
+
+            /* Hamburger button */
+            .hamburger{display:flex;flex-direction:column;gap:4px;cursor:pointer;padding:4px;border-radius:6px;transition:background .15s}
+            .hamburger:hover{background:rgba(139,92,246,.1)}
+            .hamburger span{display:block;width:18px;height:2px;background:var(--text-dim);border-radius:1px;transition:all .2s}
+            .hamburger.active span:nth-child(1){transform:rotate(45deg) translate(4px,4px)}
+            .hamburger.active span:nth-child(2){opacity:0}
+            .hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(4px,-4px)}
+
+            /* Overlay */
+            .sidebar-overlay{display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.5);-webkit-tap-highlight-color:transparent}
+            .sidebar-overlay.show{display:block}
+
             .stats-grid{grid-template-columns:1fr}
             .content{padding:1rem}
             .topbar{padding:0 .75rem}
@@ -337,6 +359,9 @@
 <body>
 
     <!-- SIDEBAR -->
+    <!-- Mobile sidebar overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-top">
             <div class="sidebar-logo">
@@ -484,6 +509,9 @@
     <div class="main">
         <div class="topbar">
             <div class="topbar-left">
+                <div class="hamburger" id="hamburger" onclick="toggleSidebar()">
+                    <span></span><span></span><span></span>
+                </div>
                 <div class="topbar-title" id="pageTitle">Dashboard</div>
                 <div class="topbar-breadcrumb" id="breadcrumb">Hive / Overview</div>
             </div>
@@ -962,7 +990,22 @@
     <script>
         // ═══ SIDEBAR ═══
         function toggleSidebar(){
-            document.getElementById('sidebar').classList.toggle('expanded');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const hamburger = document.getElementById('hamburger');
+            sidebar.classList.toggle('expanded');
+            if(window.innerWidth <= 768){
+                overlay.classList.toggle('show', sidebar.classList.contains('expanded'));
+                hamburger.classList.toggle('active', sidebar.classList.contains('expanded'));
+            }
+        }
+        function closeSidebar(){
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const hamburger = document.getElementById('hamburger');
+            sidebar.classList.remove('expanded');
+            overlay.classList.remove('show');
+            hamburger.classList.remove('active');
         }
 
         // ═══ PAGE NAVIGATION ═══
@@ -999,6 +1042,8 @@
 
         // ═══ PAGE SWITCHING ═══
         function switchPage(page){
+            // Close sidebar on mobile
+            if(window.innerWidth <= 768) closeSidebar();
             document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
             const navItem = document.querySelector(`.nav-item[data-page="${page}"]`);
             if(navItem) navItem.classList.add('active');
