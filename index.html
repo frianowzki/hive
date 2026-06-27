@@ -558,7 +558,7 @@
                     <h1 class="fi">The <span class="g">compliant AI launchpad</span> for forward-thinking DeFi.</h1>
                     <p class="hero-desc fi d1">Fully on-chain, zk-proofed AI launchpad built on Ritual Chain.<br>AI market makers, federated learning, autonomous agents,<br>and DAO governance — all with KYC/KYB compliance.</p>
                     <div class="hero-actions fi d2">
-                        <a href="/dashboard" class="btn btn-p cool-btn" id="ctaBtn" onclick="coolClick(this);setTimeout(()=>window.location.href='/dashboard',600);return false">Open Hive ❖</a>
+                        <a href="/dashboard" class="btn btn-p cool-btn" id="ctaBtn" onclick="coolClick(this);setTimeout(()=>window.location.href='/dashboard',300);return false">Open Hive ❖</a>
                     </div>
                 </div>
             </div>
@@ -949,7 +949,6 @@
                     else p.remove();
                 })(performance.now());
             }
-            setTimeout(()=>goToPage(3),800);
         }
 
 
@@ -1109,7 +1108,7 @@
                 ctaBtn.onclick = (e) => {
                     e.preventDefault();
                     coolClick(ctaBtn);
-                    setTimeout(() => window.location.href = '/dashboard', 600);
+                    setTimeout(() => window.location.href = '/dashboard', 300);
                 };
             }
             console.log('[Hive] Connection complete!', { address: connectedAddress, role: selectedRole, network: 'Ritual Chain' });
