@@ -124,7 +124,13 @@ contract HiveSovereignAgentV2 is RitualPrecompileConsumer {
             data,
             500000, // gas limit
             0,      // numCalls (0 = infinite)
-            interval // frequency
+            interval, // frequency
+            0,      // startDelay
+            0,      // startBlock
+            0,      // maxFeePerGas
+            0,      // maxPriorityFeePerGas
+            0,      // value
+            address(0) // paymentAddress
         );
 
         isRunning = true;
