@@ -60,6 +60,10 @@ const HIVE = {
     // New: hiveUSD + Faucet
     HiveUSD:          '0x60601e48038E32dBCd9A9667c589bf6D39A32fb5',
     HiveFaucet:       '0x1ed73Ac27FfDF1D009CbC064C1eeDb910932AA61',
+
+    // Privacy & Fee Economy
+    HiveDKMS:         '0x0000000000000000000000000000000000000000', // TODO: deploy
+    HoneyPot:         '0x0000000000000000000000000000000000000000', // TODO: deploy
   },
 
   // ═══ MINIMAL ABIs ═══
@@ -290,6 +294,87 @@ const HIVE = {
       'function updatePrice(address,uint256,string)',
       'function fetchPrice(address) returns (uint256)',
       'event PriceUpdated(address indexed token, uint256 price, uint256 timestamp, string source)',
+    ],
+
+    // HiveDKMS — TEE-bound key management
+    HiveDKMS: [
+      'function deriveKey(string,uint256) returns (bytes)',
+      'function storeEncrypted(string,string)',
+      'function getEncrypted(address,string) view returns (string)',
+      'function hasKey(address,string) view returns (bool)',
+      'function rotateKey(string)',
+      'function keyIndices(address,string) view returns (uint256)',
+      'function dataSlots(address,uint256) view returns (string)',
+      'function owner() view returns (address)',
+      'event KeyDerived(address indexed user, string purpose, uint256 keyIndex)',
+      'event DataEncrypted(address indexed user, string purpose, string slot)',
+      'event KeyRotated(address indexed user, string purpose, uint256 newIndex)',
+    ],
+
+    // HoneyPot — Fee distribution vault
+    HoneyPot: [
+      'function collectFee(address,uint256)',
+      'function totalFeesCollected() view returns (uint256)',
+      'function totalDistributed() view returns (uint256)',
+      'function staking() view returns (address)',
+      'function queen() view returns (address)',
+      'function pendingStakerReward(address) view returns (uint256)',
+      'function pendingReferrerFees(address) view returns (uint256)',
+      'function claimStakerReward()',
+      'function claimReferrerFees()',
+      'function reserveBalance() view returns (uint256)',
+      'function owner() view returns (address)',
+      'event FeeCollected(address indexed from, uint256 amount, uint256 stakerShare, uint256 referrerShare, uint256 reserveShare)',
+      'event StakerRewardPaid(address indexed staker, uint256 amount)',
+      'event ReferrerFeePaid(address indexed referrer, uint256 amount)',
+    ],
+
+    // HiveFLock — Federated learning
+    HiveFLock: [
+      'function trainingCount() view returns (uint256)',
+      'function getTraining(uint256) view returns (string description, uint256 prize, uint256 deadline, bool finalized)',
+      'function submitModel(uint256,string,string)',
+      'function voteModel(uint256,uint256,bool)',
+      'function finalizeTraining(uint256)',
+      'function getModels(uint256) view returns (tuple(string modelCid, address submitter, uint256 score, uint256 votes, bool deployed)[])',
+      'function brain() view returns (address)',
+      'function setBrain(address)',
+      'function owner() view returns (address)',
+      'event TrainingCreated(uint256 indexed trainingId, string description, uint256 prize)',
+      'event ModelSubmitted(uint256 indexed trainingId, address indexed submitter, string modelCid)',
+      'event ModelValidated(uint256 indexed trainingId, uint256 indexed modelIndex, bool approved)',
+    ],
+
+    // HiveID — ZK-proofed identity
+    HiveID: [
+      'function isRegistered(address) view returns (bool)',
+      'function getIdentity(address) view returns (bytes32 usernameHash, uint8 accountType, uint256 registeredAt, bool verified, bool active)',
+      'function register(bytes32,string,uint8)',
+      'function verify(bytes32,uint8,bytes)',
+      'function storeEncrypted(address,string,string)',
+      'function getEncrypted(address,string) view returns (string)',
+      'function totalRegistered() view returns (uint256)',
+      'function totalVerified() view returns (uint256)',
+      'function owner() view returns (address)',
+      'event IdentityRegistered(address indexed user, bytes32 usernameHash, uint8 accountType)',
+      'event IdentityVerified(address indexed user, bytes32 usernameHash, uint8 verificationType)',
+    ],
+
+    // HiveBrain — Sovereign agent brain
+    HiveBrain: [
+      'function think(bytes32,string) returns (string)',
+      'function plan(bytes32,string) returns (string)',
+      'function act(bytes32,string) returns (string)',
+      'function lastThought(address) view returns (string)',
+      'function confidence(address) view returns (uint256)',
+      'function setOracle(address)',
+      'function setFlock(address)',
+      'function oracle() view returns (address)',
+      'function flock() view returns (address)',
+      'function owner() view returns (address)',
+      'event Thought(address indexed agent, bytes32 topic, string response)',
+      'event PlanCreated(address indexed agent, bytes32 topic, string plan)',
+      'event ActionExecuted(address indexed agent, bytes32 topic, string action)',
     ],
 
     // HiveReferral
@@ -780,6 +865,135 @@ class HiveProvider {
     const data = await this.getOraclePrice(tokenAddress);
     if (!data || !data.valid) return null;
     return data.price;
+  }
+
+  // ═══ DKMS ═══
+  async getDKMSInfo(address) {
+    await this.init();
+    const dkms = this.getContract('HiveDKMS');
+    if (!dkms || !address) return null;
+    try {
+      const slots = ['identity', 'kyc', 'wallet', 'agent'];
+      const results = {};
+      for (const slot of slots) {
+        results[slot] = await dkms.hasKey(address, slot).catch(() => false);
+      }
+      return results;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // ═══ HONEYPOT (Fee Economy) ═══
+  async getHoneyPotInfo(address) {
+    await this.init();
+    const hp = this.getContract('HoneyPot');
+    if (!hp) return null;
+    try {
+      const [totalFees, totalDistributed, reserve, pendingStaker, pendingReferrer] = await Promise.allSettled([
+        hp.totalFeesCollected(),
+        hp.totalDistributed(),
+        hp.reserveBalance(),
+        address ? hp.pendingStakerReward(address) : Promise.resolve(0n),
+        address ? hp.pendingReferrerFees(address) : Promise.resolve(0n),
+      ]);
+      return {
+        totalFees: totalFees.status === 'fulfilled' ? totalFees.value : 0n,
+        totalDistributed: totalDistributed.status === 'fulfilled' ? totalDistributed.value : 0n,
+        reserve: reserve.status === 'fulfilled' ? reserve.value : 0n,
+        pendingStaker: pendingStaker.status === 'fulfilled' ? pendingStaker.value : 0n,
+        pendingReferrer: pendingReferrer.status === 'fulfilled' ? pendingReferrer.value : 0n,
+      };
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // ═══ CLEARING AUCTIONS ═══
+  async getAuctions(page = 0, pageSize = 10) {
+    await this.init();
+    const clearing = this.getContract('HiveClearing');
+    if (!clearing) return { total: 0, auctions: [] };
+    try {
+      const count = Number(await clearing.auctionCount());
+      const auctions = [];
+      const start = Math.max(0, count - 1 - page * pageSize);
+      const end = Math.max(0, start - pageSize);
+      for (let i = start; i > end; i--) {
+        try {
+          const a = await clearing.getAuction(i);
+          auctions.push({
+            id: i,
+            token: a[0],
+            totalSupply: a[1],
+            minPrice: a[2],
+            maxPrice: a[3],
+            currentPrice: a[4],
+            startTime: a[5],
+            endTime: a[6],
+            settled: a[7],
+          });
+        } catch (e) { break; }
+      }
+      return { total: count, auctions };
+    } catch (e) {
+      return { total: 0, auctions: [] };
+    }
+  }
+
+  // ═══ FLOCK (Federated Learning) ═══
+  async getFLockInfo() {
+    await this.init();
+    const flock = this.getContract('HiveFLock');
+    if (!flock) return { total: 0, trainings: [] };
+    try {
+      const count = Number(await flock.trainingCount());
+      const trainings = [];
+      for (let i = 0; i < Math.min(count, 20); i++) {
+        try {
+          const t = await flock.getTraining(i);
+          trainings.push({
+            id: i,
+            description: t[0],
+            prize: t[1],
+            deadline: t[2],
+            finalized: t[3],
+          });
+        } catch (e) { break; }
+      }
+      return { total: count, trainings };
+    } catch (e) {
+      return { total: 0, trainings: [] };
+    }
+  }
+
+  // ═══ HIVEID ═══
+  async getHiveIDInfo(address) {
+    await this.init();
+    const id = this.getContract('HiveID');
+    if (!id || !address) return null;
+    try {
+      const [registered, identity, totalReg, totalVer] = await Promise.allSettled([
+        id.isRegistered(address),
+        id.getIdentity(address),
+        id.totalRegistered(),
+        id.totalVerified(),
+      ]);
+      const accTypes = ['Individual', 'Project', 'VC', 'MarketMaker'];
+      return {
+        registered: registered.status === 'fulfilled' ? registered.value : false,
+        usernameHash: identity.status === 'fulfilled' ? identity.value[0] : '0x0000000000000000000000000000000000000000000000000000000000000000',
+        accountType: identity.status === 'fulfilled' ? Number(identity.value[1]) : 0,
+        accountTypeName: accTypes[identity.status === 'fulfilled' ? Number(identity.value[1]) : 0] || 'Unknown',
+        registeredAt: identity.status === 'fulfilled' ? identity.value[2] : 0n,
+        verified: identity.status === 'fulfilled' ? identity.value[3] : false,
+        active: identity.status === 'fulfilled' ? identity.value[4] : false,
+        totalRegistered: totalReg.status === 'fulfilled' ? totalReg.value : 0n,
+        totalVerified: totalVer.status === 'fulfilled' ? totalVer.value : 0n,
+      };
+    } catch (e) {
+      return null;
+    }
   }
 
   // ═══ UTILITIES ═══

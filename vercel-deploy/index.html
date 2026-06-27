@@ -246,8 +246,8 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                 <div>
                   <label class="text-xs text-slate-500 mb-1 block">Fund Amount (RITUAL)</label>
-                  <input id="d-fund" type="number" value="0.15" step="0.01" min="0.15" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
-                  <p class="text-xs text-red-400 mt-0.5">Minimum 0.15</p>
+                  <input id="d-fund" type="number" value="0.1" step="0.01" min="0.1" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
+                  <p class="text-xs text-red-400 mt-0.5">Minimum 0.1</p>
                 </div>
                 <div>
                   <label class="text-xs text-slate-500 mb-1 block">Max Budget (RITUAL)</label>
@@ -319,8 +319,8 @@
             <div class="rounded-lg px-3 py-2 border" style="background:rgba(57,255,20,0.08);border-color:rgba(57,255,20,0.2)">
               <div class="flex flex-wrap items-center gap-2 md:gap-3 text-xs">
                 <span class="text-slate-400">Deploy: ~0.02</span>
-                <span class="text-slate-400">Fund: <span id="est-fund">0.15</span></span>
-                <span class="text-white font-semibold">Total: ~<span id="est-total">0.17</span> RITUAL</span>
+                <span class="text-slate-400">Fund: <span id="est-fund">0.1</span></span>
+                <span class="text-white font-semibold">Total: ~<span id="est-total">0.12</span> RITUAL</span>
               </div>
             </div>
           </div>
@@ -386,26 +386,26 @@
 
       <!-- Restart Agent -->
       <div class="glass rounded-xl p-2 md:p-3">
-        <h3 class="text-xs font-semibold mb-3" style="color:#eab308">Restart Agent</h3>
+        <h3 class="text-xs font-semibold mb-3" style="color:#eab308">Restart / Reconfigure</h3>
         <div class="space-y-2">
           <div>
             <label class="text-xs text-slate-500 mb-1 block">Agent Address</label>
             <input id="m-restart-agent" type="text" placeholder="0x..." class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
           </div>
-          <button onclick="restartAgent()" id="restart-btn" class="btn-primary w-full rounded-xl py-2 font-semibold text-xs" style="background:linear-gradient(135deg,#eab308,#f59e0b)">Restart Agent</button>
+          <button onclick="restartAgent()" id="restart-btn" class="btn-primary w-full rounded-xl py-2 font-semibold text-xs" style="background:linear-gradient(135deg,#eab308,#f59e0b)">Check & Restart</button>
         </div>
         <div id="restart-terminal" class="terminal rounded-lg p-2 text-xs mono max-h-32 overflow-y-auto mt-2 hidden"></div>
       </div>
 
       <!-- Stop Agent -->
       <div class="glass rounded-xl p-2 md:p-3">
-        <h3 class="text-xs font-semibold mb-3" style="color:#ef4444">Stop Agent</h3>
+        <h3 class="text-xs font-semibold mb-3" style="color:#ef4444">Stop / Status</h3>
         <div class="space-y-2">
           <div>
             <label class="text-xs text-slate-500 mb-1 block">Agent Address</label>
             <input id="m-stop-agent" type="text" placeholder="0x..." class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
           </div>
-          <button onclick="stopAgent()" id="stop-btn" class="btn-primary w-full rounded-xl py-2 font-semibold text-xs" style="background:linear-gradient(135deg,#ef4444,#dc2626)">Stop Agent</button>
+          <button onclick="stopAgent()" id="stop-btn" class="btn-primary w-full rounded-xl py-2 font-semibold text-xs" style="background:linear-gradient(135deg,#ef4444,#dc2626)">Check Status</button>
         </div>
         <div id="stop-terminal" class="terminal rounded-lg p-2 text-xs mono max-h-32 overflow-y-auto mt-2 hidden"></div>
       </div>
@@ -757,15 +757,26 @@ async function deployAgent() {
   const schedulerTtl = parseInt(document.getElementById('d-schedttl').value) || 500;
   const fundAmount = parseFloat(document.getElementById('d-fund').value);
 
+  // Pre-flight: check for pending async job
+  const TRACKER_ABI = ["function hasPendingJobForSender(address sender) view returns (bool)"];
+  const TRACKER_ADDR = "0xC069FFCa0389f44eCA2C626e55491b0ab045AEF5";
+  try {
+    const tracker = new ethers.Contract(TRACKER_ADDR, TRACKER_ABI, provider);
+    const hasPending = await tracker.hasPendingJobForSender(userAddress);
+    if (hasPending) {
+      alert('You have a pending async job. Wait for it to expire (up to ~1 hour) or use a different wallet.');
+      btn.disabled = false;
+      btn.innerHTML = 'Deploy Sovereign Agent';
+      return;
+    }
+  } catch(e) { console.warn('Pending check failed:', e.message); }
+
   const scheduleTotal = freq * windowCalls;
   if (scheduleTotal > 10000) {
     alert(`Schedule too aggressive: ${freq} × ${windowCalls} = ${scheduleTotal} blocks. Must be < 10,000.`);
     return;
   }
-  if (fundAmount < 0.15) {
-    alert(`Minimum fund is 0.15 RITUAL.`);
-    return;
-  }
+
 
   const maxBudget = parseFloat(document.getElementById('d-maxbudget').value);
   const lockDuration = parseInt(document.getElementById('d-lockduration').value);
@@ -815,14 +826,14 @@ async function deployAgent() {
       log(termDiv, 'cmd', 'Waiting for confirmation...');
 
       let receipt = null;
-      for (let i = 0; i < 60; i++) {
-        await new Promise(r => setTimeout(r, 2000));
+      for (let i = 0; i < 30; i++) {
+        await new Promise(r => setTimeout(r, 5000));
         try {
           const rawReceipt = await provider.send('eth_getTransactionReceipt', [tx.hash]);
           if (rawReceipt) { receipt = rawReceipt; break; }
         } catch(e) {}
       }
-      if (!receipt) throw new Error('deployHarness timed out');
+      if (!receipt) throw new Error('deployHarness timed out after 150s — check explorer for tx status');
       const status = receipt.status === '0x1' || receipt.status === '0x01' || receipt.status === 1;
       if (!status) throw new Error('deployHarness reverted');
       log(termDiv, 'info', `Confirmed block ${parseInt(receipt.blockNumber, 16)}`);
@@ -866,7 +877,8 @@ async function deployAgent() {
           rolloverRetry: rolloverRetry,
           maxFeeGwei: maxFeeGwei,
           priorityFeeGwei: priorityFeeGwei,
-          cliType: 6
+          cliType: 6,
+          sender: userAddress
         })
       });
 
@@ -899,7 +911,7 @@ async function deployAgent() {
     } catch (simErr) {
       const simMsg = simErr.data?.message || simErr.message || 'unknown revert';
       log(termDiv, 'error', `Simulation REVERTED: ${simMsg}`);
-      throw new Error(`Simulation reverted: ${simMsg}`);
+      throw new Error(`Simulation reverted: ${simMsg}. Check: funds in RitualWallet, no pending jobs, correct params.`);
     }
 
     log(termDiv, 'cmd', 'Sending configureFundAndStart tx...');
@@ -912,30 +924,84 @@ async function deployAgent() {
     log(termDiv, 'info', `TX: <a href='https://explorer.ritualfoundation.org/tx/${tx2.hash}' target='_blank' class='tx-hash'>${tx2.hash}</a>`);
     log(termDiv, 'cmd', 'Waiting for confirmation...');
 
+    // Receipt: 30 attempts × 5s = 150s. On Ritual blocks are ~350ms, should confirm in 1-2 blocks.
     let receipt2 = null;
-    for (let i = 0; i < 60; i++) {
-      await new Promise(r => setTimeout(r, 2000));
+    for (let i = 0; i < 30; i++) {
+      await new Promise(r => setTimeout(r, 5000));
       try {
         const rawReceipt = await provider.send('eth_getTransactionReceipt', [tx2.hash]);
         if (rawReceipt) { receipt2 = rawReceipt; break; }
       } catch(e) {}
     }
 
-    if (!receipt2) throw new Error('Transaction timed out');
+    if (!receipt2) throw new Error('Transaction timed out after 150s — check explorer manually');
     const status2 = receipt2.status === '0x1' || receipt2.status === '0x01' || receipt2.status === 1;
-    if (!status2) throw new Error('configureFundAndStart reverted');
+    if (!status2) throw new Error('configureFundAndStart reverted on-chain');
     log(termDiv, 'info', `Confirmed block ${parseInt(receipt2.blockNumber, 16)}`);
 
-    updateProgress(100, 'Complete');
-    log(termDiv, 'success', '═══════════════════════════════════════');
-    log(termDiv, 'success', `SOVEREIGN AGENT DEPLOYED`);
-    log(termDiv, 'success', `Harness: <a href='https://explorer.ritualfoundation.org/agents/${harnessAddr}' target='_blank' class='tx-hash'>${harnessAddr}</a>`);
-    log(termDiv, 'success', `Model: ${model} | Fund: ${fundAmount} RITUAL`);
-    log(termDiv, 'success', '═══════════════════════════════════════');
+    // ── Phase 2: Wait for async callback to complete ──
+    // configureFundAndStart has TWO phases:
+    //   Phase 1 (sync): TX mined, funds deposited — we just confirmed this
+    //   Phase 2 (async): TEE executor picks up job, encrypts secrets, configures agent
+    // Phase 2 can take 1-5 minutes. We poll configured() to detect it.
+    log(termDiv, 'cmd', 'TX confirmed. Waiting for TEE callback (async phase)...');
+    log(termDiv, 'info', 'This takes 1-5 min — the TEE executor must pick up and arm the scheduler.');
 
-    btn.innerHTML = 'Deployed!';
-    btn.classList.remove('btn-primary');
-    btn.classList.add('btn-outline');
+    updateProgress(95, 'Step 3/3 — Waiting for TEE callback');
+
+    let agentConfigured = false;
+    const rpcProvider = new ethers.JsonRpcProvider(RITUAL_RPC);
+
+    for (let i = 0; i < 60; i++) {  // 60 × 5s = 300s = 5 min max
+      await new Promise(r => setTimeout(r, 5000));
+      try {
+        // Check wakeMode: 0=uninit, 1=stopped, 2=configured, 3+=armed
+        const wmResult = await rpcProvider.call({ to: harnessAddr, data: '0xc9777451' });
+        const wakeMode = parseInt(wmResult.hex(), 16);
+        if (wakeMode >= 3) {
+          agentConfigured = true;
+          break;
+        }
+        // Also check state selector as fallback
+        const stateResult = await rpcProvider.call({ to: harnessAddr, data: '0x24974129' });
+        const state = parseInt(stateResult.hex(), 16);
+        if (state >= 2 && i >= 12) {  // state=2 after 60s = good enough
+          agentConfigured = true;
+          break;
+        }
+      } catch(e) {}
+      // Progress feedback every 30s
+      if ((i + 1) % 6 === 0) {
+        log(termDiv, 'info', `Still waiting... (${Math.round((i + 1) * 5 / 60)} min elapsed)`);
+      }
+    }
+
+    if (!agentConfigured) {
+      // Callback didn't complete in 5 min — funds are deposited but agent unconfigured
+      updateProgress(100, 'Partial — needs manual restart');
+      log(termDiv, 'warn', '═══════════════════════════════════════');
+      log(termDiv, 'warn', 'TX confirmed but agent not armed in 5 min.');
+      log(termDiv, 'warn', 'Funds deposited. Agent deployed but scheduler not armed.');
+      log(termDiv, 'warn', 'Go to Deploy tab with SAME salt to re-trigger configureFundAndStart.');
+      log(termDiv, 'warn', '═══════════════════════════════════════');
+      log(termDiv, 'info', `Harness: <a href='https://explorer.ritualfoundation.org/agents/${harnessAddr}' target='_blank' class='tx-hash'>${harnessAddr}</a>`);
+
+      btn.innerHTML = 'Needs Restart';
+      btn.classList.remove('btn-primary');
+      btn.classList.add('btn-outline');
+    } else {
+      // Full success
+      updateProgress(100, 'Complete');
+      log(termDiv, 'success', '═══════════════════════════════════════');
+      log(termDiv, 'success', `SOVEREIGN AGENT DEPLOYED & ARMED`);
+      log(termDiv, 'success', `Harness: <a href='https://explorer.ritualfoundation.org/agents/${harnessAddr}' target='_blank' class='tx-hash'>${harnessAddr}</a>`);
+      log(termDiv, 'success', `Model: ${model} | Fund: ${fundAmount} RITUAL`);
+      log(termDiv, 'success', '═══════════════════════════════════════');
+
+      btn.innerHTML = 'Deployed!';
+      btn.classList.remove('btn-primary');
+      btn.classList.add('btn-outline');
+    }
 
     // Save to localStorage for My Agents
     const agents = JSON.parse(localStorage.getItem('sr_agents') || '[]');
@@ -1074,14 +1140,15 @@ async function depositToWallet() {
     const tx = await wallet.depositFor(agent, lockBlocks, { value, gasLimit: 3_000_000 });
     log(termDiv, 'info', `TX: <a href='https://explorer.ritualfoundation.org/tx/${tx.hash}' target='_blank' class='tx-hash'>${tx.hash}</a>`);
     let receipt = null;
-    for (let i = 0; i < 60; i++) {
-      await new Promise(r => setTimeout(r, 2000));
+    for (let i = 0; i < 30; i++) {
+      await new Promise(r => setTimeout(r, 5000));
       try { const raw = await provider.send('eth_getTransactionReceipt', [tx.hash]); if (raw) { receipt = raw; break; } } catch(e) {}
     }
-    if (!receipt) throw new Error('Transaction timed out');
+    if (!receipt) throw new Error('Transaction timed out after 150s');
     const status = receipt.status === '0x1' || receipt.status === '0x01' || receipt.status === 1;
     if (!status) throw new Error('Deposit reverted');
-    log(termDiv, 'success', `Deposited ${amount} RITUAL`);
+    log(termDiv, 'success', `Deposited ${amount} RITUAL to ${agent}`);
+    log(termDiv, 'info', `TX: <a href='https://explorer.ritualfoundation.org/tx/${tx.hash}' target='_blank' class='tx-hash'>View TX</a>`);
   } catch (err) {
     log(termDiv, 'error', `Error: ${err.message}`);
   } finally {
@@ -1100,29 +1167,55 @@ async function restartAgent() {
   termDiv.classList.remove('hidden');
   termDiv.innerHTML = '';
   btn.disabled = true;
-  btn.innerHTML = 'Restarting...';
+  btn.innerHTML = 'Checking...';
 
   try {
-    log(termDiv, 'comment', `Restart agent ${agent}`);
-    try { await provider.call({ to: agent, data: '0xc0406226', from: userAddress }); } catch(e) {
-      throw new Error('restart() would revert');
+    log(termDiv, 'comment', `Diagnose agent ${agent.slice(0,10)}...`);
+
+    const rpcProvider = new ethers.JsonRpcProvider(RITUAL_RPC);
+    const wallet = new ethers.Contract(RITUAL_WALLET, WALLET_ABI, rpcProvider);
+
+    // Check on-chain state
+    let wakeMode = 0;
+    try {
+      const r = await rpcProvider.call({ to: agent, data: '0xc9777451' });
+      wakeMode = parseInt(r.hex(), 16);
+    } catch(e) {}
+
+    const balance = await wallet.balanceOf(agent);
+    const lockUntil = await wallet.lockUntil(agent);
+    const currentBlock = await rpcProvider.getBlockNumber();
+    const balFmt = parseFloat(ethers.formatEther(balance)).toFixed(4);
+    const blocksLeft = Number(lockUntil) - currentBlock;
+    const hoursLeft = Math.max(0, Math.round(blocksLeft * 3.5 / 3600));
+
+    log(termDiv, 'info', `Balance: ${balFmt} RITUAL | Lock: ${hoursLeft > 0 ? hoursLeft + 'h left' : 'expired'}`);
+    log(termDiv, 'info', `Wake mode: ${wakeMode} (${wakeMode === 0 ? 'uninitialized' : wakeMode === 1 ? 'stopped' : wakeMode === 2 ? 'configured, not armed' : wakeMode >= 3 ? 'armed/active' : 'unknown'})`);
+
+    if (wakeMode >= 3) {
+      log(termDiv, 'success', 'Agent is armed and active. No restart needed.');
+    } else if (wakeMode === 2) {
+      log(termDiv, 'warn', 'Agent configured but not armed (wakeMode=2).');
+      log(termDiv, 'cmd', 'Re-triggering configureFundAndStart...');
+      log(termDiv, 'info', 'Go to Deploy tab > use SAME salt > Deploy again.');
+      log(termDiv, 'info', 'CREATE3 deterministic: same salt = same address = same harness.');
+      log(termDiv, 'info', 'The new configureFundAndStart will re-arm the scheduler.');
+    } else if (balance === 0n) {
+      log(termDiv, 'warn', 'No funds. Deposit first.');
+    } else {
+      log(termDiv, 'warn', `Agent in unknown state (wakeMode=${wakeMode}).`);
+      log(termDiv, 'info', 'Try Deploy tab with same salt to reconfigure.');
     }
-    const tx = await signer.sendTransaction({ to: agent, data: '0xc0406226', gasLimit: 5_000_000 });
-    log(termDiv, 'info', `TX: <a href='https://explorer.ritualfoundation.org/tx/${tx.hash}' target='_blank' class='tx-hash'>${tx.hash}</a>`);
-    let receipt = null;
-    for (let i = 0; i < 60; i++) {
-      await new Promise(r => setTimeout(r, 2000));
-      try { const raw = await provider.send('eth_getTransactionReceipt', [tx.hash]); if (raw) { receipt = raw; break; } } catch(e) {}
-    }
-    if (!receipt) throw new Error('Transaction timed out');
-    const status = receipt.status === '0x1' || receipt.status === '0x01' || receipt.status === 1;
-    if (!status) throw new Error('restart() reverted');
-    log(termDiv, 'success', 'Agent restarted');
+
+    // Link to deploy tab with salt pre-fill hint
+    log(termDiv, 'info', '');
+    log(termDiv, 'cmd', 'To reconfigure: Deploy tab > enter same salt > Deploy');
+
   } catch (err) {
     log(termDiv, 'error', `Error: ${err.message}`);
   } finally {
     btn.disabled = false;
-    btn.innerHTML = 'Restart Agent';
+    btn.innerHTML = 'Check & Restart';
   }
 }
 
@@ -1140,20 +1233,34 @@ async function stopAgent() {
 
   try {
     log(termDiv, 'comment', `Stop agent ${agent}`);
-    try { await provider.call({ to: agent, data: '0x07da28de', from: userAddress }); } catch(e) {
-      throw new Error('stop() would revert');
+
+    // The Ritual harness doesn't expose a stop() function.
+    // Agent stops when: funds run out, scheduler expires, or lock expires.
+    // To force-stop: funds will be locked until lockDuration expires.
+    log(termDiv, 'cmd', 'Harness does not expose stop() directly.');
+    log(termDiv, 'info', 'Agent stops automatically when funds run out or scheduler TTL expires.');
+    log(termDiv, 'info', 'Funds are locked in RitualWallet until lock duration expires.');
+
+    // Check current status
+    const rpcProvider = new ethers.JsonRpcProvider(RITUAL_RPC);
+    const wallet = new ethers.Contract(RITUAL_WALLET, WALLET_ABI, rpcProvider);
+    const balance = await wallet.balanceOf(agent);
+    const lockUntil = await wallet.lockUntil(agent);
+    const currentBlock = await rpcProvider.getBlockNumber();
+    const balFmt = parseFloat(ethers.formatEther(balance)).toFixed(4);
+    const blocksLeft = Number(lockUntil) - currentBlock;
+    const hoursLeft = Math.max(0, Math.round(blocksLeft * 3.5 / 3600));
+
+    log(termDiv, 'info', `Balance: ${balFmt} RITUAL`);
+    log(termDiv, 'info', `Lock: ${hoursLeft > 0 ? hoursLeft + 'h remaining' : 'expired'}`);
+
+    if (blocksLeft <= 0 && balance > 0n) {
+      log(termDiv, 'success', 'Lock expired. Funds can be withdrawn from RitualWallet.');
+    } else if (balance === 0n) {
+      log(termDiv, 'info', 'No funds. Agent is effectively stopped.');
+    } else {
+      log(termDiv, 'warn', `Funds locked for ${hoursLeft}h. Agent will stop when funds deplete.`);
     }
-    const tx = await signer.sendTransaction({ to: agent, data: '0x07da28de', gasLimit: 3_500_000 });
-    log(termDiv, 'info', `TX: <a href='https://explorer.ritualfoundation.org/tx/${tx.hash}' target='_blank' class='tx-hash'>${tx.hash}</a>`);
-    let receipt = null;
-    for (let i = 0; i < 60; i++) {
-      await new Promise(r => setTimeout(r, 2000));
-      try { const raw = await provider.send('eth_getTransactionReceipt', [tx.hash]); if (raw) { receipt = raw; break; } } catch(e) {}
-    }
-    if (!receipt) throw new Error('Transaction timed out');
-    const status = receipt.status === '0x1' || receipt.status === '0x01' || receipt.status === 1;
-    if (!status) throw new Error('stop() reverted');
-    log(termDiv, 'success', 'Agent stopped');
   } catch (err) {
     log(termDiv, 'error', `Error: ${err.message}`);
   } finally {

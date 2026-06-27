@@ -8,6 +8,8 @@ import "../oracle/HiveOracle.sol";
 import "../referral/HiveReferral.sol";
 import "../portfolio/HivePortfolio.sol";
 import "../relayer/HiveRelayer.sol";
+import "../privacy/HiveDKMS.sol";
+import "../treasury/HoneyPot.sol";
 
 /// @title HiveFactory — Master wiring contract
 /// @notice Connects ALL Hive modules into a unified system
@@ -20,6 +22,7 @@ contract HiveFactory {
     HiveID public hiveID;
     HiveVerifier public verifier;
     HiveReputation public reputation;
+    HiveDKMS public dkms;
 
     // Layer 2: Core DeFi
     address public launchPad;
@@ -27,6 +30,7 @@ contract HiveFactory {
     address public clearing;
     address public staking;
     address public treasury;
+    address public honeyPot;
 
     // Layer 3: AI & Intelligence
     address public brain;
@@ -104,6 +108,8 @@ contract HiveFactory {
         address _clearing,
         address _staking,
         address _treasury,
+        address _dkms,
+        address _honeyPot,
         address _brain,
         address _agent,
         address _strategy,
@@ -126,6 +132,8 @@ contract HiveFactory {
         clearing = _clearing;
         staking = _staking;
         treasury = _treasury;
+        dkms = HiveDKMS(payable(_dkms));
+        honeyPot = _honeyPot;
         brain = _brain;
         agent = _agent;
         strategy = _strategy;
@@ -168,6 +176,33 @@ contract HiveFactory {
         if (staking != address(0) && treasury != address(0)) {
             (bool _ok, ) = staking.call(abi.encodeWithSignature("setTreasury(address)", treasury));
             _ok;
+        }
+    }
+
+    function wireFeeEconomy() external {
+        require(msg.sender == owner, "Factory: not owner");
+        // HoneyPot → Staking (for reward distribution)
+        if (honeyPot != address(0) && staking != address(0)) {
+            (bool _ok, ) = honeyPot.call(abi.encodeWithSignature("setStaking(address)", staking));
+            _ok;
+        }
+        // HoneyPot → Treasury (for fee notifications)
+        if (honeyPot != address(0) && treasury != address(0)) {
+            (bool _ok, ) = honeyPot.call(abi.encodeWithSignature("setTreasury(address)", treasury));
+            _ok;
+        }
+        // Staking → Treasury (fee notifications)
+        if (staking != address(0) && treasury != address(0)) {
+            (bool _ok, ) = staking.call(abi.encodeWithSignature("setTreasury(address)", treasury));
+            _ok;
+        }
+    }
+
+    function wireDKMS() external {
+        require(msg.sender == owner, "Factory: not owner");
+        // DKMS is standalone — no cross-contract wiring needed
+        if (address(dkms) != address(0)) {
+            emit ModuleUpdated("dkms", address(dkms));
         }
     }
 
@@ -217,6 +252,8 @@ contract HiveFactory {
         require(msg.sender == owner, "Factory: not owner");
         this.wireAILayer();
         this.wireSecurityLayer();
+        this.wireFeeEconomy();
+        this.wireDKMS();
         this.wireQueen();
         this.wireAutoStrategy();
     }
@@ -283,6 +320,8 @@ contract HiveFactory {
         else if (keccak256(bytes(moduleName)) == keccak256("relayer")) relayer = HiveRelayer(payable(newAddr));
         else if (keccak256(bytes(moduleName)) == keccak256("brain")) brain = newAddr;
         else if (keccak256(bytes(moduleName)) == keccak256("flock")) flock = newAddr;
+        else if (keccak256(bytes(moduleName)) == keccak256("dkms")) dkms = HiveDKMS(payable(newAddr));
+        else if (keccak256(bytes(moduleName)) == keccak256("honeyPot")) honeyPot = newAddr;
         // eigenLayer removed
         else if (keccak256(bytes(moduleName)) == keccak256("staking")) staking = newAddr;
         else if (keccak256(bytes(moduleName)) == keccak256("treasury")) treasury = newAddr;
@@ -297,7 +336,7 @@ contract HiveFactory {
 
     // ═══ View ═══
 
-    function getSystemInfo() external view returns (address[25] memory modules, bool _initialized) {
+    function getSystemInfo() external view returns (address[27] memory modules, bool _initialized) {
         modules[0] = address(hiveID);
         modules[1] = address(verifier);
         modules[2] = address(reputation);
@@ -323,6 +362,8 @@ contract HiveFactory {
         modules[22] = points;
         modules[23] = queen;
         modules[24] = registry;
+        modules[25] = address(dkms);
+        modules[26] = honeyPot;
         _initialized = initialized;
     }
 

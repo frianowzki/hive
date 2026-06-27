@@ -2,11 +2,7 @@
 pragma solidity 0.8.20;
 
 import {RitualPrecompileConsumer} from "../libraries/RitualPrecompileConsumer.sol";
-
-interface IStaking {
-    function totalStaked() external view returns (uint256);
-    function stakedAmount(address user) external view returns (uint256);
-}
+import {IStaking} from "../interfaces/IHive.sol";
 
 /// @title HoneyPot — Hive Treasury Management
 /// @notice Holds capital, enforces allocation limits, rebalances via LLM

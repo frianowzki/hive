@@ -438,6 +438,14 @@
                     <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
                     <span class="nav-label">KYC / KYB</span>
                 </div>
+                <div class="nav-item" data-page="dkms" onclick="switchPage('dkms')">
+                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+                    <span class="nav-label">DKMS Privacy</span>
+                </div>
+                <div class="nav-item" data-page="honeypot" onclick="switchPage('honeypot')">
+                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+                    <span class="nav-label">Fee Economy</span>
+                </div>
             </div>
 
             <!-- System -->
@@ -917,6 +925,27 @@
             </div>
         </div>
 
+        <!-- PAGE: Identity (HiveID) -->
+        <div class="content page-content" id="page-identity" style="display:none">
+            <div id="identity-content">
+                <div style="color:var(--text-muted);text-align:center;padding:4rem">Loading...</div>
+            </div>
+        </div>
+
+        <!-- PAGE: DKMS (Privacy) -->
+        <div class="content page-content" id="page-dkms" style="display:none">
+            <div id="dkms-content">
+                <div style="color:var(--text-muted);text-align:center;padding:4rem">Loading...</div>
+            </div>
+        </div>
+
+        <!-- PAGE: HoneyPot (Fee Economy) -->
+        <div class="content page-content" id="page-honeypot" style="display:none">
+            <div id="honeypot-content">
+                <div style="color:var(--text-muted);text-align:center;padding:4rem">Loading...</div>
+            </div>
+        </div>
+
         <!-- PAGE: Generic placeholder for other pages -->
         <div class="content page-content" id="page-generic" style="display:none">
             <div class="content-header">
@@ -951,6 +980,8 @@
             governance: { title:'Proposals', breadcrumb:'Hive / Governance / Proposals' },
             multisig: { title:'Multi-Sig', breadcrumb:'Hive / Governance / Multi-Sig' },
             identity: { title:'KYC / KYB', breadcrumb:'Hive / Identity / KYC' },
+            dkms: { title:'DKMS Privacy', breadcrumb:'Hive / Identity / DKMS' },
+            honeypot: { title:'Fee Economy', breadcrumb:'Hive / Treasury / Fee Economy' },
             oracle: { title:'Oracles', breadcrumb:'Hive / System / Oracles' },
             points: { title:'Points', breadcrumb:'Hive / System / Points' },
             referral: { title:'Referral', breadcrumb:'Hive / System / Referral' },
@@ -1038,6 +1069,15 @@
             } else if(page === 'multisig'){
                 document.getElementById('page-multisig').style.display = '';
                 loadMultiSigPage();
+            } else if(page === 'identity'){
+                document.getElementById('page-identity').style.display = '';
+                loadIdentityPage();
+            } else if(page === 'dkms'){
+                document.getElementById('page-dkms').style.display = '';
+                loadDKMSPage();
+            } else if(page === 'honeypot'){
+                document.getElementById('page-honeypot').style.display = '';
+                loadHoneyPotPage();
             } else {
                 document.getElementById('page-generic').style.display = '';
                 document.getElementById('generic-title').textContent = config.title;
@@ -6860,6 +6900,134 @@
             if(n >= 1e6) return (n/1e6).toFixed(1) + 'M';
             if(n >= 1e3) return (n/1e3).toFixed(1) + 'K';
             return n.toLocaleString();
+        }
+
+        // ═══ IDENTITY PAGE ═══
+        async function loadIdentityPage(){
+            const c = document.getElementById('identity-content');
+            if(!connectedAddress){
+                c.innerHTML = '<div style="text-align:center;padding:4rem;color:var(--text-muted)"><p style="font-size:1.2rem;margin-bottom:.5rem">🔐</p><p>Connect wallet to view identity</p></div>';
+                return;
+            }
+            try {
+                const info = await hive.getHiveIDInfo(connectedAddress);
+                let html = '<div style="padding:1.5rem">';
+                html += '<h2 style="font-size:1.1rem;font-weight:600;margin-bottom:1rem">Identity Status</h2>';
+                html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem">';
+                html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px"><div style="font-size:.7rem;color:var(--text-dim);margin-bottom:.3rem">Registered</div><div style="font-size:1.1rem;font-weight:600;color:' + (info?.registered ? 'var(--green)' : 'var(--text-muted)') + '">' + (info?.registered ? 'Yes' : 'No') + '</div></div>';
+                html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px"><div style="font-size:.7rem;color:var(--text-dim);margin-bottom:.3rem">Account Type</div><div style="font-size:1.1rem;font-weight:600">' + (info?.accountTypeName || 'Unknown') + '</div></div>';
+                html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px"><div style="font-size:.7rem;color:var(--text-dim);margin-bottom:.3rem">Verified</div><div style="font-size:1.1rem;font-weight:600;color:' + (info?.verified ? 'var(--green)' : 'var(--text-muted)') + '">' + (info?.verified ? 'Yes' : 'No') + '</div></div>';
+                html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px"><div style="font-size:.7rem;color:var(--text-dim);margin-bottom:.3rem">Active</div><div style="font-size:1.1rem;font-weight:600;color:' + (info?.active ? 'var(--green)' : 'var(--red)') + '">' + (info?.active ? 'Yes' : 'No') + '</div></div>';
+                html += '</div>';
+                html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">';
+                html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px"><div style="font-size:.7rem;color:var(--text-dim);margin-bottom:.3rem">Total Registered</div><div style="font-size:1.5rem;font-weight:700">' + formatNum(Number(info?.totalRegistered || 0)) + '</div></div>';
+                html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px"><div style="font-size:.7rem;color:var(--text-dim);margin-bottom:.3rem">Total Verified</div><div style="font-size:1.5rem;font-weight:700">' + formatNum(Number(info?.totalVerified || 0)) + '</div></div>';
+                html += '</div>';
+                html += '</div>';
+                c.innerHTML = html;
+            } catch(e){
+                c.innerHTML = '<div style="text-align:center;padding:4rem;color:var(--red)">Error loading identity: ' + e.message + '</div>';
+            }
+        }
+
+        // ═══ DKMS PAGE ═══
+        async function loadDKMSPage(){
+            const c = document.getElementById('dkms-content');
+            if(!connectedAddress){
+                c.innerHTML = '<div style="text-align:center;padding:4rem;color:var(--text-muted)"><p style="font-size:1.2rem;margin-bottom:.5rem">🔒</p><p>Connect wallet to view DKMS keys</p></div>';
+                return;
+            }
+            try {
+                const info = await hive.getDKMSInfo(connectedAddress);
+                let html = '<div style="padding:1.5rem">';
+                html += '<h2 style="font-size:1.1rem;font-weight:600;margin-bottom:.5rem">TEE-Bound Key Management</h2>';
+                html += '<p style="font-size:.8rem;color:var(--text-muted);margin-bottom:1.5rem">Keys derived inside Ritual TEE enclave. Never leave the secure environment. ECIES-encrypted storage on-chain.</p>';
+                html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem">';
+                const slots = ['identity', 'kyc', 'wallet', 'agent'];
+                const icons = ['🪪', '✅', '💳', '🤖'];
+                slots.forEach((slot, i) => {
+                    const hasKey = info && info[slot];
+                    html += '<div style="padding:1.2rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;text-align:center">';
+                    html += '<div style="font-size:1.5rem;margin-bottom:.5rem">' + icons[i] + '</div>';
+                    html += '<div style="font-size:.8rem;font-weight:600;margin-bottom:.3rem;text-transform:capitalize">' + slot + '</div>';
+                    html += '<div style="font-size:.7rem;padding:.2rem .5rem;border-radius:4px;display:inline-block;background:' + (hasKey ? 'rgba(34,197,94,.15);color:var(--green)' : 'rgba(255,255,255,.05);color:var(--text-muted)') + '">' + (hasKey ? 'Key Derived' : 'No Key') + '</div>';
+                    html += '</div>';
+                });
+                html += '</div>';
+                html += '<div style="margin-top:1.5rem;padding:1rem;background:rgba(139,92,246,.05);border:1px solid rgba(139,92,246,.2);border-radius:10px">';
+                html += '<div style="font-size:.75rem;font-weight:600;color:var(--accent);margin-bottom:.3rem">ℹ️ How DKMS Works</div>';
+                html += '<div style="font-size:.7rem;color:var(--text-muted);line-height:1.6">1. Key derivation request sent to Ritual DKMS precompile (0x0803)<br>2. TEE enclave generates key pair — private key NEVER leaves enclave<br>3. Public key returned to contract, stored on-chain<br>4. Data encrypted with ECIES using the derived public key<br>5. Only the TEE enclave can decrypt — owner calls decrypt() to get plaintext</div>';
+                html += '</div>';
+                html += '</div>';
+                c.innerHTML = html;
+            } catch(e){
+                c.innerHTML = '<div style="text-align:center;padding:4rem;color:var(--red)">Error loading DKMS: ' + e.message + '</div>';
+            }
+        }
+
+        // ═══ HONEYPOT PAGE ═══
+        async function loadHoneyPotPage(){
+            const c = document.getElementById('honeypot-content');
+            try {
+                const info = await hive.getHoneyPotInfo(connectedAddress);
+                let html = '<div style="padding:1.5rem">';
+                html += '<h2 style="font-size:1.1rem;font-weight:600;margin-bottom:.5rem">Fee Economy</h2>';
+                html += '<p style="font-size:.8rem;color:var(--text-muted);margin-bottom:1.5rem">Every fee collected by Hive is auto-distributed: 60% to stakers, 25% to referrers, 15% to reserve.</p>';
+
+                // Stats grid
+                html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem">';
+                html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px"><div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.3rem">Total Fees Collected</div><div style="font-size:1.2rem;font-weight:700">' + hive.formatEther(info?.totalFees || 0n) + ' RITUAL</div></div>';
+                html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px"><div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.3rem">Total Distributed</div><div style="font-size:1.2rem;font-weight:700">' + hive.formatEther(info?.totalDistributed || 0n) + ' RITUAL</div></div>';
+                html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px"><div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.3rem">Reserve Balance</div><div style="font-size:1.2rem;font-weight:700">' + hive.formatEther(info?.reserve || 0n) + ' RITUAL</div></div>';
+                html += '</div>';
+
+                // Distribution split visual
+                html += '<div style="margin-bottom:1.5rem">';
+                html += '<div style="font-size:.8rem;font-weight:600;margin-bottom:.75rem">Distribution Split</div>';
+                html += '<div style="display:flex;border-radius:8px;overflow:hidden;height:32px">';
+                html += '<div style="flex:60;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:600;color:#000">60% Stakers</div>';
+                html += '<div style="flex:25;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:600;color:#fff">25% Referrers</div>';
+                html += '<div style="flex:15;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:600;color:var(--text-muted)">15% Reserve</div>';
+                html += '</div>';
+                html += '</div>';
+
+                // User rewards
+                if(connectedAddress){
+                    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">';
+                    html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px"><div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.3rem">Your Pending Staker Reward</div><div style="font-size:1.1rem;font-weight:700;color:var(--green)">' + hive.formatEther(info?.pendingStaker || 0n) + ' RITUAL</div></div>';
+                    html += '<div style="padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px"><div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.3rem">Your Pending Referrer Fee</div><div style="font-size:1.1rem;font-weight:700;color:var(--accent)">' + hive.formatEther(info?.pendingReferrer || 0n) + ' RITUAL</div></div>';
+                    html += '</div>';
+
+                    // Claim buttons
+                    html += '<div style="display:flex;gap:1rem">';
+                    html += '<button onclick="claimStakerReward()" style="padding:.6rem 1.5rem;border-radius:8px;border:1px solid var(--green);background:rgba(34,197,94,.1);color:var(--green);font-weight:600;cursor:pointer;font-size:.8rem">Claim Staker Reward</button>';
+                    html += '<button onclick="claimReferrerFee()" style="padding:.6rem 1.5rem;border-radius:8px;border:1px solid var(--accent);background:rgba(139,92,246,.1);color:var(--accent);font-weight:600;cursor:pointer;font-size:.8rem">Claim Referrer Fee</button>';
+                    html += '</div>';
+                }
+
+                html += '</div>';
+                c.innerHTML = html;
+            } catch(e){
+                c.innerHTML = '<div style="text-align:center;padding:4rem;color:var(--red)">Error loading fee economy: ' + e.message + '</div>';
+            }
+        }
+
+        async function claimStakerReward(){
+            try {
+                const hp = hive.getWriteContract('HoneyPot');
+                const tx = await hp.claimStakerReward();
+                await tx.wait();
+                loadHoneyPotPage();
+            } catch(e){ alert('Claim failed: ' + (e.reason || e.message)); }
+        }
+
+        async function claimReferrerFee(){
+            try {
+                const hp = hive.getWriteContract('HoneyPot');
+                const tx = await hp.claimReferrerFees();
+                await tx.wait();
+                loadHoneyPotPage();
+            } catch(e){ alert('Claim failed: ' + (e.reason || e.message)); }
         }
 
         init();
