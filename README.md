@@ -1,373 +1,293 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/frianowzki/hive/master/logo_hive.png" width="180" alt="Hive Logo">
-</p>
+<div align="center">
 
-<h1 align="center">HIVE</h1>
-<p align="center"><strong>Compliant AI Launchpad on Ritual Testnet</strong></p>
+<img src="https://raw.githubusercontent.com/frianowzki/hive/master/logo_hive.png" width="120" alt="Hive">
 
-<p align="center">
-  <a href="https://explorer.ritualfoundation.org">Explorer</a> ·
-  <a href="#architecture">Architecture</a> ·
-  <a href="#contracts">Contracts</a> ·
-  <a href="#quickstart">Quickstart</a>
-</p>
+<br>
+
+# `H I V E`
+
+### **Compliant AI Launchpad on Ritual Testnet**
+
+<br>
+
+![Solidity](https://img.shields.io/badge/Solidity-0.8.20-363636?style=flat&logo=solidity)
+![Foundry](https://img.shields.io/badge/Foundry-v2-363636?style=flat)
+![Tests](https://img.shields.io/badge/Tests-320%20passed-00cc88)
+![Contracts](https://img.shields.io/badge/Contracts-33%20deployed-6366f1)
+![Chain](https://img.shields.io/badge/Chain-Ritual%20Testnet%20(1979)-8b5cf6)
+![License](https://img.shields.io/badge/License-MIT-363636)
+
+<br>
+
+[**Explorer**](https://explorer.ritualfoundation.org) · [**Contracts**](#-contracts) · [**Architecture**](#-architecture) · [**Quickstart**](#-quickstart) · [**Deployer**](https://sovereign-deployer.vercel.app)
+
+</div>
 
 ---
 
 ## What is Hive?
 
-Hive is a **compliant, AI-powered launchpad** built natively on [Ritual Testnet](https://ritual.net) (Chain ID: 1979). It combines zero-knowledge identity verification, AI-driven price discovery, and decentralized governance into a single platform for launching and trading tokens.
+**Hive** is a compliant, AI-powered launchpad built natively on [Ritual Testnet](https://ritual.net) (Chain ID: 1979). Zero-knowledge identity. AI-driven price discovery. Decentralized governance. One platform.
 
-**Core thesis:** Compliance and decentralization are not opposites. Hive uses zk-proofs to verify identity (KYC for individuals, KYB for projects/institutions) without exposing personal data on-chain. Users self-custody through a dual-wallet architecture — their primary wallet (browser extension) controls a Hive wallet (passkey-based) — keeping full custody while meeting regulatory requirements.
+**Core thesis:** Compliance and decentralization are not opposites.
+
+Hive uses zk-proofs to verify identity (KYC for individuals, KYB for projects) without exposing personal data on-chain. Users self-custody through a dual-wallet architecture — primary wallet (browser extension) controls a Hive wallet (passkey-based) — keeping full custody while meeting regulatory requirements.
+
+<br>
 
 ### Key Features
 
-- **ZK-Proofed Identity** — KYC/KYB verification via zero-knowledge proofs. Prove you're 18+, prove your country, prove your organization — without revealing the underlying data
-- **DKMS Privacy** — TEE-bound key derivation via Ritual DKMS precompile (0x0803). Private keys never leave the enclave. ECIES-encrypted KYC data stored on-chain, only TEE can decrypt
-- **Dual Wallet Auth** — Primary wallet (ECDSA, e.g. MetaMask) + Hive wallet (Ritual passkey P-256). User always retains custody
-- **AI-Driven Price Discovery** — Hive Clearing Auction (HCA) with Ritual LLM-powered pricing. Optimal token launch price determined by on-chain AI
-- **Allora Price Feeds** — AI-inferred price predictions from Allora Network via Ritual HTTP precompile. Crowdsourced models supply predictions with confidence intervals
-- **FLock Federated Training** — Self-improving AI via FLock.io federated learning. Training tasks, model submissions, validator voting, winner selection, ONNX deployment via Ritual precompile
-- **AI Agent Gateway** — On-chain chatbot powered by Ritual LLM precompile. Market analysis, token insights, strategy advice — all computed on-chain
-- **Agent Brain (Async + PII)** — Sovereign AI brain with async LLM inference and PII mode. `think()` → `plan()` → `act()` pipeline with confidence threshold. PII mode ensures sensitive strategy data never hits the mempool
-- **On-Chain Governance** — DAO voting with staked-weighted power, delegation, proposal types, quorum enforcement, and time-locked execution
-- **4-Tier Staking** — Bronze → Silver → Gold → Diamond. Lock multiplier, auto-compound, fee discounts, priority access
-- **Fee Economy** — Treasury auto-distributes fees: 60% to stakers, 25% to referrers, 15% to reserve
+<table>
+<tr>
+<td width="50%">
+
+**🔐 Identity & Privacy**
+- **ZK-Proofed Identity** — KYC/KYB via zero-knowledge proofs. Prove age, country, organization — without revealing data
+- **DKMS Privacy** — TEE-bound key derivation via Ritual DKMS precompile (0x0803). Private keys never leave the enclave
+- **Dual Wallet Auth** — Primary (ECDSA/MetaMask) + Hive (Ritual passkey P-256). User always retains custody
+
+</td>
+<td width="50%">
+
+**🤖 AI Engine**
+- **AI-Driven Price Discovery** — Hive Clearing Auction (HCA) with on-chain Ritual LLM pricing
+- **Allora Price Feeds** — AI-inferred predictions from Allora Network via HTTP precompile
+- **FLock Federated Training** — Self-improving AI via federated learning. Training → Validation → ONNX deployment
+
+</td>
+</tr>
+<tr>
+<td>
+
+**💰 DeFi Infrastructure**
+- **4-Tier Staking** — Bronze → Silver → Gold → Diamond. Lock multiplier, auto-compound, fee discounts
+- **Fee Economy** — Auto-distributes: 60% stakers / 25% referrers / 15% reserve
+- **Governance** — DAO voting with staked-weighted power, delegation, quorum, time-locked execution
+
+</td>
+<td>
+
+**🛠️ Platform**
+- **Agent Gateway** — On-chain chatbot powered by Ritual LLM precompile
+- **Sovereign Agents** — Autonomous agents with async LLM + PII mode
+- **Meta-Tx Relayer** — Gasless transactions via primary wallet signing
+
+</td>
+</tr>
+</table>
+
+<br>
 
 ### Why Ritual Testnet?
 
-Hive is designed as a **flagship showcase** for Ritual's five research frontiers:
+Hive is a **flagship showcase** for Ritual's five research frontiers:
 
-1. **Ritual LLM Precompile** — On-chain AI inference (HiveAgent, HiveBrain, HiveClearing)
-2. **Ritual HTTP Precompile** — Off-chain data feeds (HiveOracle, Allora Network)
-3. **Ritual DKMS Precompile** — TEE-bound key derivation for private KYC (HiveID)
-4. **Ritual ECIES Precompile** — Encrypted P2P messaging (HiveChat)
-5. **Ritual Passkey (P-256)** — Native passkey signatures for Hive wallets
+| Precompile | Usage | Contracts |
+|:---:|---|---|
+| **LLM** | On-chain AI inference | HiveAgent, HiveBrain, HiveClearing |
+| **HTTP** | Off-chain data feeds | HiveOracle, Allora Network |
+| **DKMS** | TEE-bound key derivation | HiveID, HiveDKMS |
+| **ECIES** | Encrypted P2P messaging | HiveChat |
+| **P-256** | Native passkey auth | Hive wallets |
 
-No other chain supports all five primitives natively.
+> *No other chain supports all five primitives natively.*
 
 ---
 
-## Architecture
+## 🏗️ Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                          HIVE PROTOCOL                              │
-│                                                                     │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐           │
-│  │ HiveID   │  │HiveMulti │  │HiveVeri- │  │HiveRelay-│           │
-│  │ (Identity│  │  Sig     │  │  fier    │  │   er     │           │
-│  │  Layer)  │  │ (M-of-N) │  │  (ZK)    │  │ (MetaTx) │           │
-│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘           │
-│       │              │              │              │                 │
-│  ┌────┴──────────────┴──────────────┴──────────────┴─────┐         │
-│  │                   HiveFactory                          │         │
-│  │              (Master Wiring Contract)                   │         │
-│  └────┬──────────────┬──────────────┬──────────────┬─────┘         │
-│       │              │              │              │                 │
-│  ┌────┴─────┐  ┌─────┴────┐  ┌─────┴────┐  ┌─────┴────┐           │
-│  │HiveClear-│  │HivePort- │  │HiveRepu- │  │HiveRefer-│           │
-│  │  ing     │  │  folio   │  │ tation   │  │   ral    │           │
-│  │ (HCA +   │  │(Holdings │  │(5-Tier   │  │(4-Tier   │           │
-│  │  AI)     │  │ + PnL)   │  │ Score)   │  │ Engine)  │           │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘           │
-│                                                                     │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐           │
-│  │HiveToken │  │HiveOracle│  │HiveAgent │  │HiveBrain │           │
-│  │(ERC20 +  │  │(Price    │  │(LLM      │  │(Sovereign│           │
-│  │ Vesting) │  │ Feed)    │  │ Gateway) │  │ Agent)   │           │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘           │
-│                                                                     │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐           │
-│  │HiveGovern│  │HiveStak- │  │HiveTreas-│  │HiveNotif-│           │
-│  │  ance    │  │   ing    │  │   ury    │  │ ication  │           │
-│  │ (DAO)    │  │(4-Tier)  │  │(Fee      │  │(On-Chain │           │
-│  │          │  │          │  │ Distrib) │  │ Events)  │           │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘           │
-│                                                                     │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐           │
-│  │HiveAuto- │  │HiveChat  │  │ Queen    │  │HiveLaunch│           │
-│  │Strategy  │  │(Encrypted│  │(Brain    │  │  Pad     │           │
-│  │(DCA/TP/  │  │  P2P)    │  │ Orchest) │  │(Token    │           │
-│  │ SL/Trail)│  │          │  │          │  │ Launch)  │           │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘           │
-│                                                                     │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐           │
-│  │HiveLock  │  │HiveAgent │  │ hiveUSD  │  │HiveFaucet│           │
-│  │(Vesting  │  │ Factory  │  │(USD      │  │(Testnet  │           │
-│  │ 3 types) │  │(Summon   │  │ Stable)  │  │ Drip)    │           │
-│  │          │  │ Agents)  │  │          │  │          │           │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘           │
-└─────────────────────────────────────────────────────────────────────┘
-                              │
-                    ┌─────────┴─────────┐
-                    │  Ritual Testnet    │
-                    │  ┌──────────────┐  │
-                    │  │ LLM Precomp  │  │  ← On-chain AI inference
-                    │  │ HTTP Precomp │  │  ← Off-chain data + Allora
-                    │  │ DKMS Precomp │  │  ← TEE key derivation
-                    │  │ ECIES Precomp│  │  ← Encrypted messaging
-                    │  │ P-256 Passkey│  │  ← Native passkey auth
-                    │  └──────────────┘  │
-                    └────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                            HIVE PROTOCOL                                │
+│                                                                         │
+│  ┌─────────────────────────── SECURITY ───────────────────────────┐    │
+│  │                                                                │    │
+│  │   HiveID        HiveMultiSig      HiveVerifier    HiveRelayer  │    │
+│  │   (Identity)    (M-of-N)          (ZK Proofs)     (Meta-Tx)    │    │
+│  │                                                                │    │
+│  └────────────────────────────┬───────────────────────────────────┘    │
+│                               │                                         │
+│  ┌────────────────────────────┴───────────────────────────────────┐    │
+│  │                       HiveFactory (25 modules)                  │    │
+│  └───┬──────────┬──────────┬──────────┬──────────┬────────────────┘    │
+│      │          │          │          │          │                      │
+│  ┌───┴──┐  ┌───┴──┐  ┌───┴──┐  ┌───┴──┐  ┌───┴──┐                   │
+│  │Clear │  │Oracle│  │Brain │  │FLock │  │DKMS  │  ← AI + Privacy    │
+│  │ing   │  │(Feed)│  │(LLM) │  │(FL)  │  │(TEE) │                    │
+│  └──────┘  └──────┘  └──────┘  └──────┘  └──────┘                    │
+│                                                                         │
+│  ┌───┴──┐  ┌───┴──┐  ┌───┴──┐  ┌───┴──┐  ┌───┴──┐                   │
+│  │Stak- │  │Treas-│  │Honey-│  │Refer-│  │Gov-  │  ← Economics      │
+│  │ing   │  │ury   │  │Pot   │  │ral   │  │ern   │                    │
+│  └──────┘  └──────┘  └──────┘  └──────┘  └──────┘                    │
+│                                                                         │
+│  ┌───┴──┐  ┌───┴──┐  ┌───┴──┐  ┌───┴──┐  ┌───┴──┐                   │
+│  │Queen │  │Agent │  │Lock  │  │USD   │  │Fauc- │  ← Platform        │
+│  │(Orch)│  │Fact. │  │(Vest)│  │(Stab)│  │et    │                    │
+│  └──────┘  └──────┘  └──────┘  └──────┘  └──────┘                    │
+│                                                                         │
+│                          ┌─────────────┐                               │
+│                          │  Ritual L1  │                               │
+│                          │  Chain 1979 │                               │
+│                          └─────────────┘                               │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### User Flow
+### Data Flow
 
 ```
-User (MetaMask) ──→ HiveID ──→ Register (free) ──→ Get Hive Wallet (passkey)
-      │                                                │
-      │  Primary Wallet (ECDSA)                        │  Hive Wallet (P-256)
-      │  - Signs all transactions                      │  - Receives funds
-      │  - Controls Hive wallet                        │  - Internal operations
-      │                                                │
-      └──────────── Withdraw ──────────────────────────┘
-                    (to primary or other HiveID)
+User → HiveID (verify) → HiveClearing (bid) → HoneyPot (fee) → Stakers/Referrers/Reserve
+                                                    ↓
+                                              HiveBrain (analyze) ← HiveOracle (prices)
+                                                    ↓                   ↑
+                                              HiveFLock (train)    Allora Network
+                                                    ↓
+                                              ONNX → Ritual Precompile
 ```
 
 ---
 
-## Contracts
+## 📋 Contracts
 
-### 🔐 Identity & Security Layer
+### 🔐 Identity & Security
 
-| Contract | Address | Description |
-|----------|---------|-------------|
-| **HiveID** | `0x013c...08A01` | On-chain identity registry with DKMS privacy. Permanent username, dual-wallet binding, KYC/KYB verification, TEE-bound key derivation, ECIES-encrypted KYC storage, PII redaction mode |
-| **HiveMultiSig** | `0xd450...4B1B6` | M-of-N multi-signature wallet with 24h timelock. Required for Project/VC accounts |
-| **HiveVerifier** | `0xDD2A...23Eb6` | ZK proof verifier for KYC/KYB. 5 proof types (age, country, accreditation, org, sanctions). Nullifier + nonce replay prevention |
-| **HiveRelayer** | `0xa2FC...513c` | Meta-transaction relayer. Primary wallet signs, relayer executes from hive wallet |
+| Contract | Description |
+|---|---|
+| **HiveID** | On-chain identity registry. Permanent username, dual-wallet binding, KYC/KYB verification, TEE-bound key derivation, ECIES-encrypted storage, PII redaction |
+| **HiveDKMS** | TEE-bound key management via Ritual DKMS precompile (0x0803). ECIES encrypt/decrypt, key derivation, owner-bound keys |
+| **HiveMultiSig** | M-of-N multi-signature wallet with 24h timelock |
+| **HiveVerifier** | ZK proof verifier for KYC/KYB. 5 proof types (age, country, accreditation, org, sanctions) |
+| **HiveRelayer** | Meta-transaction relayer. Primary wallet signs, relayer executes |
 
 ### 💰 Financial Infrastructure
 
-| Contract | Address | Description |
-|----------|---------|-------------|
-| **HiveClearing** | `0x6319...c20CC` | Hive Clearing Auction with AI-driven pricing. Token sale mechanism where price is continuously determined by demand via Ritual LLM |
-| **HivePortfolio** | `0x81E3...a066` | Holdings tracking, weighted average entry price, vesting schedules, PnL calculation |
-| **HiveReputation** | `0x4cbe...526A` | 5-tier reputation scoring (Bronze → Diamond). Fee discounts based on score |
-| **HiveReferral** | `0x6fc9...41ED` | 4-tier referral engine with fee sharing |
-| **HiveOracle** | `0x5D72...1aEbE` | Price feed via Ritual HTTP precompile + Allora Network. AI-inferred price predictions with confidence intervals, batch fetching, price history |
-| **HiveToken** | `0xDA81...5ec3` | ERC20 token with vesting schedules and transfer restrictions |
-| **HiveStaking** | `0x8D2A...3d28` | 4-tier staking with Treasury integration. setTreasury() for fee notifications. Lock multiplier, auto-compound, voting power |
-| **HiveTreasury** | `0x90fb...8C18` | Fee collector & distributor. Multi-sig controlled. Auto-distributes: 60% stakers, 25% referrers, 15% to reserve |
+| Contract | Description |
+|---|---|
+| **HiveClearing** | Hive Clearing Auction (HCA). AI-driven price discovery via Ritual LLM. Refund mechanism, batch bidding, settlement |
+| **HoneyPot** | Treasury vault with auto-distribution: 60% stakers / 25% referrers / 15% reserve. Per-referrer tracking, no-staker fallback |
+| **HiveStaking** | 4-tier staking (Bronze → Diamond). Lock multiplier, auto-compound, fee discounts, voting power |
+| **HiveTreasury** | Fee collector & distributor. Multi-sig controlled |
+| **HiveOracle** | Price feed via Ritual HTTP precompile + Allora Network. AI-inferred predictions with confidence intervals |
+| **HiveToken** | ERC20 with vesting and transfer restrictions |
+| **HivePortfolio** | Holdings tracking, weighted average entry, PnL |
+| **HiveReputation** | 5-tier reputation scoring |
+| **HiveReferral** | 4-tier referral engine with fee sharing |
 
-### 🤖 AI & Agent Layer
+### 🤖 AI & Agents
 
-| Contract | Address | Description |
-|----------|---------|-------------|
-| **HiveAgent** | `0x8424...4327` | AI Agent Gateway via Ritual LLM precompile. On-chain chatbot for market analysis, token insights, strategy advice |
-| **HiveBrain** | `0x0ad0...42B4` | Sovereign agent brain with async LLM, PII mode, Oracle price feeds, and FLock model integration. 14 action types. Cross-contract calls to HiveOracle and HiveFLock |
-| **HiveAgentFactory** | `0x5485...2189` | Per-user sovereign agent summoning. Deploys HiveGovernor + HiveSovereignAgent per user. Default/custom limits, fee to treasury |
-| **Queen** | `0xC2ec...DDfd` | Central orchestrator with AI integration. `runCycle()` calls Brain.think(). `setDivision()` wires 9 modules |
-| **HiveAutoStrategy** | `0x1b3A...BEF9` | Automated trading with Oracle integration. DCA, TP, SL, Trailing Stop. `fetchPrice()` calls HiveOracle.getBestPrice() |
-| **HiveMarketMaker** | `0x62C8...637D` | AI-driven market making via Ritual LLM |
-| **HiveFLock** | `0xb0f4...F5d2` | Federated learning with Brain integration. Training tasks, model validation, ONNX deployment, FLock API inference |
+| Contract | Description |
+|---|---|
+| **HiveBrain** | Sovereign agent brain. Async LLM, PII mode, Oracle integration, 14 action types |
+| **HiveFLock** | Federated learning via FLock.io. Training tasks, model validation, ONNX deployment, winner selection |
+| **HiveAgent** | AI Agent Gateway via Ritual LLM precompile |
+| **HiveAgentFactory** | Per-user sovereign agent summoning |
+| **Queen** | Central orchestrator. `runCycle()` → Brain.think() → Strategy.execute() |
+| **HiveAutoStrategy** | Automated trading: DCA, TP, SL, Trailing Stop |
+| **HiveMarketMaker** | AI-driven market making via Ritual LLM |
 
-### 🏛️ Governance
+### 🏛️ Governance & Platform
 
-| Contract | Address | Description |
-|----------|---------|-------------|
-| **HiveGovernance** | `0xeadd...2702` | DAO governance. Voting power from staked RITUAL. Proposal types, delegation, quorum, time-locked execution |
-| **HiveNotification** | `0x9a04...C42` | On-chain event system. Subscriptions, price alerts, webhook integration |
+| Contract | Description |
+|---|---|
+| **HiveGovernance** | DAO voting. Staked-weighted power, delegation, quorum, time-locked execution |
+| **HiveNotification** | On-chain event system with subscriptions and price alerts |
+| **HiveLock** | Vesting (Linear, Cliff+Linear, Custom). Create/claim/cancel |
+| **hiveUSD** | USD-pegged stablecoin for testnet (100B supply) |
+| **HiveFaucet** | Claim 1,000 hiveUSD every 24h |
 
 ### 🔧 Infrastructure
 
-| Contract | Address | Description |
-|----------|---------|-------------|
-| **HiveFactory** | `0x0241...63c6` | Master wiring contract. 25 module references. `wireAll()` connects AI layer (Brain↔Oracle↔FLock), security layer (Staking↔Treasury), Queen orchestration |
-| **HiveChat** | `0x615F...85B6` | Encrypted P2P messaging via Ritual ECIES precompile |
-| **HiveLaunchPad** | `0x8eb7...3d95b` | Token launch platform with HCA mechanics |
-| **HiveCouncil** | `0x2455...715B3` | Council governance (multi-representative) |
-| **HivePoints** | `0xC031...fbaa` | On-chain points/rewards system |
-| **HiveRegistry** | `0x89Cf...82eE` | Contract registry for module discovery |
-| **Drone** | `0x8607...BC704` | Autonomous execution agents |
-| **Strategy** | `0xc2d2...b202` | Base strategy contract (parent of HiveAutoStrategy) |
-
-### 📦 Vesting & Tokens
-
-| Contract | Address | Description |
-|----------|---------|-------------|
-| **HiveLock** | `0xc731...c3d` | Vesting contract with 3 types: Linear, Cliff+Linear, Custom. Create/claim/cancel schedules, auto-unlock |
-| **hiveUSD** | `0x6060...fb5` | USD-pegged stablecoin for testnet. 100B supply, faucet-based distribution |
-| **HiveFaucet** | `0x8FCe...0F88` | Testnet faucet. Claim 1,000 hiveUSD every 24 hours for testing and sale participation |
-
-### 📚 Libraries & Interfaces
-
 | Contract | Description |
-|----------|-------------|
-| **HiveTypes** | Shared type definitions (AccountType, VerificationType, etc.) |
-| **RitualPrecompileConsumer** | Base contract for Ritual precompile integration (LLM, HTTP, ECIES, DKMS) |
-| **IHive** | Hive protocol interface |
-| **IRitual** | Ritual precompile interface |
+|---|---|
+| **HiveFactory** | Master wiring contract. `wireAll()` connects all 25 modules |
+| **HiveChat** | Encrypted P2P via Ritual ECIES precompile |
+| **HiveLaunchPad** | Token launch with HCA mechanics |
+| **HiveRegistry** | Contract registry for module discovery |
+| **HiveCouncil** | Council governance (multi-representative) |
+| **HivePoints** | On-chain points/rewards |
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 hive/
-├── src/                          # Smart contracts (~40 files, ~12,000 LOC)
-│   ├── agent/
-│   │   ├── HiveAgent.sol         # AI Agent Gateway (LLM precompile)
-│   │   ├── HiveAgentFactory.sol  # Per-user agent summoning
-│   │   ├── HiveBrain.sol         # Sovereign agent brain
-│   │   ├── HiveGovernor.sol      # Safety layer for agents
-│   │   └── HiveSovereignAgent.sol # Ritual Sovereign Agent
+├── src/                              # 33 contracts, ~12,000 LOC
+│   ├── agent/                        # AI agent layer
+│   │   ├── HiveAgent.sol             # LLM Gateway
+│   │   ├── HiveAgentFactory.sol      # Agent summoning
+│   │   ├── HiveBrain.sol             # Sovereign brain
+│   │   ├── HiveGovernor.sol          # Safety layer
+│   │   └── HiveSovereignAgent.sol    # Ritual Sovereign Agent
 │   ├── auction/
-│   │   └── HiveClearing.sol      # Hive Clearing Auction + AI pricing
-│   ├── chat/
-│   │   └── HiveChat.sol          # Encrypted P2P messaging (ECIES)
-│   ├── council/
-│   │   └── HiveCouncil.sol       # Council governance
-│   ├── drone/
-│   │   └── Drone.sol             # Autonomous execution agents
-│   ├── factory/
-│   │   └── HiveFactory.sol       # Master wiring contract
-│   ├── faucet/
-│   │   └── HiveFaucet.sol        # Testnet token faucet
-│   ├── governance/
-│   │   └── HiveGovernance.sol    # DAO governance
+│   │   └── HiveClearing.sol          # HCA + AI pricing
 │   ├── identity/
-│   │   └── HiveID.sol            # On-chain identity registry
-│   ├── interfaces/
-│   │   ├── IHive.sol             # Hive protocol interface
-│   │   └── IRitual.sol           # Ritual precompile interface
-│   ├── launch/
-│   │   └── HiveLaunchPad.sol     # Token launch platform
-│   ├── libraries/
-│   │   ├── HiveTypes.sol         # Shared type definitions
-│   │   └── RitualPrecompileConsumer.sol
-│   ├── maker/
-│   │   └── HiveMarketMaker.sol   # AI market maker
-│   ├── multisig/
-│   │   └── HiveMultiSig.sol      # M-of-N multi-sig wallet
-│   ├── notification/
-│   │   └── HiveNotification.sol  # On-chain event system
+│   │   └── HiveID.sol                # ZK-proofed identity
+│   ├── privacy/
+│   │   └── HiveDKMS.sol              # TEE-bound key management
+│   ├── training/
+│   │   └── HiveFLock.sol             # Federated learning
 │   ├── oracle/
-│   │   └── HiveOracle.sol        # Price feed (HTTP precompile)
-│   ├── points/
-│   │   └── HivePoints.sol        # Points/rewards system
-│   ├── portfolio/
-│   │   └── HivePortfolio.sol     # Holdings & PnL tracking
-│   ├── queen/
-│   │   └── Queen.sol             # Brain orchestrator
-│   ├── referral/
-│   │   └── HiveReferral.sol      # 4-tier referral engine
-│   ├── registry/
-│   │   └── HiveRegistry.sol      # Contract registry
-│   ├── relayer/
-│   │   └── HiveRelayer.sol       # Meta-transaction relayer
-│   ├── reputation/
-│   │   └── HiveReputation.sol    # 5-tier reputation scoring
+│   │   └── HiveOracle.sol            # Allora price feeds
 │   ├── staking/
-│   │   └── HiveStaking.sol       # 4-tier staking system
-│   ├── strategy/
-│   │   ├── HiveAutoStrategy.sol  # Automated trading strategies
-│   │   └── Strategy.sol          # Base strategy contract
-│   ├── token/
-│   │   ├── HiveToken.sol         # ERC20 + vesting
-│   │   └── HiveUSD.sol           # USD-pegged stablecoin
+│   │   └── HiveStaking.sol           # 4-tier staking
 │   ├── treasury/
-│   │   ├── HiveTreasury.sol      # Fee collector & distributor
-│   │   └── HoneyPot.sol          # Treasury vault
-│   ├── vesting/
-│   │   └── HiveLock.sol          # Vesting (Linear, Cliff, Custom)
-│   └── verifier/
-│       └── HiveVerifier.sol      # ZK proof verifier
+│   │   ├── HiveTreasury.sol          # Fee collector
+│   │   └── HoneyPot.sol              # Auto-distribution vault
+│   ├── governance/
+│   │   └── HiveGovernance.sol        # DAO
+│   └── ...                           # 20+ more modules
 │
-├── test/                         # Test suite (300 tests)
-│   ├── Hive.t.sol                # Core integration tests
-│   ├── HiveID.t.sol              # HiveID + DKMS privacy tests
-│   ├── HiveSuite.t.sol           # Suite 1: ID, MultiSig, Clearing
-│   ├── HiveSuite2.t.sol          # Suite 2: Verifier, Relayer, Oracle
-│   ├── AlloraBrain.t.sol         # Allora + HiveBrain async/PII tests
-│   ├── HiveFLock.t.sol           # FLock federated learning tests
-│   ├── HiveStaking.t.sol         # Staking + agent system tests
-│   └── HiveLock.t.sol            # Vesting contract tests
+├── test/                             # 320 tests, all passing
+│   ├── Hive.t.sol                    # Core integration
+│   ├── HiveClearing.t.sol            # HCA tests
+│   ├── HiveDKMS.t.sol                # DKMS privacy tests
+│   ├── HiveFeeDistribution.t.sol     # Fee economy tests
+│   ├── HiveFLock.t.sol               # Federated learning tests
+│   ├── HiveID.t.sol                  # Identity tests
+│   ├── HiveOracle.t.sol              # Oracle tests
+│   └── HiveSuite2.t.sol              # Suite 2
 │
 ├── script/
-│   ├── Deploy.s.sol              # Deployment script (Phase 1)
-│   ├── DeployV3.s.sol            # Deployment script (Phase 2)
-│   ├── DeployHiveLock.s.sol      # Deploy HiveLock
-│   └── DeployAgentFactory.s.sol  # Deploy HiveAgentFactory
+│   ├── Deploy.s.sol                  # Phase 1 deployment
+│   └── DeployV3.s.sol                # Phase 2 deployment
 │
-├── verification/                 # Contract verification package
-│   ├── README.md                 # Manual verification guide
-│   ├── DEPLOYMENT_MANIFEST.json  # Addresses, constructor args
-│   ├── flattened/                # Flattened source files
-│   └── abis/                     # JSON ABIs
+├── vercel-deploy/                    # Sovereign Deployer UI
+│   ├── index.html                    # Frosted glass deployer
+│   └── api/encode.py                 # Calldata encoder
 │
-├── audit/
-│   ├── AUDIT_REPORT.md           # Security audit report
-│   └── AUDIT_REPORT.pdf          # Audit report (PDF)
-│
-├── foundry.toml                  # Foundry configuration
-└── .env.example                  # Environment template
+└── foundry.toml                      # via_ir: true, optimizer: 100 runs
 ```
 
 ---
 
-## Network
+## 🌐 Network
 
-| Property | Value |
-|----------|-------|
+| | |
+|---|---|
 | **Chain** | Ritual Testnet |
-| **Chain ID** | 1979 |
+| **Chain ID** | `1979` |
 | **RPC** | `https://rpc.ritualfoundation.org` |
 | **Explorer** | `https://explorer.ritualfoundation.org` |
 | **Currency** | RITUAL |
-
-### Interconnections
-
-All modules connected via `HiveFactory.wireAll()`:
-
-```
-                    ┌─────────────┐
-                    │ HiveFactory │
-                    │ (25 modules)│
-                    └──────┬──────┘
-                           │
-        ┌──────────────────┼──────────────────┐
-        │                  │                  │
-   wireAILayer()     wireSecurityLayer()   wireQueen()
-        │                  │                  │
-  ┌─────┴─────┐     ┌─────┴──────┐    ┌─────┴──────┐
-  │Brain↔Oracle│    │Staking↔    │    │Queen↔Brain │
-  │Brain↔FLock │    │Treasury    │    │Queen↔Oracle│
-  │FLock→Brain │    └────────────┘    │Queen↔FLock │
-  └───────────┘                       └────────────┘
-```
-
-**AI Chain:** HiveBrain ↔ HiveOracle (prices) ↔ HiveFLock (models)
-**Security Chain:** HiveStaking ↔ HiveTreasury
-**Orchestration:** Queen → Brain (think) → Strategy (execute) → Registry (heartbeat)
-**User Flow:** HiveAutoStrategy → HiveOracle (fetchPrice) → HiveMarketMaker (swap)
-**Agent Summoning:** User → HiveAgentFactory → deploys HiveGovernor + HiveSovereignAgent
+| **Block Time** | ~348ms |
 
 ---
 
-## Quickstart
+## 🚀 Quickstart
 
 ### Prerequisites
 
 - [Foundry](https://book.getfoundry.sh/) (forge, cast, anvil)
-- Git
 
-### Build
+### Build & Test
 
 ```bash
 git clone https://github.com/frianowzki/hive.git
 cd hive
 forge build
-```
-
-### Test
-
-```bash
 forge test -vv
 ```
-
-All 300 tests should pass.
 
 ### Deploy
 
@@ -377,61 +297,70 @@ cp .env.example .env
 
 forge script script/Deploy.s.sol \
   --rpc-url https://rpc.ritualfoundation.org \
-  --broadcast \
-  --verify
+  --broadcast --verify
 ```
 
-### Verify Contracts
+### Sovereign Deployer
 
-See [`verification/README.md`](verification/README.md) for verification instructions.
+Deploy autonomous AI agents on-chain via the web UI:
+
+**[sovereign-deployer.vercel.app](https://sovereign-deployer.vercel.app)**
+
+- ZeroClaw (CLI_TYPE=6) recommended
+- Native LLM provider (no API key needed)
+- Model: `zai-org/GLM-4.7-FP8`
+- Simulate before broadcast
+- Hybrid agent scanning (localStorage + on-chain events)
 
 ---
 
-## Compiler Settings
+## ⚙️ Compiler
 
 ```
-Solidity:     0.8.20
-Optimizer:    enabled (100 runs)
-via_ir:       true
-EVM Version:  default (shanghai)
+Solidity      0.8.20
+Optimizer     enabled (100 runs)
+via_ir        true
+EVM           shanghai
 ```
-
-`via_ir` is enabled to resolve stack-too-deep errors in complex contracts.
 
 ---
 
-## Security
+## 🔒 Security
 
 **Audit:** [`audit/AUDIT_REPORT.md`](audit/AUDIT_REPORT.md) · [`PDF`](audit/AUDIT_REPORT.pdf)
 
 | Severity | Count | Status |
-|----------|-------|--------|
+|:---:|:---:|:---:|
 | Critical | 0 | ✅ |
 | High | 0 | ✅ |
-| Medium | 2 | ✅ Fixed (HiveClearing rounding, HiveRelayer nonce) |
-| Low | 5 | ✅ Fixed (event indexing, input validation) |
-| Info | 8 | ✅ Noted (gas optimizations, documentation) |
+| Medium | 2 | ✅ Fixed |
+| Low | 5 | ✅ Fixed |
+| Info | 8 | ✅ Noted |
 
-**Audit scope:** Core 31 contracts (pre-interconnection). Covers access control, reentrancy, fund safety, zk-proof verification, DAO governance.
+**Scope:** Core 31 contracts (pre-interconnection). Access control, reentrancy, fund safety, zk-proof verification, DAO governance.
 
-**Not yet audited:**
-- Phase 1-3 integrations (Allora, FLock, wireAll wiring)
-- HiveBrain ↔ HiveOracle ↔ HiveFLock data flow
-- Queen orchestration cycle (Brain → Strategy → Registry)
-- HiveLock vesting logic
-- HiveAgentFactory agent deployment
-- HiveUSD + HiveFaucet
+**Not yet audited:** Phase 1-3 integrations, HiveBrain ↔ Oracle ↔ FLock data flow, Queen orchestration, HiveLock, AgentFactory, HiveUSD + Faucet.
 
-**Production readiness:** Testnet only. Full re-audit required before mainnet.
+> **Production readiness:** Testnet only. Full re-audit required before mainnet.
 
 ---
 
-## License
+## 📜 License
 
 MIT
 
 ---
 
-<p align="center">
-  Built on <a href="https://ritual.net">Ritual Testnet</a> · 33 contracts deployed · 300 tests · Powered by Ritual LLM, HTTP, DKMS, ECIES, and Passkey precompiles · Price feeds by <a href="https://allora.network">Allora Network</a> · Training by <a href="https://flock.io">FLock.io</a>
-</p>
+<div align="center">
+
+**Built on [Ritual Testnet](https://ritual.net)**
+
+33 contracts · 320 tests · 5 Ritual precompiles
+
+Price feeds by [Allora Network](https://allora.network) · Training by [FLock.io](https://flock.io)
+
+<br>
+
+*Built by [Frianowzki](https://github.com/frianowzki)*
+
+</div>
