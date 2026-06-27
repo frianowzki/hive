@@ -331,7 +331,7 @@ contract HiveTest is Test {
     // ═══ HoneyPot Tests ═══
 
     function testHoneyPotDeposit() public {
-        honeypot = new HoneyPot(address(this));
+        honeypot = new HoneyPot(address(this), address(0));
         queen = new Queen("TestHive", 100, address(honeypot), address(0), address(0), address(0), address(0), address(0));
 
         vm.deal(address(this), 10 ether);
@@ -340,7 +340,7 @@ contract HiveTest is Test {
     }
 
     function testHoneyPotAllocation() public {
-        honeypot = new HoneyPot(address(this));
+        honeypot = new HoneyPot(address(this), address(0));
         queen = new Queen("TestHive", 100, address(honeypot), address(0), address(0), address(0), address(0), address(0));
 
         vm.deal(address(this), 10 ether);
@@ -356,7 +356,7 @@ contract HiveTest is Test {
     }
 
     function testHoneyPotPause() public {
-        honeypot = new HoneyPot(address(this));
+        honeypot = new HoneyPot(address(this), address(0));
         queen = new Queen("TestHive", 100, address(honeypot), address(0), address(0), address(0), address(0), address(0));
 
         assertFalse(honeypot.paused());
