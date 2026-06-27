@@ -162,6 +162,9 @@
         .topbar-left{display:flex;align-items:center;gap:1rem}
         .topbar-title{font-family:var(--font-display);font-size:.95rem;font-weight:700}
         .topbar-breadcrumb{font-size:.7rem;color:var(--text-dim)}
+        .back-btn{display:none;align-items:center;gap:.4rem;padding:.4rem .7rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text);font-size:.7rem;font-weight:600;cursor:pointer;transition:all .15s}
+        .back-btn:hover{border-color:var(--accent);background:var(--accent-glow)}
+        .back-btn svg{width:14px;height:14px}
         .topbar-right{display:flex;align-items:center;gap:.75rem}
         .topbar-chain{
             display:flex;align-items:center;gap:.4rem;
@@ -324,7 +327,9 @@
             .data-table{font-size:.75rem}
             .data-table th,.data-table td{padding:.5rem}
             .section-card{padding:1rem}
-            .action-btn{padding:.75rem}
+            .action-btn{padding:.65rem;flex-direction:column;gap:.35rem;text-align:center}
+            .action-btn .action-icon{width:28px;height:28px}
+            .action-btn .action-text{font-size:.6rem}
             .lock-row{flex-direction:column}
             .stk-stats{grid-template-columns:1fr!important}
             /* Auction cards */
@@ -351,7 +356,8 @@
             .content{padding:.75rem}
             .section-card{padding:.75rem}
             h1{font-size:1.1rem!important}
-            .actions-grid{grid-template-columns:1fr}
+            .actions-grid{grid-template-columns:repeat(3,1fr)}
+            .back-btn{display:flex!important}
             [style*="grid-template-columns:repeat(2"]{grid-template-columns:1fr!important}
         }
     </style>
@@ -512,6 +518,10 @@
                 <div class="hamburger" id="hamburger" onclick="toggleSidebar()">
                     <span></span><span></span><span></span>
                 </div>
+                <button class="back-btn" id="backBtn" onclick="switchPage('dashboard')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    Back
+                </button>
                 <div class="topbar-title" id="pageTitle">Dashboard</div>
                 <div class="topbar-breadcrumb" id="breadcrumb">Hive / Overview</div>
             </div>
@@ -973,6 +983,10 @@
             const config = pageConfig[page] || { title:page, breadcrumb:'Hive' };
             document.getElementById('pageTitle').textContent = config.title;
             document.getElementById('breadcrumb').textContent = config.breadcrumb;
+
+            // Show/hide back button (only on non-dashboard pages)
+            const backBtn = document.getElementById('backBtn');
+            if(backBtn) backBtn.style.display = page === 'dashboard' ? 'none' : 'flex';
 
             // Hide all pages
             document.querySelectorAll('.page-content').forEach(p => p.style.display = 'none');
