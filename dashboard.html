@@ -3592,7 +3592,7 @@
             { symbol:'AETH', name:'AetherFi', color:'#f59e0b', logo:'A', inputAmount:10000, investedAmount:0, fee:0, refundAmount:10000, reason:'Sale cancelled', status:'pending', timestamp:'3h ago', txHash:'0x789...123' },
         ];
 
-        function loadAuctionPage(){
+        async function loadAuctionPage(){
             const container = document.getElementById('auction-content');
             if(!connectedAddress){
                 container.innerHTML = `<div style="text-align:center;padding:4rem 2rem">
@@ -3602,6 +3602,35 @@
                 </div>`;
                 return;
             }
+            // Fetch on-chain auctions
+            try {
+                const result = await hive.getAuctions(0, 50);
+                if(result && result.total > 0){
+                    const now = Math.floor(Date.now()/1000);
+                    const active = [], upcoming = [], completed = [];
+                    for(const a of result.auctions){
+                        const item = {
+                            name: 'Token Auction #'+a.id, symbol:'TKN'+a.id, logo:'T',
+                            color: ['#8b5cf6','#22c55e','#3b82f6','#f59e0b'][a.id % 4],
+                            blocks: Number(a.totalSupply) || 100,
+                            logoUrl:''
+                        };
+                        if(a.settled){
+                            completed.push({...item, ended:'Settled', participants:'--', raisedUSD:0});
+                        } else if(Number(a.endTime) > now){
+                            const secsLeft = Number(a.endTime) - now;
+                            const hrs = Math.floor(secsLeft/3600);
+                            const mins = Math.floor((secsLeft%3600)/60);
+                            active.push({...item, endsIn: hrs+'h '+mins+'m', soldBlocks:0, participants:0, raisedUSD:0, currentPrice: a.currentPrice, minPrice: a.minPrice, maxPrice: a.maxPrice});
+                        } else {
+                            upcoming.push({...item, startsIn:'Pending', blocks: Number(a.totalSupply)||100});
+                        }
+                    }
+                    mockAuctions.active = active.length > 0 ? active : mockAuctions.active;
+                    mockAuctions.upcoming = upcoming.length > 0 ? upcoming : mockAuctions.upcoming;
+                    mockAuctions.completed = completed.length > 0 ? completed : mockAuctions.completed;
+                }
+            } catch(e) { console.warn('[Hive] Auction fetch:', e); }
             renderAuctionTab(auctionTab);
         }
 
