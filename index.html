@@ -12,7 +12,7 @@
         :root{
             --bg:#000;--bg-card:rgba(255,255,255,0.03);--bg-card-hover:rgba(255,255,255,0.06);
             --text:#fff;--text-dim:#888;--text-muted:#555;
-            --accent:#72cc63;--accent-light:#8ed682;--accent-dark:#5ba34f;
+            --accent:#b49eff;--accent-light:#c9b8ff;--accent-dark:#9f8ae8;
             --accent-glow:rgba(114,204,99,0.12);--green:#22c55e;
             --border:rgba(255,255,255,0.06);
             --font:'Inter',-apple-system,sans-serif;
@@ -366,7 +366,7 @@
             <div class="role-options">
                 <div class="role-card" onclick="selectRole('user')">
                     <div class="role-icon user">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="#8ed682" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#c9b8ff" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     </div>
                     <div class="role-info">
                         <div class="role-name">Login as a User</div>
@@ -873,7 +873,7 @@
         (function(){
             const btn=document.getElementById('ctaBtn');
             if(!btn)return;
-            const colors=['#72cc63','#8ed682','#b8e6b0','#5ba34f','#d4f0d0','#fff'];
+            const colors=['#b49eff','#c9b8ff','#d4b8ff','#9f8ae8','#e8dfff','#fff'];
             function spawnParticles(x,y){
                 const count=18;
                 for(let i=0;i<count;i++){
@@ -917,7 +917,7 @@
         function coolClick(el){
             const r=el.getBoundingClientRect();
             // trigger particle burst
-            const colors=['#72cc63','#8ed682','#b8e6b0','#5ba34f','#d4f0d0','#fff'];
+            const colors=['#b49eff','#c9b8ff','#d4b8ff','#9f8ae8','#e8dfff','#fff'];
             for(let i=0;i<22;i++){
                 const p=document.createElement('div');
                 const size=Math.random()*7+3;
