@@ -161,20 +161,57 @@
             .caps-grid{grid-template-columns:repeat(2,1fr)}
             .svc-grid{grid-template-columns:repeat(2,1fr)}
             .about-grid{grid-template-columns:1fr}
+            .feat-card{width:90%;max-width:580px}
         }
         @media(max-width:768px){
-            .navbar{padding:0 1.5rem}
+            .navbar{padding:0 1rem}
             .nav-links{display:none}
-            .page{padding:56px 1.5rem 3rem}
-            .hero h1{font-size:2rem}
-            .sec-title{font-size:1.5rem}
+            .page{padding:56px 1rem 3rem}
+            .hero h1{font-size:1.75rem;line-height:1.15}
+            .hero-desc{font-size:.85rem;line-height:1.6}
+            .hero-desc br{display:none}
+            .sec-title{font-size:1.3rem}
             .caps-grid,.svc-grid{grid-template-columns:1fr}
             .about-feats{grid-template-columns:1fr}
             .contact-info{flex-direction:column;gap:.75rem}
             .contact-actions{flex-direction:column}
             .page-dots{display:none}
-            .mini-footer{padding:.4rem 1.5rem}
+            .mini-footer{padding:.4rem 1rem}
             .mini-footer-links{display:none}
+            .btn{padding:.55rem 1rem;font-size:.8rem}
+            .btn-i{width:11px;height:11px}
+            .feat-card{width:95%;padding:1.5rem}
+            .feat-card .fc-title{font-size:1.1rem}
+            .feat-card .fc-desc{font-size:.8rem;line-height:1.6}
+            .feat-nav{gap:.5rem}
+            .feat-nav-btn{width:36px;height:36px}
+            .marquee-item{padding:.5rem .85rem;font-size:.7rem}
+            .marquee-item .svc-name{font-size:.7rem}
+            .team-card{flex-direction:column;text-align:center}
+            .team-avatar{width:56px;height:56px}
+            .section-card{padding:1.5rem 1rem}
+            .about-feats{gap:.5rem}
+            .about-feat{font-size:.75rem;padding:.5rem .75rem}
+            .modal{width:100%;max-width:100%;border-radius:16px 16px 0 0;max-height:90vh;padding:1.5rem}
+            .modal-overlay{align-items:flex-end}
+            .wallet-btn{padding:.6rem .75rem}
+            .wallet-btn-name{font-size:.85rem}
+            .role-btn{padding:1rem}
+            .role-icon{width:40px;height:40px}
+            .role-title{font-size:.9rem}
+            .role-desc{font-size:.75rem}
+        }
+        @media(max-width:480px){
+            .hero h1{font-size:1.4rem}
+            .hero-desc{font-size:.8rem}
+            .hero-actions{flex-direction:column;gap:.5rem}
+            .hero-actions .btn{width:100%;justify-content:center}
+            .sec-title{font-size:1.1rem}
+            .page-inner{padding:0 .5rem}
+            .feat-card{padding:1rem}
+            .feat-card .fc-title{font-size:1rem}
+            .about-text p{font-size:.8rem}
+            .about-feat{font-size:.7rem}
         }
 
         /* ═══ MODALS ═══ */
@@ -458,7 +495,7 @@
                     <h1 class="fi">The <span class="g">compliant AI launchpad</span> for forward-thinking DeFi.</h1>
                     <p class="hero-desc fi d1">Fully on-chain, zk-proofed AI launchpad built on Ritual Chain.<br>AI market makers, federated learning, autonomous agents,<br>and DAO governance — all with KYC/KYB compliance.</p>
                     <div class="hero-actions fi d2">
-                        <a href="#contact" class="btn btn-p cool-btn" id="ctaBtn" onclick="coolClick(this);return false">Open Hive<svg class="btn-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+                        <a href="/dashboard" class="btn btn-p cool-btn" id="ctaBtn" onclick="coolClick(this);setTimeout(()=>window.location.href='/dashboard',600);return false">Open Hive<svg class="btn-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
                     </div>
                 </div>
             </div>
@@ -704,7 +741,7 @@
     </div>
 
     <script>
-        let currentPage=0;const totalPages=4;let autoScroll=true;let autoScrollTimer=null;const autoScrollDuration=8000;let dotsTimeout;
+        let currentPage=0;const totalPages=4;let autoScroll=false;let autoScrollTimer=null;const autoScrollDuration=8000;let dotsTimeout;
 
         function goToPage(index){
             if(index===currentPage||index<0||index>=totalPages)return;
@@ -721,7 +758,7 @@
             if(navLinks[currentPage])navLinks[currentPage].classList.add('active');
             animatePage(currentPage);
             showDots();
-            if(currentPage===1)startFeatAutoScroll();else stopFeatAutoScroll();
+            if(currentPage===1){/* feat auto-scroll disabled */}else stopFeatAutoScroll();
             if(autoScroll)resetAutoScroll();
         }
         function nextPage(){goToPage((currentPage+1)%totalPages)}
@@ -769,7 +806,7 @@
 
         animatePage(0);
         showDots();
-        if(autoScroll)startAutoScroll();
+        // Auto-scroll disabled — user navigates manually
 
         /* Flickering Grid for marquee items */
         (function(){
@@ -1052,11 +1089,8 @@
                 ctaBtn.href = '/dashboard';
                 ctaBtn.onclick = (e) => {
                     e.preventDefault();
-                    // Save connection state for dashboard
-                    localStorage.setItem('hive_connected', 'true');
-                    localStorage.setItem('hive_address', connectedAddress);
-                    localStorage.setItem('hive_role', selectedRole || 'user');
-                    window.location.href = '/dashboard';
+                    coolClick(ctaBtn);
+                    setTimeout(() => window.location.href = '/dashboard', 600);
                 };
             }
             console.log('[Hive] Connection complete!', { address: connectedAddress, role: selectedRole, network: 'Ritual Chain' });
