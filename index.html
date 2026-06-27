@@ -1049,7 +1049,15 @@
             if(ctaBtn && connectedAddress){
                 const shortAddr = connectedAddress.slice(0,6) + '...' + connectedAddress.slice(-4);
                 ctaBtn.innerHTML = '<span style="display:flex;align-items:center;gap:.5rem"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>' + shortAddr + '</span>';
-                ctaBtn.onclick = () => console.log('[Hive] Connected as:', connectedAddress);
+                ctaBtn.href = '/dashboard';
+                ctaBtn.onclick = (e) => {
+                    e.preventDefault();
+                    // Save connection state for dashboard
+                    localStorage.setItem('hive_connected', 'true');
+                    localStorage.setItem('hive_address', connectedAddress);
+                    localStorage.setItem('hive_role', selectedRole || 'user');
+                    window.location.href = '/dashboard';
+                };
             }
             console.log('[Hive] Connection complete!', { address: connectedAddress, role: selectedRole, network: 'Ritual Chain' });
         }
