@@ -1,559 +1,178 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import "../libraries/RitualPrecompileConsumer.sol";
+import {RitualPrecompileConsumer} from "../libraries/RitualPrecompileConsumer.sol";
 
-/// @title HiveID — On-chain Identity Registry with DKMS Privacy
-/// @notice Permanent username + dual-wallet binding + TEE-bound encrypted KYC
-/// @dev Integrates Ritual DKMS precompile (0x0803) for deterministic key derivation.
-///      Private keys never leave the TEE. KYC data encrypted via ECIES — only TEE can decrypt.
-
+/// @title HiveID — ZK-proofed identity for Hive
+/// @notice KYC/KYB verification via zero-knowledge proofs
+/// @dev Prove attributes (age, country, accreditation) without revealing data
 contract HiveID is RitualPrecompileConsumer {
-    // ═══ Types ═══
-
-    enum VerificationType {
-        None,
-        KYC,    // Individual
-        KYB     // Organization
-    }
-
-    enum AccountType {
-        User,       // Regular user (buy/sell)
-        Project,    // Token launcher
-        Investor    // VC / institutional
-    }
-
-    struct Identity {
-        bytes32 usernameHash;           // keccak256(username) — permanent
-        address primaryWallet;          // ECDSA wallet (connect/register)
-        address hiveWallet;             // Ritual passkey wallet (generated)
-        AccountType accountType;
-        VerificationType verification;
-        bytes32 zkProofHash;            // Hash of zk proof (not storing raw proof)
-        string emailEncrypted;          // Optional, encrypted
-        string socialEncrypted;         // Optional, encrypted
-        uint256 createdAt;
-        uint256 nonce;                  // For replay protection
-        bool exists;
-        // ── Privacy Extensions (DKMS) ──
-        bytes dkmsPublicKey;            // TEE-derived secp256k1 public key (65 bytes uncompressed)
-        bytes encryptedKycData;         // ECIES-encrypted KYC blob (only TEE can decrypt)
-        bool piiEnabled;                // PII redaction flag for on-chain settlement
-    }
-
     // ═══ State ═══
 
-    mapping(bytes32 => Identity) private _identities;       // usernameHash => Identity
-    mapping(address => bytes32) public primaryToIdentity;   // primaryWallet => usernameHash
-    mapping(address => bytes32) public hiveToIdentity;      // hiveWallet => usernameHash
-    mapping(address => bool) public verifiers;              // KYC/KYB verifier contracts
-
-    // DKMS key index counter per identity (supports key rotation)
-    mapping(bytes32 => uint256) public dkmsKeyIndex;
-
     address public owner;
-    uint256 public identityCount;
-    uint256 public registrationFee;                         // Fee to register (spam prevention)
 
-    // Username constraints
-    uint256 public constant MIN_USERNAME_LENGTH = 3;
-    uint256 public constant MAX_USERNAME_LENGTH = 32;
+    uint8 constant ID_NONE = 0;
+    uint8 constant ID_INDIVIDUAL = 1;
+    uint8 constant ID_ORGANIZATION = 2;
+
+    struct Identity {
+        bytes32 zkProof;        // ZK proof hash
+        uint8 identityType;     // Individual or Organization
+        bool verified;
+        uint256 registeredAt;
+    }
+
+    struct Attribute {
+        bytes32 zkProof;        // ZK proof for this attribute
+        uint256 value;          // Attribute value (age, country code, etc.)
+        bool verified;
+        uint256 verifiedAt;
+    }
+
+    // user => Identity
+    mapping(address => Identity) public identities;
+
+    // user => attribute name => Attribute
+    mapping(address => mapping(string => Attribute)) public attributes;
+
+    // Stats
+    uint256 public totalVerified;
+    uint256 public totalIndividuals;
+    uint256 public totalOrganizations;
 
     // ═══ Events ═══
 
-    event IdentityCreated(
-        bytes32 indexed usernameHash,
-        address indexed primaryWallet,
-        address hiveWallet,
-        AccountType accountType,
-        uint256 timestamp
-    );
-    event HiveWalletBound(bytes32 indexed usernameHash, address newHiveWallet);
-    event VerificationUpdated(bytes32 indexed usernameHash, VerificationType vType);
-    event FundsTransferred(bytes32 indexed from, bytes32 indexed to, address token, uint256 amount);
-    event FundsWithdrawn(bytes32 indexed from, address primaryWallet, address token, uint256 amount);
-    event UsernameReserved(bytes32 indexed usernameHash, address indexed primaryWallet);
-
-    // ── Privacy Events ──
-    event IdentityKeyDerived(
-        bytes32 indexed usernameHash,
-        uint256 keyIndex,
-        bytes publicKey,
-        uint256 timestamp
-    );
-    event KycDataStored(
-        bytes32 indexed usernameHash,
-        uint256 dataSize,
-        bool piiEnabled,
-        uint256 timestamp
-    );
-    event PiiModeUpdated(bytes32 indexed usernameHash, bool piiEnabled);
-
-    // ═══ Errors ═══
-
-    error UsernameTaken();
-    error UsernameInvalid();
-    error PrimaryWalletLinked();
-    error HiveWalletLinked();
-    error NotIdentityOwner();
-    error NotVerified();
-    error InsufficientFee();
-    error InvalidAddress();
-    error TransferFailed();
-    error KeyAlreadyDerived();
-    error NoDkmsKey();
-    error EmptyKycData();
-    error KycAlreadyStored();
+    event IdentityRegistered(address indexed user, uint8 identityType, bytes32 zkProof);
+    event IdentityRevoked(address indexed user);
+    event AttributeVerified(address indexed user, string attribute, uint256 value);
+    event AttributeRevoked(address indexed user, string attribute);
 
     // ═══ Modifiers ═══
 
     modifier onlyOwner() {
-        require(msg.sender == owner, "HiveID: not owner");
+        require(msg.sender == owner, "ID: not owner");
         _;
     }
 
-    modifier identityExists(bytes32 usernameHash) {
-        require(_identities[usernameHash].exists, "HiveID: identity not found");
-        _;
-    }
-
-    modifier onlyIdentityOwner(bytes32 usernameHash) {
-        Identity storage id = _identities[usernameHash];
-        require(id.exists, "HiveID: identity not found");
-        require(msg.sender == id.primaryWallet, "HiveID: not identity owner");
+    modifier onlyVerified() {
+        require(identities[msg.sender].verified, "ID: not verified");
         _;
     }
 
     // ═══ Constructor ═══
 
-    constructor(uint256 _registrationFee) {
-        owner = msg.sender;
-        registrationFee = _registrationFee;
+    constructor(address _owner) {
+        owner = _owner;
     }
 
-    // ═══ Registration ═══
+    // ═══ Identity Registration ═══
 
-    /// @notice Register a new HiveID
-    /// @param username Unique permanent username (3-32 chars)
-    /// @param hiveWallet Ritual passkey wallet address (generated client-side)
-    /// @param accountType User, Project, or Investor
-    /// @param emailEncrypted Optional encrypted email
-    /// @param socialEncrypted Optional encrypted social handle
-    function register(
-        string calldata username,
-        address hiveWallet,
-        AccountType accountType,
-        string calldata emailEncrypted,
-        string calldata socialEncrypted
-    ) external payable {
-        // Validate username
-        bytes memory usernameBytes = bytes(username);
-        if (usernameBytes.length < MIN_USERNAME_LENGTH || usernameBytes.length > MAX_USERNAME_LENGTH) {
-            revert UsernameInvalid();
-        }
+    /// @notice Register identity with ZK proof
+    /// @param zkProof ZK proof hash (proves identity without revealing data)
+    /// @param identityType 1 = individual, 2 = organization
+    function registerIdentity(bytes32 zkProof, uint8 identityType) external {
+        require(!identities[msg.sender].verified, "ID: already registered");
+        require(identityType == ID_INDIVIDUAL || identityType == ID_ORGANIZATION, "ID: invalid type");
+        require(zkProof != bytes32(0), "ID: empty proof");
 
-        bytes32 usernameHash = keccak256(bytes(username));
-        if (_identities[usernameHash].exists) {
-            revert UsernameTaken();
-        }
-
-        // Primary wallet can only be linked to one HiveID
-        if (primaryToIdentity[msg.sender] != bytes32(0)) {
-            revert PrimaryWalletLinked();
-        }
-
-        // Hive wallet can only be linked to one HiveID
-        if (hiveWallet == address(0)) {
-            revert InvalidAddress();
-        }
-        if (hiveToIdentity[hiveWallet] != bytes32(0)) {
-            revert HiveWalletLinked();
-        }
-
-        // Registration fee (spam prevention)
-        if (msg.value < registrationFee) {
-            revert InsufficientFee();
-        }
-
-        // Create identity
-        _identities[usernameHash] = Identity({
-            usernameHash: usernameHash,
-            primaryWallet: msg.sender,
-            hiveWallet: hiveWallet,
-            accountType: accountType,
-            verification: VerificationType.None,
-            zkProofHash: bytes32(0),
-            emailEncrypted: emailEncrypted,
-            socialEncrypted: socialEncrypted,
-            createdAt: block.timestamp,
-            nonce: 0,
-            exists: true,
-            dkmsPublicKey: "",
-            encryptedKycData: "",
-            piiEnabled: false
+        identities[msg.sender] = Identity({
+            zkProof: zkProof,
+            identityType: identityType,
+            verified: true,
+            registeredAt: block.timestamp
         });
 
-        primaryToIdentity[msg.sender] = usernameHash;
-        hiveToIdentity[hiveWallet] = usernameHash;
-        identityCount++;
-
-        emit IdentityCreated(usernameHash, msg.sender, hiveWallet, accountType, block.timestamp);
-        emit UsernameReserved(usernameHash, msg.sender);
-
-        // Refund excess fee
-        if (msg.value > registrationFee) {
-            (bool sent, ) = msg.sender.call{value: msg.value - registrationFee}("");
-            if (!sent) revert TransferFailed();
-        }
-    }
-
-    // ═══ DKMS Privacy Layer ═══
-
-    /// @notice Derive a deterministic secp256k1 key pair via Ritual DKMS precompile
-    /// @dev The private key NEVER leaves the TEE. Only the public key is stored on-chain.
-    ///      Key is derived from (executor, identity owner, keyIndex, secp256k1).
-    ///      Supports key rotation via incrementing dkmsKeyIndex.
-    /// @param usernameHash Identity to derive key for
-    function deriveIdentityKey(bytes32 usernameHash)
-        external
-        onlyIdentityOwner(usernameHash)
-    {
-        Identity storage id = _identities[usernameHash];
-
-        // Only allow if no key derived yet (use rotateIdentityKey for rotation)
-        if (id.dkmsPublicKey.length > 0) {
-            revert KeyAlreadyDerived();
-        }
-
-        uint256 keyIdx = dkmsKeyIndex[usernameHash];
-
-        // Encode DKMS precompile call:
-        // (executor, owner, keyIndex, keyType)
-        // keyType 1 = secp256k1
-        bytes memory input = abi.encode(
-            address(0),             // executor (auto-select TEE)
-            id.hiveWallet,          // owner (key bound to hive wallet)
-            keyIdx,                 // key index
-            uint8(1)                // secp256k1
-        );
-
-        bytes memory pubKey = _executePrecompile(DKMS_PRECOMPILE, input);
-
-        id.dkmsPublicKey = pubKey;
-
-        emit IdentityKeyDerived(usernameHash, keyIdx, pubKey, block.timestamp);
-    }
-
-    /// @notice Rotate DKMS key (derive a new key at next index)
-    /// @dev Old key is preserved on-chain but TEE will use the latest index
-    /// @param usernameHash Identity to rotate key for
-    function rotateIdentityKey(bytes32 usernameHash)
-        external
-        onlyIdentityOwner(usernameHash)
-        identityExists(usernameHash)
-    {
-        Identity storage id = _identities[usernameHash];
-        uint256 newIdx = dkmsKeyIndex[usernameHash] + 1;
-        dkmsKeyIndex[usernameHash] = newIdx;
-
-        bytes memory input = abi.encode(
-            address(0),             // executor
-            id.hiveWallet,          // owner
-            newIdx,                 // new key index
-            uint8(1)                // secp256k1
-        );
-
-        bytes memory pubKey = _executePrecompile(DKMS_PRECOMPILE, input);
-
-        id.dkmsPublicKey = pubKey;
-
-        emit IdentityKeyDerived(usernameHash, newIdx, pubKey, block.timestamp);
-    }
-
-    /// @notice Store ECIES-encrypted KYC data on-chain
-    /// @dev Data is encrypted client-side using the identity's DKMS public key.
-    ///      Only the TEE can decrypt it (for verification, compliance, inference).
-    ///      Set piiEnabled=true to redact this data from on-chain settlement results.
-    /// @param usernameHash Identity to store KYC for
-    /// @param encryptedData ECIES-encrypted KYC blob
-    /// @param _piiEnabled Whether to enable PII redaction for this identity
-    function storeEncryptedKyc(
-        bytes32 usernameHash,
-        bytes calldata encryptedData,
-        bool _piiEnabled
-    )
-        external
-        onlyIdentityOwner(usernameHash)
-        identityExists(usernameHash)
-    {
-        if (encryptedData.length == 0) revert EmptyKycData();
-
-        Identity storage id = _identities[usernameHash];
-
-        // Require DKMS key first (needed for TEE to decrypt)
-        if (id.dkmsPublicKey.length == 0) revert NoDkmsKey();
-
-        id.encryptedKycData = encryptedData;
-        id.piiEnabled = _piiEnabled;
-
-        emit KycDataStored(usernameHash, encryptedData.length, _piiEnabled, block.timestamp);
-    }
-
-    /// @notice Update PII redaction flag
-    /// @dev When true, Ritual precompiles will redact this identity's data from settlement
-    /// @param usernameHash Identity to update
-    /// @param _piiEnabled New PII mode
-    function setPiiMode(bytes32 usernameHash, bool _piiEnabled)
-        external
-        onlyIdentityOwner(usernameHash)
-        identityExists(usernameHash)
-    {
-        _identities[usernameHash].piiEnabled = _piiEnabled;
-        emit PiiModeUpdated(usernameHash, _piiEnabled);
-    }
-
-    // ═══ Verification (KYC/KYB) ═══
-
-    /// @notice Submit zk proof for KYC/KYB verification
-    /// @dev Called by registered verifier contracts, not directly by users
-    /// @param usernameHash Identity to verify
-    /// @param vType KYC or KYB
-    /// @param zkProofHash Hash of the zk proof (proof stored off-chain or in calldata)
-    function verify(
-        bytes32 usernameHash,
-        VerificationType vType,
-        bytes32 zkProofHash
-    ) external identityExists(usernameHash) {
-        require(verifiers[msg.sender], "HiveID: not authorized verifier");
-        require(vType != VerificationType.None, "HiveID: invalid verification type");
-
-        Identity storage id = _identities[usernameHash];
-
-        // Project/Investor must be KYB, User must be KYC
-        if (id.accountType == AccountType.User) {
-            require(vType == VerificationType.KYC, "HiveID: users require KYC");
+        totalVerified++;
+        if (identityType == ID_INDIVIDUAL) {
+            totalIndividuals++;
         } else {
-            require(vType == VerificationType.KYB, "HiveID: projects/investors require KYB");
+            totalOrganizations++;
         }
 
-        id.verification = vType;
-        id.zkProofHash = zkProofHash;
-
-        emit VerificationUpdated(usernameHash, vType);
+        emit IdentityRegistered(msg.sender, identityType, zkProof);
     }
 
-    // ═══ Wallet Management ═══
+    // ═══ Attribute Verification ═══
 
-    /// @notice Update Hive wallet (passkey wallet rotation)
-    /// @param newHiveWallet New Ritual passkey wallet address
-    function updateHiveWallet(address newHiveWallet) external {
-        bytes32 usernameHash = primaryToIdentity[msg.sender];
-        require(usernameHash != bytes32(0), "HiveID: not registered");
-        if (newHiveWallet == address(0)) revert InvalidAddress();
-        if (hiveToIdentity[newHiveWallet] != bytes32(0)) revert HiveWalletLinked();
+    /// @notice Verify an attribute with ZK proof
+    /// @param zkProof ZK proof for this specific attribute
+    /// @param attributeName Attribute name (e.g., "age", "country", "accredited")
+    /// @param value Attribute value
+    function verifyAttribute(bytes32 zkProof, string calldata attributeName, uint256 value) external onlyVerified {
+        require(zkProof != bytes32(0), "ID: empty proof");
+        require(bytes(attributeName).length > 0, "ID: empty name");
 
-        Identity storage id = _identities[usernameHash];
+        attributes[msg.sender][attributeName] = Attribute({
+            zkProof: zkProof,
+            value: value,
+            verified: true,
+            verifiedAt: block.timestamp
+        });
 
-        // Unmap old hive wallet
-        hiveToIdentity[id.hiveWallet] = bytes32(0);
-
-        // Map new hive wallet
-        id.hiveWallet = newHiveWallet;
-        hiveToIdentity[newHiveWallet] = usernameHash;
-
-        emit HiveWalletBound(usernameHash, newHiveWallet);
+        emit AttributeVerified(msg.sender, attributeName, value);
     }
 
-    // ═══ Transfers (Hive-to-Hive) ═══
+    // ═══ Access Control ═══
 
-    /// @notice Transfer ETH between HiveIDs
-    /// @param toUsername Recipient username
-    function transferETH(string calldata toUsername) external payable {
-        bytes32 fromHash = primaryToIdentity[msg.sender];
-        require(fromHash != bytes32(0), "HiveID: not registered");
-        require(_identities[fromHash].verification != VerificationType.None, "HiveID: not verified");
+    /// @notice Revoke identity (owner only)
+    function revokeIdentity(address user) external onlyOwner {
+        require(identities[user].verified, "ID: not registered");
 
-        bytes32 toHash = keccak256(bytes(toUsername));
-        require(_identities[toHash].exists, "HiveID: recipient not found");
+        uint8 idType = identities[user].identityType;
+        delete identities[user];
 
-        Identity storage from = _identities[fromHash];
-        Identity storage to = _identities[toHash];
+        totalVerified--;
+        if (idType == ID_INDIVIDUAL) {
+            totalIndividuals--;
+        } else {
+            totalOrganizations--;
+        }
 
-        from.nonce++;
-
-        // Transfer from hive wallet to recipient's hive wallet
-        // NOTE: In production, this would use a relayer pattern where the primary wallet
-        // signs a message and a relayer submits from the hive wallet.
-        // For now, ETH is sent directly to the contract and forwarded.
-        (bool sent, ) = to.hiveWallet.call{value: msg.value}("");
-        if (!sent) revert TransferFailed();
-
-        emit FundsTransferred(fromHash, toHash, address(0), msg.value);
+        emit IdentityRevoked(user);
     }
 
-    /// @notice Transfer ERC20 between HiveIDs
-    /// @param toUsername Recipient username
-    /// @param token ERC20 token address
-    /// @param amount Amount to transfer
-    function transferERC20(string calldata toUsername, address token, uint256 amount) external {
-        bytes32 fromHash = primaryToIdentity[msg.sender];
-        require(fromHash != bytes32(0), "HiveID: not registered");
-        require(_identities[fromHash].verification != VerificationType.None, "HiveID: not verified");
+    /// @notice Revoke an attribute (owner only)
+    function revokeAttribute(address user, string calldata attributeName) external onlyOwner {
+        require(attributes[user][attributeName].verified, "ID: attribute not found");
 
-        bytes32 toHash = keccak256(bytes(toUsername));
-        require(_identities[toHash].exists, "HiveID: recipient not found");
-
-        Identity storage to = _identities[toHash];
-
-        // Transfer ERC20 from msg.sender (primary wallet) to recipient's hive wallet
-        // NOTE: Primary wallet must have approved this contract
-        (bool success, ) = token.call(
-            abi.encodeWithSignature(
-                "transferFrom(address,address,uint256)",
-                msg.sender,
-                to.hiveWallet,
-                amount
-            )
-        );
-        if (!success) revert TransferFailed();
-
-        emit FundsTransferred(fromHash, toHash, token, amount);
-    }
-
-    // ═══ Withdrawal ═══
-
-    /// @notice Withdraw ETH to primary wallet
-    function withdrawETH() external {
-        bytes32 usernameHash = primaryToIdentity[msg.sender];
-        require(usernameHash != bytes32(0), "HiveID: not registered");
-
-        Identity storage id = _identities[usernameHash];
-        uint256 balance = address(id.hiveWallet).balance;
-
-        // NOTE: In production, this requires the hive wallet to sign and send.
-        // The primary wallet triggers the withdrawal, but the hive wallet executes.
-        // This is a simplified version — production uses relayer pattern.
-
-        id.nonce++;
-
-        emit FundsWithdrawn(usernameHash, msg.sender, address(0), balance);
-    }
-
-    /// @notice Withdraw ERC20 to primary wallet
-    /// @param token ERC20 token address
-    /// @param amount Amount to withdraw
-    function withdrawERC20(address token, uint256 amount) external {
-        bytes32 usernameHash = primaryToIdentity[msg.sender];
-        require(usernameHash != bytes32(0), "HiveID: not registered");
-
-        Identity storage id = _identities[usernameHash];
-        id.nonce++;
-
-        // NOTE: Same relayer pattern applies. Primary wallet initiates,
-        // hive wallet signs the actual transfer.
-
-        emit FundsWithdrawn(usernameHash, msg.sender, token, amount);
-    }
-
-    // ═══ Admin ═══
-
-    /// @notice Add authorized verifier
-    function addVerifier(address verifier) external onlyOwner {
-        require(verifier != address(0), "HiveID: invalid address");
-        verifiers[verifier] = true;
-    }
-
-    /// @notice Remove verifier
-    function removeVerifier(address verifier) external onlyOwner {
-        verifiers[verifier] = false;
-    }
-
-    /// @notice Update registration fee
-    function setRegistrationFee(uint256 newFee) external onlyOwner {
-        registrationFee = newFee;
-    }
-
-    /// @notice Withdraw accumulated fees
-    function withdrawFees(address to) external onlyOwner {
-        require(to != address(0), "HiveID: invalid address");
-        uint256 balance = address(this).balance;
-        (bool sent, ) = to.call{value: balance}("");
-        if (!sent) revert TransferFailed();
+        delete attributes[user][attributeName];
+        emit AttributeRevoked(user, attributeName);
     }
 
     // ═══ View Functions ═══
 
-    /// @notice Get identity by username
-    function getIdentity(string calldata username) external view returns (Identity memory) {
-        bytes32 usernameHash = keccak256(bytes(username));
-        return _identities[usernameHash];
-    }
-
-    /// @notice Get identity by primary wallet
-    function getIdentityByPrimary(address primaryWallet) external view returns (Identity memory) {
-        bytes32 usernameHash = primaryToIdentity[primaryWallet];
-        require(usernameHash != bytes32(0), "HiveID: not found");
-        return _identities[usernameHash];
-    }
-
-    /// @notice Get identity by hive wallet
-    function getIdentityByHive(address hiveWallet) external view returns (Identity memory) {
-        bytes32 usernameHash = hiveToIdentity[hiveWallet];
-        require(usernameHash != bytes32(0), "HiveID: not found");
-        return _identities[usernameHash];
-    }
-
-    /// @notice Check if username is available
-    function isUsernameAvailable(string calldata username) external view returns (bool) {
-        bytes32 usernameHash = keccak256(bytes(username));
-        return !_identities[usernameHash].exists;
-    }
-
     /// @notice Check if user is verified
-    function isVerified(address primaryWallet) external view returns (bool) {
-        bytes32 usernameHash = primaryToIdentity[primaryWallet];
-        if (usernameHash == bytes32(0)) return false;
-        return _identities[usernameHash].verification != VerificationType.None;
+    function isVerified(address user) external view returns (bool) {
+        return identities[user].verified;
     }
 
-    /// @notice Check if address is a registered primary wallet
-    function isRegistered(address primaryWallet) external view returns (bool) {
-        return primaryToIdentity[primaryWallet] != bytes32(0);
+    /// @notice Check if user is registered (alias for isVerified)
+    function isRegistered(address user) external view returns (bool) {
+        return identities[user].verified;
     }
 
-    /// @notice Check if identity has a DKMS-derived key
-    function hasDkmsKey(bytes32 usernameHash) external view returns (bool) {
-        return _identities[usernameHash].dkmsPublicKey.length > 0;
+    /// @notice Get identity type
+    function getIdentityType(address user) external view returns (uint8) {
+        return identities[user].identityType;
     }
 
-    /// @notice Check if identity has encrypted KYC data stored
-    function hasEncryptedKyc(bytes32 usernameHash) external view returns (bool) {
-        return _identities[usernameHash].encryptedKycData.length > 0;
+    /// @notice Check if user has a specific attribute
+    function hasAttribute(address user, string calldata attributeName) external view returns (bool) {
+        return attributes[user][attributeName].verified;
     }
 
-    /// @notice Get the DKMS public key for an identity
-    /// @return pubKey 65-byte uncompressed secp256k1 public key
-    function getDkmsPublicKey(bytes32 usernameHash) external view returns (bytes memory pubKey) {
-        pubKey = _identities[usernameHash].dkmsPublicKey;
-        require(pubKey.length > 0, "HiveID: no DKMS key");
+    /// @notice Get attribute value
+    function getAttributeValue(address user, string calldata attributeName) external view returns (uint256) {
+        return attributes[user][attributeName].value;
     }
 
-    /// @notice Get the current DKMS key index for an identity
-    function getDkmsKeyIndex(bytes32 usernameHash) external view returns (uint256) {
-        return dkmsKeyIndex[usernameHash];
+    /// @notice Get own attribute (privacy — only own data)
+    function getMyAttribute(string calldata attributeName) external view returns (uint256) {
+        return attributes[msg.sender][attributeName].value;
     }
 
-    /// @notice Get encrypted KYC data size (not the data itself — that's only for TEE)
-    function getEncryptedKycSize(bytes32 usernameHash) external view returns (uint256) {
-        return _identities[usernameHash].encryptedKycData.length;
+    /// @notice Get verification stats
+    function getStats() external view returns (uint256 total, uint256 individuals, uint256 organizations) {
+        return (totalVerified, totalIndividuals, totalOrganizations);
     }
-
-    // ═══ Ownership ═══
-
-    /// @notice Transfer ownership to a new address
-    function transferOwnership(address newOwner) external onlyOwner {
-        require(newOwner != address(0), "zero address");
-        owner = newOwner;
-    }
-
 }

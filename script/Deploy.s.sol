@@ -33,7 +33,7 @@ contract DeployHive is Script {
 
         // Phase 1: Core Infrastructure
         // HiveID requires registration fee (0 = free registration)
-        HiveID hiveID = new HiveID(0);
+        HiveID hiveID = new HiveID(msg.sender);
         console.log("HiveID deployed at:", address(hiveID));
 
         address[] memory signers = new address[](1);

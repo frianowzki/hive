@@ -432,7 +432,7 @@ contract HiveFactoryTest is Test {
 
     function setUp() public {
         // Deploy all modules — factory must be HiveID owner for addVerifier
-        hiveID = new HiveID(0.01 ether);
+        hiveID = new HiveID(address(this));
         verifier = new HiveVerifier();
         reputation = new HiveReputation();
         oracle = new HiveOracle();
@@ -442,9 +442,6 @@ contract HiveFactoryTest is Test {
 
         // Deploy factory
         factory = new HiveFactory();
-
-        // Pre-authorize verifier in HiveID (factory can't do this unless it's owner)
-        hiveID.addVerifier(address(verifier));
 
         // Authorize factory to record reputation activities
         reputation.authorize(address(factory));
@@ -482,7 +479,8 @@ contract HiveFactoryTest is Test {
         // User registers on HiveID first
         vm.deal(user1, 1 ether);
         vm.prank(user1);
-        hiveID.register{value: 0.01 ether}("alice", hiveWallet1, HiveID.AccountType.User, "", "");
+        bytes32 zkProof = keccak256("proof-alice");
+        hiveID.registerIdentity(zkProof, 1); // individual
 
         // Then complete onboarding via factory
         bytes32 usernameHash = keccak256(bytes("alice"));
