@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hive — Compliant AI Launchpad on Ritual Chain</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{
+            --bg:#000;--bg-card:rgba(255,255,255,0.03);--bg-card-hover:rgba(255,255,255,0.06);
+            --text:#fff;--text-dim:#888;--text-muted:#555;
+            --accent:#8b5cf6;--accent-light:#a78bfa;--accent-dark:#7c3aed;
+            --accent-glow:rgba(139,92,246,0.12);--green:#22c55e;
+            --border:rgba(255,255,255,0.06);
+            --font:'Inter',-apple-system,sans-serif;
+            --font-display:'Space Grotesk','Inter',sans-serif;
+        }
+        html{overflow:hidden;height:100%}
+        body{font-family:var(--font);background:var(--bg);color:var(--text);overflow:hidden;height:100%;-webkit-font-smoothing:antialiased}
+        ::selection{background:var(--accent);color:#fff}
+        a{color:inherit;text-decoration:none;transition:all .3s}
+
+        /* NAV */
+        .navbar{position:fixed;top:0;left:0;right:0;z-index:1000;padding:0 3rem;height:56px;display:flex;justify-content:space-between;align-items:center;background:transparent}
+        .logo{font-family:var(--font-display);font-size:1.35rem;font-weight:700;display:flex;align-items:center;letter-spacing:-.02em}
+        .nav-links{display:flex;gap:1.5rem;list-style:none;align-items:center}
+        .nav-links a{font-size:.7rem;font-weight:500;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);transition:color .3s;cursor:pointer;padding:.4rem 0;position:relative}
+        .nav-links a::after{content:'';position:absolute;bottom:0;left:0;width:0;height:1.5px;background:var(--accent);transition:width .3s}
+        .nav-links a:hover,.nav-links a.active{color:var(--text)}
+        .nav-links a:hover::after,.nav-links a.active::after{width:100%}
+
+        /* PAGES */
+        .pages-wrapper{height:100vh;overflow:hidden;position:relative}
+        .page{height:100vh;width:100%;position:absolute;top:0;left:0;opacity:0;transform:translateY(20px);transition:opacity .6s,transform .6s;pointer-events:none;display:flex;align-items:center;padding:56px 3rem 3rem;overflow-y:auto}
+        .page.active{opacity:1;transform:translateY(0);pointer-events:all;z-index:10}
+        .page-inner{width:100%;max-width:1100px;margin:0 auto;position:relative;z-index:2}
+
+        /* PAGE DOTS */
+        .page-dots{position:fixed;right:1.5rem;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:.5rem;opacity:0;transition:opacity .5s}
+        .page-dots.visible{opacity:1}
+        .dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.12);cursor:pointer;transition:all .3s}
+        .dot:hover{background:rgba(255,255,255,0.35)}
+        .dot.active{background:var(--accent);box-shadow:0 0 6px rgba(139,92,246,0.4)}
+
+        /* FOOTER */
+        .mini-footer{position:fixed;bottom:0;left:0;right:0;z-index:100;padding:.6rem 3rem;display:flex;justify-content:space-between;align-items:center;background:transparent;font-size:.7rem;color:var(--text-muted)}
+        .mini-footer p{font-family:var(--font-display);font-size:.7rem;font-weight:500;letter-spacing:.02em}
+        .mini-footer a{color:var(--text-dim)}
+        .mini-footer-links{display:flex;gap:1.5rem}
+        .mini-footer-links a{font-family:var(--font-display);font-size:.7rem;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);transition:color .3s}
+        .mini-footer-links a:hover{color:var(--text)}
+
+        /* BG */
+        .bg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse at center,black 20%,transparent 70%);-webkit-mask-image:radial-gradient(ellipse at center,black 20%,transparent 70%);pointer-events:none}
+        .bg-glow{position:absolute;width:500px;height:500px;border-radius:50%;filter:blur(120px);pointer-events:none}
+
+        /* FADE */
+        .fi{opacity:0;transform:translateY(12px);transition:all .5s cubic-bezier(.4,0,.2,1)}
+        .fi.v{opacity:1;transform:translateY(0)}
+        .d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}.d5{transition-delay:.4s}.d6{transition-delay:.48s}
+
+        /* ═══ PAGE 1: HERO ═══ */
+        .hero-content{max-width:640px}
+        .hero h1{font-family:var(--font-display);font-size:3.2rem;font-weight:800;line-height:1.08;letter-spacing:-.04em;margin-bottom:1rem}
+        .hero h1 .g{background:linear-gradient(135deg,var(--accent-light),var(--accent),#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .hero-desc{font-size:.95rem;color:var(--text-dim);margin-bottom:1.75rem;line-height:1.65;max-width:480px}
+        .hero-actions{display:flex;gap:.75rem;margin-bottom:2.5rem}
+        .hero-stats{display:flex;gap:2rem;padding-top:1.5rem;border-top:1px solid var(--border)}
+        .stat-val{font-family:var(--font-display);font-size:1.75rem;font-weight:800;line-height:1}
+        .stat-val .g{color:var(--green)}
+        .stat-lbl{font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-top:.3rem}
+
+        /* ═══ BUTTONS ═══ */
+        .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.65rem 1.25rem;font-family:var(--font);font-size:.75rem;font-weight:600;border-radius:6px;cursor:pointer;transition:all .3s;border:none;outline:none}
+        .btn-p{background:var(--accent);color:#fff;box-shadow:0 4px 16px rgba(139,92,246,.25)}
+        .btn-p:hover{background:var(--accent-dark);transform:translateY(-1px);box-shadow:0 6px 24px rgba(139,92,246,.3)}
+        .btn-o{background:transparent;color:var(--text);border:1px solid var(--border)}
+        .btn-o:hover{border-color:var(--accent);color:var(--accent-light);background:var(--accent-glow)}
+        .btn-i{width:13px;height:13px}
+
+        /* ═══ SECTION ═══ */
+        .sec-hdr{margin-bottom:2rem}
+        .sec-lbl{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem}
+        .sec-lbl::before{content:'';width:16px;height:1.5px;background:var(--accent)}
+        .sec-title{font-family:var(--font-display);font-size:2rem;font-weight:800;letter-spacing:-.03em}
+
+        /* ═══ PAGE 2: FEATURES (Card Stack) ═══ */
+        .feat-stack{position:relative;width:580px;flex:1;min-height:0;perspective:1200px}
+        .feat-card{position:absolute;top:0;left:0;right:0;bottom:0;width:580px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:20px;transition:all .5s cubic-bezier(.4,0,.2,1);opacity:0;pointer-events:none;display:flex;flex-direction:column;overflow:hidden}
+        .feat-card.active{opacity:1;pointer-events:all;z-index:5;border-color:rgba(255,255,255,.1)}
+        .feat-card.prev,.feat-card.next{display:none}
+        .feat-card .fc-watermark{position:absolute;bottom:-20px;right:-20px;width:260px;height:260px;opacity:.04;color:var(--accent);pointer-events:none}
+        .feat-card .fc-accent{position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),transparent);opacity:.6}
+        .feat-card .fc-body{position:relative;z-index:2;padding:2.5rem 2.5rem;flex:1;display:flex;flex-direction:column;justify-content:space-between}
+        .feat-card .fc-tag{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.15em;color:var(--accent);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem}
+        .feat-card .fc-tag::before{content:'';width:20px;height:1px;background:var(--accent)}
+        .feat-card .fc-num{font-family:var(--font-display);font-size:5rem;font-weight:900;line-height:1;color:rgba(255,255,255,.03);position:absolute;bottom:1.5rem;right:2rem;pointer-events:none}
+        .feat-card .fc-icon{width:56px;height:56px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.15);border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:1.5rem}
+        .feat-card .fc-icon svg{width:26px;height:26px;color:var(--accent-light)}
+        .feat-card .fc-title{font-family:var(--font-display);font-size:1.6rem;font-weight:800;letter-spacing:-.02em;margin-bottom:1rem;background:linear-gradient(135deg,#fff,rgba(255,255,255,.7));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .feat-card .fc-desc{font-size:.9rem;color:var(--text-dim);line-height:1.8;max-width:90%}
+        .feat-nav{display:flex;align-items:center;gap:.6rem;margin-top:1.25rem}
+        .feat-nav-btn{width:42px;height:42px;border-radius:50%;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text-dim);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s}
+        .feat-nav-btn:hover{border-color:var(--accent);color:var(--accent-light);background:var(--accent-glow)}
+        .feat-nav-btn svg{width:16px;height:16px}
+        .feat-dots{display:flex;gap:.4rem}
+        .feat-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.12);transition:all .3s}
+        .feat-dot.active{background:var(--accent);width:18px;border-radius:3px}
+
+
+        /* ═══ PAGE 3: SERVICES (Marquee) ═══ */
+        .marquee-wrap{display:flex;flex-direction:column;gap:1rem;overflow:hidden;width:100%;padding:1rem 0}
+        .marquee-row{display:flex;gap:1rem;animation:marquee-scroll var(--duration,40s) linear infinite;width:max-content}
+        .marquee-row:hover{animation-play-state:paused}
+        .marquee-row.reverse{animation-direction:reverse}
+        @keyframes marquee-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+        .marquee-item{display:flex;align-items:center;gap:.65rem;padding:.75rem 1.25rem;border:1px solid var(--border);border-radius:8px;white-space:nowrap;cursor:default;transition:all .3s;flex-shrink:0;background:rgba(255,255,255,.02);position:relative;overflow:hidden}
+        .marquee-item:hover{border-color:var(--accent);background:var(--accent-glow)}
+        .marquee-item .svc-name{font-size:.8rem;font-weight:500;color:var(--text-dim);transition:color .3s;position:relative;z-index:2}
+        .marquee-item:hover .svc-name{color:var(--text)}
+        .marquee-item .svc-icon{width:16px;height:16px;color:var(--accent);flex-shrink:0;position:relative;z-index:2}
+        .marquee-item .flicker-canvas{position:absolute;inset:0;pointer-events:none;opacity:.5}
+        .marquee-fade{position:relative}
+        .marquee-fade::before,.marquee-fade::after{content:'';position:absolute;top:0;bottom:0;width:80px;z-index:10;pointer-events:none}
+        .marquee-fade::before{left:0;background:linear-gradient(90deg,var(--bg),transparent)}
+        .marquee-fade::after{right:0;background:linear-gradient(270deg,var(--bg),transparent)}
+
+        /* ═══ PAGE 4: ABOUT ═══ */
+        .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;align-items:start}
+        .about-text h3{font-family:var(--font-display);font-size:1.35rem;font-weight:700;margin-bottom:1rem}
+        .about-text p{font-size:.85rem;color:var(--text-dim);line-height:1.7;margin-bottom:.6rem}
+        .about-feats{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:1.25rem}
+        .about-feat{display:flex;align-items:center;gap:.4rem;padding:.5rem .65rem;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;font-size:.75rem;font-weight:500}
+        .about-feat i{color:var(--accent);font-style:normal}
+        .team-card{background:var(--bg-card);border-radius:12px;padding:1.5rem;border:1px solid var(--border);display:grid;grid-template-columns:auto 1fr;gap:1.25rem;align-items:center;transition:all .3s}
+        .team-card:hover{border-color:rgba(255,255,255,.1);background:var(--bg-card-hover)}
+        .team-avatar{width:64px;height:64px;border-radius:14px;overflow:hidden;border:1px solid rgba(139,92,246,.15);flex-shrink:0}
+        .team-avatar img{width:100%;height:100%;object-fit:cover}
+        .team-role{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:.1rem}
+        .team-name{font-family:var(--font-display);font-size:1.05rem;font-weight:700;margin-bottom:.25rem}
+        .team-bio{font-size:.75rem;color:var(--text-dim);line-height:1.5}
+.warp-container{position:relative;border-radius:16px;padding:2px;background:conic-gradient(from var(--warp-angle,0deg),transparent 20%,rgba(139,92,246,.4) 30%,rgba(168,85,247,.8) 35%,rgba(139,92,246,.4) 40%,transparent 50%,transparent 70%,rgba(99,102,241,.4) 80%,rgba(129,140,248,.6) 85%,rgba(99,102,241,.4) 90%,transparent 100%);animation:warp-spin 4s linear infinite}.warp-container::before{content:"";position:absolute;inset:0;border-radius:16px;background:conic-gradient(from calc(var(--warp-angle,0deg) + 180deg),transparent 20%,rgba(168,85,247,.3) 30%,rgba(192,132,252,.5) 35%,rgba(168,85,247,.3) 40%,transparent 50%);animation:warp-spin 6s linear infinite;filter:blur(4px)}.team-card{position:relative;z-index:1;background:rgba(10,10,10,.95)!important;border-radius:14px}@keyframes warp-spin{to{--warp-angle:360deg}}@property --warp-angle{syntax:"<angle>";initial-value:0deg;inherits:false}
+        .team-link{display:inline-block;margin-top:.4rem;font-size:.65rem;font-weight:600;padding:.3rem .6rem;background:var(--accent-glow);border:1px solid rgba(139,92,246,.15);border-radius:5px;color:var(--accent-light);transition:all .3s}
+        .team-link:hover{background:rgba(139,92,246,.2);border-color:var(--accent)}
+
+        /* ═══ PAGE 5: CONTACT ═══ */
+        .contact-page{text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center}
+        .contact-sub{font-size:.95rem;color:var(--text-dim);max-width:440px;margin:0 auto 2rem;line-height:1.65}
+        .contact-actions{display:flex;gap:.75rem;margin-bottom:2.5rem}
+        .contact-info{display:flex;gap:1.5rem;align-items:center}
+        .contact-info-item{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--text-dim);transition:all .3s}
+        .contact-info-item:hover{border-color:var(--accent);color:var(--accent-light);background:var(--accent-glow)}
+        .contact-info-item svg{width:18px;height:18px}
+
+        /* ═══ RESPONSIVE ═══ */
+        @media(max-width:1024px){
+            .hero h1{font-size:2.5rem}
+            .caps-grid{grid-template-columns:repeat(2,1fr)}
+            .svc-grid{grid-template-columns:repeat(2,1fr)}
+            .about-grid{grid-template-columns:1fr}
+            .feat-card{width:90%;max-width:580px}
+        }
+        @media(max-width:768px){
+            /* Smooth scroll + perf */
+            html{scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+            *,*::before,*::after{will-change:auto}
+            .marquee-row,.warp-container,.feat-card{will-change:transform}
+
+            /* Kill expensive effects on mobile */
+            .bg-glow{display:none}
+            .bg-grid{display:none}
+            .warp-container{background:none!important;animation:none!important}
+            .warp-container::before{display:none}
+            .modal-overlay{backdrop-filter:none}
+            .modal-frosted{backdrop-filter:none;background:#0a0a0a}
+
+            /* Normal scroll layout */
+            html,body{overflow:auto;height:auto}
+            .pages-wrapper{height:auto;overflow:visible}
+            .page{height:auto;min-height:auto;position:relative;transform:none!important;opacity:1!important;pointer-events:all!important;display:block;padding:3rem 1.25rem 2rem;overflow:visible}
+            .page.active{transform:none!important}
+            .page:not(.active){display:block!important;opacity:1!important;pointer-events:all!important}
+
+            /* Hero — full page */
+            .page.hero{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center}
+
+            /* Navbar */
+            .navbar{padding:0 1rem;height:52px}
+            .nav-links{display:none}
+
+            /* Hero */
+            .hero{padding-top:0;padding-bottom:0;align-items:center}
+            .hero h1{font-size:1.65rem;line-height:1.12;letter-spacing:-.03em}
+            .hero-desc{font-size:.82rem;line-height:1.55;margin-bottom:1.25rem}
+            .hero-desc br{display:none}
+            .hero-actions{flex-direction:column;gap:.5rem}
+            .hero-actions .btn{width:100%;justify-content:center;padding:.7rem 1rem}
+            .hero-stats{gap:1rem;flex-wrap:wrap}
+            .stat-val{font-size:1.3rem}
+
+            /* Sections */
+            .sec-title{font-size:1.2rem;margin-bottom:.75rem}
+            .sec-lbl{font-size:.6rem}
+            .section-card{padding:1.25rem 1rem}
+
+            /* Features — disable card stack, show all */
+            .feat-stack{position:relative;width:100%;min-height:auto;perspective:none}
+            .feat-card{position:relative;width:100%;opacity:1;pointer-events:all;transform:none;margin-bottom:1rem;border-radius:14px}
+            .feat-card.active{opacity:1;transform:none}
+            .feat-card.prev,.feat-card.next{display:block;opacity:1;transform:none}
+            .feat-card .fc-body{padding:1.5rem 1.25rem}
+            .feat-card .fc-title{font-size:1.05rem;margin-bottom:.5rem}
+            .feat-card .fc-desc{font-size:.78rem;line-height:1.55;max-width:100%}
+            .feat-card .fc-icon{width:42px;height:42px;border-radius:10px;margin-bottom:1rem}
+            .feat-card .fc-icon svg{width:20px;height:20px}
+            .feat-card .fc-num{font-size:3rem}
+            .feat-card .fc-tag{font-size:.55rem;margin-bottom:1rem}
+            .feat-nav{display:none}
+            .feat-dots{display:none}
+
+            /* Marquee — slower, smaller */
+            .marquee-row{animation-duration:80s!important}
+            .marquee-item{padding:.45rem .75rem;border-radius:6px}
+            .marquee-item .svc-name{font-size:.65rem}
+            .marquee-item .svc-icon{width:14px;height:14px}
+            .marquee-fade::before,.marquee-fade::after{width:40px}
+
+            /* About */
+            .about-grid{grid-template-columns:1fr;gap:1.5rem}
+            .about-text h3{font-size:1.15rem}
+            .about-text p{font-size:.8rem;line-height:1.6}
+            .about-feats{grid-template-columns:1fr;gap:.4rem}
+            .about-feat{font-size:.7rem;padding:.4rem .6rem}
+            .team-card{flex-direction:column;text-align:center;padding:1.25rem}
+            .team-avatar{width:52px;height:52px;border-radius:12px}
+            .team-name{font-size:.95rem}
+            .team-bio{font-size:.7rem}
+
+            /* Contact */
+            .contact-page{padding:2rem 0}
+            .contact-sub{font-size:.85rem;margin-bottom:1.5rem}
+            .contact-actions{flex-direction:column;gap:.5rem}
+            .contact-actions .btn{width:100%;justify-content:center}
+            .contact-info{flex-direction:row;justify-content:center;gap:1rem}
+            .contact-info-item{width:36px;height:36px}
+
+            /* Footer */
+            .page-dots{display:none}
+            .mini-footer{position:relative;padding:.75rem 1rem;font-size:.6rem;justify-content:center}
+            .mini-footer-links{display:none}
+
+            /* Modals — bottom sheet */
+            .modal{width:100%;max-width:100%;border-radius:16px 16px 0 0;max-height:90vh;padding:1.25rem}
+            .modal-overlay{align-items:flex-end}
+            .wallet-btn{padding:.55rem .75rem}
+            .wallet-btn-name{font-size:.8rem}
+            .role-btn{padding:.85rem}
+            .role-icon{width:36px;height:36px}
+            .role-title{font-size:.85rem}
+            .role-desc{font-size:.7rem}
+
+            /* Grids */
+            .caps-grid,.svc-grid{grid-template-columns:1fr}
+        }
+        @media(max-width:480px){
+            .hero h1{font-size:1.35rem}
+            .hero-desc{font-size:.78rem}
+            .page{padding:2.5rem 1rem 1.5rem}
+            .sec-title{font-size:1.05rem}
+            .feat-card .fc-body{padding:1.25rem 1rem}
+            .feat-card .fc-title{font-size:.95rem}
+            .feat-card .fc-desc{font-size:.75rem}
+            .marquee-item{padding:.35rem .6rem}
+            .marquee-item .svc-name{font-size:.6rem}
+        }
+
+        /* ═══ MODALS ═══ */
+        .modal-overlay{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+        .modal-overlay.open{opacity:1;pointer-events:all}
+        .modal{position:relative;width:420px;max-width:90vw;max-height:85vh;overflow-y:auto;background:#0a0a0a;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:2rem;transform:scale(.95);transition:transform .3s}
+        .modal-overlay.open .modal{transform:scale(1)}
+        .modal-frosted{background:rgba(10,10,10,.55);backdrop-filter:blur(24px) saturate(1.6);-webkit-backdrop-filter:blur(24px) saturate(1.6);border:1px solid rgba(255,255,255,.1);box-shadow:0 8px 32px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.04)}
+        .modal-close{position:absolute;top:1rem;right:1rem;width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:var(--text-dim);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-size:1rem;line-height:1}
+        .modal-close:hover{border-color:rgba(255,255,255,.15);color:var(--text)}
+        .modal-title{font-family:var(--font-display);font-size:1.35rem;font-weight:800;letter-spacing:-.02em;margin-bottom:.4rem}
+        .modal-sub{font-size:.8rem;color:var(--text-dim);margin-bottom:1.5rem;line-height:1.5}
+        .modal-divider{height:1px;background:var(--border);margin:1.25rem 0}
+
+        /* Role Selection */
+        .role-options{display:flex;flex-direction:column;gap:.6rem}
+        .role-card{display:flex;align-items:center;gap:1rem;padding:1rem 1.25rem;background:rgba(15,15,15,.9);border:1px solid rgba(255,255,255,.06);border-radius:12px;cursor:pointer;transition:all .3s}
+        .role-card:hover{border-color:var(--accent);background:var(--accent-glow)}
+        .role-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;overflow:hidden}
+        .role-icon.user{background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.12)}
+        .role-icon.user::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(139,92,246,.15),transparent 70%)}
+        .role-icon.retail{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.12)}
+        .role-icon.retail::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(34,197,94,.15),transparent 70%)}
+        .role-icon svg{width:24px;height:24px;position:relative;z-index:1}
+        .role-info{flex:1}
+        .role-name{font-family:var(--font-display);font-size:.95rem;font-weight:700;margin-bottom:.15rem}
+        .role-desc{font-size:.7rem;color:var(--text-dim);line-height:1.4}
+        .role-badge{font-size:.55rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;padding:.2rem .5rem;border-radius:4px;flex-shrink:0}
+        .role-badge.no-kyc{background:rgba(139,92,246,.1);color:var(--accent-light);border:1px solid rgba(139,92,246,.15)}
+        .role-badge.kyb{background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.15)}
+
+        /* Wallet Connect */
+        .wallet-section-label{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--text-muted);margin-bottom:.6rem}
+        .wallet-options{display:flex;flex-direction:column;gap:.4rem}
+        .wallet-btn{display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;background:rgba(15,15,15,.9);border:1px solid rgba(255,255,255,.06);border-radius:10px;cursor:pointer;transition:all .3s;font-family:var(--font);font-size:.8rem;font-weight:500;color:var(--text)}
+        .wallet-btn:hover{border-color:var(--accent);background:var(--accent-glow)}
+        .wallet-btn img,.wallet-btn svg{width:28px;height:28px;flex-shrink:0;border-radius:6px;object-fit:contain}
+        .wallet-btn-name{flex:1;text-align:left}
+        .wallet-btn-tag{font-size:.55rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);padding:.15rem .4rem;background:rgba(255,255,255,.04);border-radius:3px}
+        .modal-back{display:flex;align-items:center;gap:.3rem;font-size:.7rem;color:var(--text-dim);cursor:pointer;margin-bottom:1rem;transition:color .2s;background:none;border:none;font-family:var(--font)}
+        .modal-back:hover{color:var(--text)}
+        .modal-back svg{width:14px;height:14px}
+
+        /* Sign Modal */
+        .sign-icon-wrap{display:flex;align-items:center;justify-content:center;width:80px;height:80px;border-radius:20px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.12);margin:1.5rem auto;position:relative;overflow:hidden}
+        .sign-icon-wrap::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(139,92,246,.15),transparent 70%)}
+        .sign-icon-wrap svg{position:relative;z-index:1;color:var(--accent)}
+        .sign-status{display:flex;align-items:center;justify-content:center;gap:.5rem;font-size:.75rem;color:var(--text-dim);margin-bottom:1.5rem;min-height:24px}
+        .sign-status.success{color:var(--green)}
+        .sign-status.error{color:#ef4444}
+        .sign-spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.1);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
+
+        /* Network Modal */
+        .network-info{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:1rem;margin-bottom:1.5rem}
+        .network-row{display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,.04)}
+        .network-row:last-child{border-bottom:none}
+        .network-label{font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em}
+        .network-value{font-size:.75rem;color:var(--text);font-family:var(--font-mono)}
+        .network-rpc{font-size:.75rem;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+        /* Buttons */
+        .btn-primary{display:flex;align-items:center;justify-content:center;gap:.5rem;width:100%;padding:.85rem;background:var(--accent);color:white;border:none;border-radius:10px;font-family:var(--font);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s}
+        .btn-primary:hover{background:var(--accent-light);transform:translateY(-1px)}
+        .btn-primary:active{transform:translateY(0)}
+        .btn-secondary{display:flex;align-items:center;justify-content:center;gap:.5rem;width:100%;padding:.85rem;background:transparent;color:var(--text-dim);border:1px solid rgba(255,255,255,.08);border-radius:10px;font-family:var(--font);font-size:.75rem;font-weight:500;cursor:pointer;transition:all .2s;margin-top:.5rem}
+        .btn-secondary:hover{border-color:rgba(255,255,255,.15);color:var(--text)}
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">Hive</div>
+        <ul class="nav-links">
+            <li><a data-page="0" class="active">Home</a></li>
+            <li><a data-page="1">Features</a></li>
+            <li><a data-page="2">Services</a></li>
+            <li><a data-page="3">About</a></li>
+            <li><a data-page="4">Contact</a></li>
+        </ul>
+    </nav>
+
+
+    <!-- MODAL: Role Selection -->
+    <div class="modal-overlay" id="roleModal">
+        <div class="modal modal-frosted">
+            <button class="modal-close" onclick="closeModal('roleModal')">&times;</button>
+            <div class="modal-title">Open Hive</div>
+            <div class="modal-sub">Choose how you want to access the platform.</div>
+            <div class="role-options">
+                <div class="role-card" onclick="selectRole('user')">
+                    <div class="role-icon user">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </div>
+                    <div class="role-info">
+                        <div class="role-name">Login as a User</div>
+                        <div class="role-desc">Access launches, stake, and participate in governance.</div>
+                    </div>
+                </div>
+                <div class="role-card" onclick="selectRole('retail')">
+                    <div class="role-icon retail">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                    </div>
+                    <div class="role-info">
+                        <div class="role-name">Login as a Retail</div>
+                        <div class="role-desc">Institutional access with higher allocation limits.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Wallet Connect -->
+    <div class="modal-overlay" id="walletModal">
+        <div class="modal modal-frosted">
+            <button class="modal-close" onclick="closeModal('walletModal')">&times;</button>
+            <button class="modal-back" onclick="backToRole()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                Back
+            </button>
+            <div class="modal-title" id="walletModalTitle">Connect Wallet</div>
+            <div class="modal-sub" id="walletModalSub">Connect your wallet or sign in with a social account.</div>
+
+            <div class="wallet-section-label">Social Login</div>
+            <div class="wallet-options" style="margin-bottom:1rem">
+                <button class="wallet-btn" onclick="connectSocial('google')">
+                    <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                    <span class="wallet-btn-name">Continue with Google</span>
+                </button>
+                <button class="wallet-btn" onclick="connectSocial('twitter')">
+                    <svg viewBox="0 0 24 24" fill="#fff"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    <span class="wallet-btn-name">Continue with X</span>
+                </button>
+                <button class="wallet-btn" onclick="connectSocial('discord')">
+                    <svg viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+                    <span class="wallet-btn-name">Continue with Discord</span>
+                </button>
+                <button class="wallet-btn" onclick="connectSocial('email')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                    <span class="wallet-btn-name">Continue with Email</span>
+                </button>
+            </div>
+
+            <div class="wallet-section-label">Wallet</div>
+            <div class="wallet-options">
+                <button class="wallet-btn" onclick="connectWallet('metamask')">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" alt="MetaMask">
+                    <span class="wallet-btn-name">MetaMask</span>
+                    <span class="wallet-btn-tag">Popular</span>
+                </button>
+                <button class="wallet-btn" onclick="connectWallet('rabby')">
+                    <img src="https://assets.rabby.io/rabby-assets/rabby.png" alt="Rabby">
+                    <span class="wallet-btn-name">Rabby Wallet</span>
+                </button>
+                <button class="wallet-btn" onclick="connectWallet('okx')">
+                    <img src="https://static.okx.com/cdn/assets/imgs/247/58E63FEA4F534DC0.png" alt="OKX">
+                    <span class="wallet-btn-name">OKX Wallet</span>
+                </button>
+                <button class="wallet-btn" onclick="connectWallet('coinbase')">
+                    <img src="https://images.ctfassets.net/q5ulk4qp683w/2JG4pdf2lVeWsNePwBDQBx/eab29cc82a4d0e5f8dd46e12f82658c6/coinbase-icon2.svg" alt="Coinbase">
+                    <span class="wallet-btn-name">Coinbase Wallet</span>
+                </button>
+                <button class="wallet-btn" onclick="connectWallet('walletconnect')">
+                    <img src="https://altcoinsbox.com/wp-content/uploads/2023/04/wallet-connect-logo.png" alt="WalletConnect">
+                    <span class="wallet-btn-name">WalletConnect</span>
+                </button>
+                <button class="wallet-btn" onclick="connectWallet('trust')">
+                    <img src="https://trustwallet.com/assets/images/media/assets/TWT.png" alt="Trust Wallet">
+                    <span class="wallet-btn-name">Trust Wallet</span>
+                </button>
+                <button class="wallet-btn" onclick="connectWallet('phantom')">
+                    <img src="https://phantom.app/img/phantom-logo.svg" alt="Phantom">
+                    <span class="wallet-btn-name">Phantom</span>
+                </button>
+                <button class="wallet-btn" onclick="connectWallet('safe')">
+                    <img src="https://safe.global/favicon.ico" alt="Safe">
+                    <span class="wallet-btn-name">Safe</span>
+                </button>
+                <button class="wallet-btn" onclick="connectWallet('frame')">
+                    <img src="https://frame.sh/favicon.ico" alt="Frame">
+                    <span class="wallet-btn-name">Frame</span>
+                </button>
+                <button class="wallet-btn" onclick="connectWallet('tokenpocket')">
+                    <img src="https://www.tokenpocket.pro/favicon.ico" alt="TokenPocket">
+                    <span class="wallet-btn-name">TokenPocket</span>
+                </button>
+            </div>
+
+            <div class="modal-divider"></div>
+            <div style="font-size:.65rem;color:var(--text-muted);line-height:1.5;text-align:center">By connecting, you agree to Hive's Terms of Service and Privacy Policy.</div>
+        </div>
+    </div>
+
+    <!-- MODAL: Sign Wallet -->
+    <div class="modal-overlay" id="signModal">
+        <div class="modal modal-frosted">
+            <button class="modal-close" onclick="closeModal('signModal')">&times;</button>
+            <div class="modal-title">Sign to Verify</div>
+            <div class="modal-sub">Sign a message to verify your wallet ownership. This is free and does not send any transaction.</div>
+            
+            <div class="sign-icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
+                    <path d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z"/>
+                </svg>
+            </div>
+
+            <div class="sign-status" id="signStatus">
+                <div class="sign-spinner"></div>
+                <span>Waiting for signature...</span>
+            </div>
+
+            <button class="btn-primary" id="signBtn" onclick="requestSign()">
+                Sign Message
+            </button>
+            
+            <div class="modal-divider"></div>
+            <div style="font-size:.65rem;color:var(--text-muted);line-height:1.5;text-align:center">Your wallet will ask you to sign a message. No gas fees required.</div>
+        </div>
+    </div>
+
+    <!-- MODAL: Add Network -->
+    <div class="modal-overlay" id="networkModal">
+        <div class="modal modal-frosted">
+            <button class="modal-close" onclick="closeModal('networkModal')">&times;</button>
+            <div class="modal-title">Add Ritual Chain</div>
+            <div class="modal-sub">Your wallet doesn't have Ritual Chain configured. Add it to continue.</div>
+            
+            <div class="network-info">
+                <div class="network-row">
+                    <span class="network-label">Network Name</span>
+                    <span class="network-value">Ritual Chain</span>
+                </div>
+                <div class="network-row">
+                    <span class="network-label">Chain ID</span>
+                    <span class="network-value">1979</span>
+                </div>
+                <div class="network-row">
+                    <span class="network-label">Currency Symbol</span>
+                    <span class="network-value">RITUAL</span>
+                </div>
+                <div class="network-row">
+                    <span class="network-label">RPC URL</span>
+                    <span class="network-value network-rpc">https://rpc.ritualfoundation.org</span>
+                </div>
+                <div class="network-row">
+                    <span class="network-label">Explorer</span>
+                    <span class="network-value">https://explorer.ritualfoundation.org</span>
+                </div>
+                <div class="network-row">
+                    <span class="network-label">Faucet</span>
+                    <span class="network-value">https://faucet.ritualfoundation.org</span>
+                </div>
+            </div>
+
+            <button class="btn-primary" id="addNetworkBtn" onclick="addRitualNetwork()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                    <path d="M12 4.5v15m7.5-7.5h-15"/>
+                </svg>
+                Add to Wallet
+            </button>
+
+            <button class="btn-secondary" onclick="skipNetwork()">Skip for now</button>
+        </div>
+    </div>
+
+    <div class="page-dots" id="pageDots">
+        <div class="dot active" data-page="0"></div>
+        <div class="dot" data-page="1"></div>
+        <div class="dot" data-page="2"></div>
+        <div class="dot" data-page="3"></div>
+        <div class="dot" data-page="4"></div>
+    </div>
+
+    <div class="pages-wrapper">
+
+        <!-- PAGE 1: HERO -->
+        <div class="page hero active" data-index="0">
+            <div class="bg-grid"></div>
+            <div class="bg-glow" style="top:-150px;right:-100px;background:var(--accent);opacity:.12"></div>
+            <div class="page-inner">
+                <div class="hero-content">
+                    <h1 class="fi">The <span class="g">compliant AI launchpad</span> for forward-thinking DeFi.</h1>
+                    <p class="hero-desc fi d1">Fully on-chain, zk-proofed AI launchpad built on Ritual Chain.<br>AI market makers, federated learning, autonomous agents,<br>and DAO governance — all with KYC/KYB compliance.</p>
+                    <div class="hero-actions fi d2">
+                        <a href="/dashboard" class="btn btn-p cool-btn" id="ctaBtn" onclick="coolClick(this);setTimeout(()=>window.location.href='/dashboard',600);return false">Open Hive<svg class="btn-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 2: FEATURES (Card Stack) -->
+        <div class="page" data-index="1">
+            <div class="bg-grid"></div>
+            <div class="bg-glow" style="bottom:-150px;left:-150px;background:var(--accent);opacity:.1"></div>
+            <div class="page-inner" style="display:flex;flex-direction:column;height:100%">
+                <div class="sec-hdr fi">
+                    <h2 class="sec-title">Features</h2>
+                </div>
+                <div class="feat-stack fi d1">
+                    <div class="feat-card active" data-feat="0">
+                        <div class="fc-accent"></div>
+                        
+                        <div class="fc-watermark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+                        <div class="fc-body">
+                            <div>
+                                <div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+                                <h3 class="fc-title">ZK Identity & Compliance</h3>
+                                <p class="fc-desc">Groth16-based KYC/KYB verification with on-chain identity. Semi-custodial wallets with dual-auth. Full regulatory compliance without exposing personal data.</p>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <div class="feat-card" data-feat="1">
+                        <div class="fc-accent"></div>
+                        
+                        <div class="fc-watermark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M12 2a7 7 0 0 1 7 7c0 2.4-1.2 4.5-3 5.7V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.3C6.2 13.5 5 11.4 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg></div>
+                        <div class="fc-body">
+                            <div>
+                                <div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 2.4-1.2 4.5-3 5.7V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.3C6.2 13.5 5 11.4 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg></div>
+                                <h3 class="fc-title">AI Decision Engine</h3>
+                                <p class="fc-desc">HiveBrain orchestrates AI operations — price feeds via Allora, federated learning via FLock, autonomous strategies. Think → Plan → Act pipeline with confidence threshold.</p>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <div class="feat-card" data-feat="2">
+                        <div class="fc-accent"></div>
+                        
+                        <div class="fc-watermark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+                        <div class="fc-body">
+                            <div>
+                                <div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+                                <h3 class="fc-title">AI Market Maker</h3>
+                                <p class="fc-desc">Constant-product AMM with AI-driven pricing. Liquidity pools, LP rewards, real-time oracle integration. On-chain AI determines optimal token launch price.</p>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <div class="feat-card" data-feat="3">
+                        <div class="fc-accent"></div>
+                        
+                        <div class="fc-watermark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg></div>
+                        <div class="fc-body">
+                            <div>
+                                <div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg></div>
+                                <h3 class="fc-title">DAO Governance</h3>
+                                <p class="fc-desc">Multi-sig council, proposal system, voting, treasury management. HiveClearing batch auctions for fair token launches with AI-driven price discovery.</p>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <div class="feat-card" data-feat="4">
+                        <div class="fc-accent"></div>
+                        
+                        <div class="fc-watermark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+                        <div class="fc-body">
+                            <div>
+                                <div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+                                <h3 class="fc-title">Security & Privacy</h3>
+                                <p class="fc-desc">Ritual native precompiles — DKMS key management, ECIES encryption, Passkey authentication. TEE-bound keys never leave the enclave. Privacy-preserving by design.</p>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <div class="feat-card" data-feat="5">
+                        <div class="fc-accent"></div>
+                        
+                        <div class="fc-watermark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8M12 8v8"/></svg></div>
+                        <div class="fc-body">
+                            <div>
+                                <div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8M12 8v8"/></svg></div>
+                                <h3 class="fc-title">Autonomous Agents</h3>
+                                <p class="fc-desc">Queen orchestrator routes tasks to Brain, Strategy, and Drone agents. Automated trading strategies, on-chain points, 4-tier referral engine.</p>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                <div class="feat-nav fi d2">
+                    <button class="feat-nav-btn" onclick="featNav(-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6" /></svg></button>
+                    <button class="feat-nav-btn" onclick="featNav(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6" /></svg></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 3: SERVICES -->
+        <div class="page" data-index="2">
+            <div class="bg-grid"></div>
+            <div class="page-inner">
+                <div class="sec-hdr fi">
+                    <h2 class="sec-title">What we build</h2>
+                </div>
+                <div class="marquee-wrap fi d1">
+                    <div class="marquee-fade">
+                        <div class="marquee-row" style="--duration:50s">
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span class="svc-name">ZK Proof Verification (Groth16)</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span class="svc-name">AI Market Maker (AMM)</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="svc-name">Federated Learning (FLock)</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg><span class="svc-name">Price Oracles (Allora)</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg><span class="svc-name">Batch Auctions (HCA)</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span class="svc-name">Token Launches + Vesting</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span class="svc-name">Multi-Sig Wallets</span></div>
+                            <!-- duplicate set for seamless loop -->
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span class="svc-name">ZK Proof Verification (Groth16)</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span class="svc-name">AI Market Maker (AMM)</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="svc-name">Federated Learning (FLock)</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg><span class="svc-name">Price Oracles (Allora)</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg><span class="svc-name">Batch Auctions (HCA)</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span class="svc-name">Token Launches + Vesting</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span class="svc-name">Multi-Sig Wallets</span></div>
+                        </div>
+                    </div>
+                    <div class="marquee-fade">
+                        <div class="marquee-row reverse" style="--duration:55s">
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg><span class="svc-name">DAO Governance + Voting</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span class="svc-name">DKMS Key Management</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="svc-name">Encrypted P2P Chat (ECIES)</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8M12 8v8"/></svg><span class="svc-name">Autonomous Agent Orchestration</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg><span class="svc-name">Portfolio Management</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span class="svc-name">Referral & Points System</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span class="svc-name">Meta-Transaction Relay</span></div>
+                            <!-- duplicate for seamless loop -->
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg><span class="svc-name">DAO Governance + Voting</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span class="svc-name">DKMS Key Management</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="svc-name">Encrypted P2P Chat (ECIES)</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8M12 8v8"/></svg><span class="svc-name">Autonomous Agent Orchestration</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg><span class="svc-name">Portfolio Management</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span class="svc-name">Referral & Points System</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span class="svc-name">Meta-Transaction Relay</span></div>
+                        </div>
+                    </div>
+                    <div class="marquee-fade">
+                        <div class="marquee-row" style="--duration:45s">
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg><span class="svc-name">Batch Auctions (HCA)</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg><span class="svc-name">DAO Governance + Voting</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span class="svc-name">Token Launches + Vesting</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span class="svc-name">AI Market Maker (AMM)</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span class="svc-name">DKMS Key Management</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="svc-name">Federated Learning (FLock)</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="svc-name">Encrypted P2P Chat (ECIES)</span></div>
+                            <!-- duplicate for seamless loop -->
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg><span class="svc-name">Batch Auctions (HCA)</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg><span class="svc-name">DAO Governance + Voting</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span class="svc-name">Token Launches + Vesting</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span class="svc-name">AI Market Maker (AMM)</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span class="svc-name">DKMS Key Management</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="svc-name">Federated Learning (FLock)</span></div>
+                            <div class="marquee-item"><svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="svc-name">Encrypted P2P Chat (ECIES)</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 4: ABOUT -->
+        <div class="page" data-index="3">
+            <div class="bg-grid"></div>
+            <div class="page-inner">
+                <div class="sec-hdr fi">
+                    <h2 class="sec-title">About us</h2>
+                </div>
+                <div class="about-grid">
+                    <div class="about-text fi d1">
+                        <h3>Building the future of compliant DeFi</h3>
+                        <p>Hive is a fully on-chain AI launchpad built on Ritual Chain. We combine zero-knowledge proofs, artificial intelligence, and decentralized governance to create a compliant, privacy-preserving DeFi ecosystem.</p>
+                        <p>Our architecture features 33 smart contracts, all fully interconnected and tested with 320 passing tests. Every component is designed for security, scalability, and compliance.</p>
+                        <p>We leverage Ritual Chain's native precompiles — LLM inference, HTTP requests, DKMS key management, ECIES encryption, and Passkey authentication.</p>
+                    </div>
+                    <div class="fi d2">
+                        <div class="warp-container">
+                        <div class="team-card">
+                            <div class="team-avatar"><img src="assets/frian-avatar.jpg" alt="Frian"></div>
+                            <div>
+                                <div class="team-role">Builder</div>
+                                <h4 class="team-name">Frian</h4>
+                                <p class="team-bio">Full-stack Web3 builder. DeFi architect. Leading Hive's smart contract development, AI integration, and Ritual Chain optimization.</p>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 5: CONTACT -->
+        <div class="page contact-page" data-index="4">
+            <div class="bg-grid"></div>
+            <div class="bg-glow" style="top:50%;left:50%;transform:translate(-50%,-50%);background:var(--accent);opacity:.12"></div>
+            <div class="page-inner">
+                <div class="contact-info fi d2">
+                    <a href="https://x.com/widyakrnwn" target="_blank" class="contact-info-item" title="X (Twitter)">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    </a>
+                    <a href="https://t.me/widyakrnwn" target="_blank" class="contact-info-item" title="Telegram">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+                    </a>
+                    <a href="https://github.com/frianowzki" target="_blank" class="contact-info-item" title="GitHub">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mini-footer">
+        <p>© 2026 Hive. Built on <a href="https://ritual.net" target="_blank">Ritual Chain</a>.</p>
+        <div class="mini-footer-links">
+            <a href="https://github.com/frianowzki/hive" target="_blank">GitHub</a>
+            <a href="https://x.com/widyakrnwn" target="_blank">X</a>
+            <a href="https://discord.gg/ritual-net" target="_blank">Discord</a>
+        </div>
+    </div>
+
+    <script>
+        let currentPage=0;const totalPages=4;let autoScroll=false;let autoScrollTimer=null;const autoScrollDuration=8000;let dotsTimeout;
+
+        function goToPage(index){
+            if(index===currentPage||index<0||index>=totalPages)return;
+            const pages=document.querySelectorAll('.page');
+            const dots=document.querySelectorAll('.dot');
+            const navLinks=document.querySelectorAll('.nav-links a[data-page]');
+            pages.forEach(p=>{p.classList.remove('active');p.style.opacity='0';p.style.pointerEvents='none'});
+            currentPage=index;
+            const t=pages[currentPage];
+            t.classList.add('active');t.style.opacity='1';t.style.pointerEvents='all';t.style.transform='translateY(0)';
+            dots.forEach(d=>d.classList.remove('active'));
+            if(dots[currentPage])dots[currentPage].classList.add('active');
+            navLinks.forEach(l=>l.classList.remove('active'));
+            if(navLinks[currentPage])navLinks[currentPage].classList.add('active');
+            animatePage(currentPage);
+            showDots();
+            if(currentPage===1){/* feat auto-scroll disabled */}else stopFeatAutoScroll();
+            if(autoScroll)resetAutoScroll();
+        }
+        function nextPage(){goToPage((currentPage+1)%totalPages)}
+        function prevPage(){goToPage((currentPage-1+totalPages)%totalPages)}
+        function animatePage(i){
+            const p=document.querySelectorAll('.page')[i];
+            p.querySelectorAll('.fi').forEach(el=>{el.classList.remove('v')});
+            setTimeout(()=>{p.querySelectorAll('.fi').forEach(el=>el.classList.add('v'))},50);
+        }
+        function showDots(){
+            const d=document.getElementById('pageDots');
+            d.classList.add('visible');
+            clearTimeout(dotsTimeout);
+            dotsTimeout=setTimeout(()=>{d.classList.remove('visible')},3000);
+        }
+
+        function startAutoScroll(){autoScrollTimer=setTimeout(nextPage,autoScrollDuration)}
+        function resetAutoScroll(){clearTimeout(autoScrollTimer);startAutoScroll()}
+
+        /* Feature Card Stack */
+        let featIdx=0;
+        const featAutoDuration=15000;
+        let featAutoTimer=null;
+        function featNav(dir){
+            const cards=document.querySelectorAll('.feat-card');
+            cards.forEach(c=>c.classList.remove('active','prev','next'));
+            featIdx=(featIdx+dir+cards.length)%cards.length;
+            cards[featIdx].classList.add('active');
+            resetFeatAutoScroll();
+        }
+        function startFeatAutoScroll(){featAutoTimer=setTimeout(()=>{featNav(1)},featAutoDuration)}
+        function resetFeatAutoScroll(){clearTimeout(featAutoTimer);startFeatAutoScroll()}
+        function stopFeatAutoScroll(){clearTimeout(featAutoTimer);featAutoTimer=null}
+        /* Init stack */
+        (function(){const c=document.querySelectorAll('.feat-card');if(c.length>1)c[1].classList.add('next');})();
+
+        let wheelTimeout;
+        const isMobile = () => window.innerWidth <= 768;
+        document.addEventListener('wheel',e=>{if(isMobile())return;e.preventDefault();clearTimeout(wheelTimeout);wheelTimeout=setTimeout(()=>{if(e.deltaY>0)nextPage();else prevPage()},60)},{passive:false});
+        let touchY=0;
+        document.addEventListener('touchstart',e=>{if(isMobile())return;touchY=e.touches[0].clientY});
+        document.addEventListener('touchend',e=>{if(isMobile())return;const d=touchY-e.changedTouches[0].clientY;if(Math.abs(d)>50){if(d>0)nextPage();else prevPage()}});
+        document.addEventListener('keydown',e=>{if(isMobile())return;if(e.key==='ArrowDown'||e.key==='ArrowRight'||e.key===' '){e.preventDefault();nextPage()}else if(e.key==='ArrowUp'||e.key==='ArrowLeft'){e.preventDefault();prevPage()}});
+        document.querySelectorAll('.nav-links a[data-page]').forEach(l=>{l.addEventListener('click',()=>{if(isMobile())return;goToPage(parseInt(l.dataset.page))})});
+        document.querySelectorAll('.dot').forEach(d=>{d.addEventListener('click',()=>{if(isMobile())return;goToPage(parseInt(d.dataset.page))})});
+
+        animatePage(0);
+        showDots();
+        // Auto-scroll disabled — user navigates manually
+
+        // On mobile, show all pages as normal scroll sections
+        if(isMobile()){
+            document.querySelectorAll('.page').forEach(p=>{
+                p.classList.add('active');
+                p.style.opacity='1';
+                p.style.pointerEvents='all';
+                p.style.transform='none';
+                p.querySelectorAll('.fi').forEach(el=>el.classList.add('v'));
+            });
+            document.querySelector('.page-dots')?.style.setProperty('display','none');
+            document.querySelector('.mini-footer')?.style.setProperty('position','relative');
+        }
+
+        /* Cool Mode — particle burst on CTA click */
+        (function(){
+            const btn=document.getElementById('ctaBtn');
+            if(!btn)return;
+            const colors=['#8b5cf6','#a78bfa','#c4b5fd','#7c3aed','#ddd6fe','#fff'];
+            function spawnParticles(x,y){
+                const count=18;
+                for(let i=0;i<count;i++){
+                    const p=document.createElement('div');
+                    const size=Math.random()*6+3;
+                    const angle=(Math.PI*2/count)*i+Math.random()*.5;
+                    const velocity=Math.random()*120+60;
+                    const dx=Math.cos(angle)*velocity;
+                    const dy=Math.sin(angle)*velocity;
+                    const color=colors[Math.floor(Math.random()*colors.length)];
+                    const shape=Math.random()>.5?'50%':'2px';
+                    Object.assign(p.style,{
+                        position:'fixed',left:x+'px',top:y+'px',width:size+'px',height:size+'px',
+                        background:color,borderRadius:shape,pointerEvents:'none',zIndex:'9999',
+                        transform:'translate(-50%,-50%)',opacity:'1',
+                        transition:'none'
+                    });
+                    document.body.appendChild(p);
+                    const start=performance.now();
+                    const dur=600+Math.random()*400;
+                    const spin=Math.random()*360;
+                    function animate(now){
+                        const t=Math.min((now-start)/dur,1);
+                        const ease=1-Math.pow(1-t,3);
+                        p.style.left=(x+dx*ease)+'px';
+                        p.style.top=(y+dy*ease+40*t*t)+'px';
+                        p.style.opacity=String(1-t);
+                        p.style.transform=`translate(-50%,-50%) rotate(${spin+ease*360}deg) scale(${1-t*.5})`;
+                        if(t<1)requestAnimationFrame(animate);
+                        else p.remove();
+                    }
+                    requestAnimationFrame(animate);
+                }
+            }
+            btn.addEventListener('click',function(e){
+                const r=btn.getBoundingClientRect();
+                spawnParticles(r.left+r.width/2,r.top+r.height/2);
+            });
+        })();
+
+        function coolClick(el){
+            const r=el.getBoundingClientRect();
+            // trigger particle burst
+            const colors=['#8b5cf6','#a78bfa','#c4b5fd','#7c3aed','#ddd6fe','#fff'];
+            for(let i=0;i<22;i++){
+                const p=document.createElement('div');
+                const size=Math.random()*7+3;
+                const angle=(Math.PI*2/22)*i+Math.random()*.5;
+                const velocity=Math.random()*140+70;
+                const dx=Math.cos(angle)*velocity;
+                const dy=Math.sin(angle)*velocity;
+                const color=colors[Math.floor(Math.random()*colors.length)];
+                const shape=Math.random()>.5?'50%':'2px';
+                Object.assign(p.style,{
+                    position:'fixed',left:r.left+r.width/2+'px',top:r.top+r.height/2+'px',
+                    width:size+'px',height:size+'px',
+                    background:color,borderRadius:shape,pointerEvents:'none',zIndex:'9999',
+                    transform:'translate(-50%,-50%)',opacity:'1'
+                });
+                document.body.appendChild(p);
+                const start=performance.now();
+                const dur=700+Math.random()*400;
+                const spin=Math.random()*360;
+                const cx=r.left+r.width/2,cy=r.top+r.height/2;
+                (function anim(now){
+                    const t=Math.min((now-start)/dur,1);
+                    const ease=1-Math.pow(1-t,3);
+                    p.style.left=(cx+dx*ease)+'px';
+                    p.style.top=(cy+dy*ease+50*t*t)+'px';
+                    p.style.opacity=String(1-t);
+                    p.style.transform=`translate(-50%,-50%) rotate(${spin+ease*360}deg) scale(${1-t*.5})`;
+                    if(t<1)requestAnimationFrame(anim);
+                    else p.remove();
+                })(performance.now());
+            }
+            setTimeout(()=>goToPage(3),800);
+        }
+
+
+        // ═══ MODALS ═══
+        let selectedRole = null;
+
+        function openRoleModal(){
+            document.getElementById('roleModal').classList.add('open');
+            document.body.style.overflow='hidden';
+            autoScroll = false;
+        }
+
+        function openModal(id){
+            document.getElementById(id).classList.add('open');
+            document.body.style.overflow='hidden';
+        }
+
+        function closeModal(id){
+            document.getElementById(id).classList.remove('open');
+            document.body.style.overflow='';
+        }
+
+        function selectRole(role){
+            selectedRole = role;
+            closeModal('roleModal');
+            setTimeout(()=>{
+                const title = document.getElementById('walletModalTitle');
+                const sub = document.getElementById('walletModalSub');
+                if(role === 'user'){
+                    title.textContent = 'Connect Wallet';
+                    sub.textContent = 'Connect your wallet or sign in with a social account.';
+                } else {
+                    title.textContent = 'Institutional Access';
+                    sub.textContent = 'Connect your institutional wallet for retail access.';
+                }
+                openModal('walletModal');
+            }, 200);
+        }
+
+        function backToRole(){
+            closeModal('walletModal');
+            setTimeout(()=>openRoleModal(), 200);
+        }
+
+        function connectSocial(provider){
+            console.log('[Hive] Social login:', provider, 'Role:', selectedRole);
+            // TODO: Integrate Privy SDK
+            closeModal('walletModal');
+        }
+
+        // ═══ RITUAL CHAIN CONFIG ═══
+        const RITUAL_CHAIN_ID = 1979;
+        const RITUAL_NETWORK = {
+            chainId: '0x' + RITUAL_CHAIN_ID.toString(16),
+            chainName: 'Ritual Chain',
+            nativeCurrency: { name: 'RITUAL', symbol: 'RITUAL', decimals: 18 },
+            rpcUrls: ['https://rpc.ritualfoundation.org'],
+            blockExplorerUrls: ['https://explorer.ritualfoundation.org']
+        };
+
+        let connectedAddress = null;
+        let connectedProvider = null;
+
+        async function connectWallet(wallet){
+            console.log('[Hive] Wallet connect:', wallet, 'Role:', selectedRole);
+            if(typeof window.ethereum === 'undefined'){
+                alert('Please install a wallet extension (MetaMask, Rabby, etc.) to continue.');
+                return;
+            }
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                if(accounts.length === 0){ alert('No accounts found. Please unlock your wallet.'); return; }
+                connectedAddress = accounts[0];
+                connectedProvider = window.ethereum;
+                console.log('[Hive] Connected:', connectedAddress);
+                closeModal('walletModal');
+                setTimeout(() => { openModal('signModal'); }, 200);
+            } catch(err) {
+                console.error('[Hive] Connection error:', err);
+                if(err.code === 4001) console.log('[Hive] User rejected connection');
+                else alert('Failed to connect wallet: ' + err.message);
+            }
+        }
+
+        async function requestSign(){
+            if(!connectedAddress || !connectedProvider){ alert('No wallet connected.'); return; }
+            const signBtn = document.getElementById('signBtn');
+            const signStatus = document.getElementById('signStatus');
+            signBtn.disabled = true;
+            signBtn.textContent = 'Signing...';
+            signStatus.innerHTML = '<div class="sign-spinner"></div><span>Waiting for signature...</span>';
+            signStatus.className = 'sign-status';
+            try {
+                const message = 'Welcome to Hive!\n\nSign this message to verify your wallet ownership.\n\nAddress: ' + connectedAddress + '\nTimestamp: ' + Date.now() + '\nNetwork: Ritual Chain';
+                const signature = await connectedProvider.request({ method: 'personal_sign', params: [message, connectedAddress] });
+                console.log('[Hive] Signature:', signature);
+                signStatus.innerHTML = '✓ Signature verified successfully!';
+                signStatus.className = 'sign-status success';
+                signBtn.textContent = 'Continue';
+                signBtn.onclick = () => { closeModal('signModal'); checkAndAddNetwork(); };
+            } catch(err) {
+                console.error('[Hive] Sign error:', err);
+                signStatus.innerHTML = '✗ Signature failed or rejected';
+                signStatus.className = 'sign-status error';
+                signBtn.disabled = false;
+                signBtn.textContent = 'Try Again';
+                if(err.code === 4001) signStatus.innerHTML = '✗ Signature rejected by user';
+            }
+        }
+
+        async function checkAndAddNetwork(){
+            if(!connectedProvider) return;
+            try {
+                const chainId = await connectedProvider.request({ method: 'eth_chainId' });
+                const currentChainId = parseInt(chainId, 16);
+                console.log('[Hive] Current chain:', currentChainId);
+                if(currentChainId !== RITUAL_CHAIN_ID) setTimeout(() => { openModal('networkModal'); }, 200);
+                else showConnectedState();
+            } catch(err) {
+                console.error('[Hive] Network check error:', err);
+                setTimeout(() => { openModal('networkModal'); }, 200);
+            }
+        }
+
+        async function addRitualNetwork(){
+            if(!connectedProvider) return;
+            const addBtn = document.getElementById('addNetworkBtn');
+            addBtn.disabled = true;
+            addBtn.innerHTML = '<div class="sign-spinner"></div> Adding...';
+            try {
+                await connectedProvider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: RITUAL_NETWORK.chainId }] });
+                closeModal('networkModal');
+                showConnectedState();
+            } catch(err) {
+                if(err.code === 4902){
+                    try {
+                        await connectedProvider.request({ method: 'wallet_addEthereumChain', params: [RITUAL_NETWORK] });
+                        closeModal('networkModal');
+                        showConnectedState();
+                    } catch(addErr) {
+                        alert('Failed to add network: ' + addErr.message);
+                        addBtn.disabled = false; addBtn.innerHTML = 'Try Again';
+                    }
+                } else if(err.code === 4001){ addBtn.disabled = false; addBtn.innerHTML = 'Try Again'; }
+                else { alert('Failed to switch network: ' + err.message); addBtn.disabled = false; addBtn.innerHTML = 'Try Again'; }
+            }
+        }
+
+        function skipNetwork(){ closeModal('networkModal'); showConnectedState(); }
+
+        function showConnectedState(){
+            const ctaBtn = document.getElementById('ctaBtn');
+            if(ctaBtn && connectedAddress){
+                const shortAddr = connectedAddress.slice(0,6) + '...' + connectedAddress.slice(-4);
+                ctaBtn.innerHTML = '<span style="display:flex;align-items:center;gap:.5rem"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>' + shortAddr + '</span>';
+                ctaBtn.href = '/dashboard';
+                ctaBtn.onclick = (e) => {
+                    e.preventDefault();
+                    coolClick(ctaBtn);
+                    setTimeout(() => window.location.href = '/dashboard', 600);
+                };
+            }
+            console.log('[Hive] Connection complete!', { address: connectedAddress, role: selectedRole, network: 'Ritual Chain' });
+        }
+
+        if(typeof window.ethereum !== 'undefined'){
+            window.ethereum.on('accountsChanged', (accounts) => {
+                if(accounts.length === 0){ connectedAddress = null; location.reload(); }
+                else { connectedAddress = accounts[0]; showConnectedState(); }
+            });
+            window.ethereum.on('chainChanged', () => location.reload());
+        }
+
+        // Close modal on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(overlay=>{
+            overlay.addEventListener('click',e=>{ if(e.target===overlay) closeModal(overlay.id); });
+        });
+
+        // Close modal on Escape
+        document.addEventListener('keydown',e=>{
+            if(e.key==='Escape'){
+                document.querySelectorAll('.modal-overlay.open').forEach(m=>closeModal(m.id));
+            }
+        });
+
+    </script>
+</body>
+</html>

@@ -14,7 +14,7 @@ const HIVE = {
   addr: {
     // Core
     HiveToken:        '0xDA8185F0742b46A8B6D413Dc10eFC25E9FBd5ec3',
-    HiveFactory:      '0x3fa4e0Db20b15A730a1b2C5B30531404BCdE0036',
+    HiveFactory:      '0x0241cfB0a6620f57988C75Cd06dA2914b21463c6',
     HiveRegistry:     '0x89Cff106458261b48597ee0307017504080182eE',
     HivePoints:       '0xC031064390952259a42885219dB16F66677fbfaa',
 
@@ -62,8 +62,8 @@ const HIVE = {
     HiveFaucet:       '0x1ed73Ac27FfDF1D009CbC064C1eeDb910932AA61',
 
     // Privacy & Fee Economy
-    HiveDKMS:         '0x9533BD3D3baD7182EE52e054ca9c73780069AD5E',
-    HoneyPot:         '0x4DF77A4f06b792BA964B3dD751a0672cFa2bAb69',
+    HiveDKMS:         '0x0000000000000000000000000000000000000000', // TODO: deploy
+    HoneyPot:         '0x0000000000000000000000000000000000000000', // TODO: deploy
   },
 
   // ═══ MINIMAL ABIs ═══

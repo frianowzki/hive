@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ritual Sovereign Agent — Deploy UI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    if (!crypto.randomUUID) {
+      crypto.randomUUID = function() {
+        return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+          (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+        );
+      };
+    }
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root { --ritual-green: #57d36b; --ritual-dark: #000; }
+    * { scrollbar-width: none; -ms-overflow-style: none; }
+    *::-webkit-scrollbar { display: none; }
+    body { font-family: 'Inter', sans-serif; background: var(--ritual-dark); color: #e2e8f0; overflow: hidden; }
+    code, .mono { font-family: 'JetBrains Mono', monospace; }
+    .glass { background: rgba(255,255,255,0.03); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.06); }
+    .glass-strong { background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.08); }
+    .tab-active { border-bottom: 2px solid #57d36b; color: #57d36b; }
+    .tab-inactive { border-bottom: 2px solid transparent; color: #64748b; }
+    .tab-inactive:hover { color: #94a3b8; }
+    input, select, textarea { background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: #e2e8f0 !important; }
+    input:focus, select:focus, textarea:focus { border-color: #57d36b !important; outline: none; box-shadow: 0 0 0 2px rgba(57,255,20,0.15); }
+    .btn-primary { background: linear-gradient(135deg, #57d36b, #3da854); color: #000; font-weight: 600; }
+    .btn-primary:hover { background: linear-gradient(135deg, #3da854, #2d7a3e); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-outline { border: 1px solid rgba(57,255,20,0.4); color: #57d36b; }
+    .btn-outline:hover { background: rgba(57,255,20,0.1); }
+    .fade-in { animation: fadeIn 0.3s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse-ring { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
+    .pulse-dot::before { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid currentColor; animation: pulse-ring 1.5s infinite; }
+    .tx-hash { color: #58a6ff; text-decoration: underline; cursor: pointer; }
+    .tx-hash:hover { color: #79c0ff; }
+    #terminal, .terminal { background: #0d1117; border: 1px solid rgba(255,255,255,0.08); }
+    #terminal .line, .terminal .line { padding: 2px 0; }
+    #terminal .comment, .terminal .comment { color: #484f58; }
+    #terminal .cmd, .terminal .cmd { color: #e2e8f0; }
+    #terminal .success, .terminal .success { color: #3fb950; }
+    #terminal .error, .terminal .error { color: #f85149; }
+    #terminal .info, .terminal .info { color: #58a6ff; }
+    #terminal .warn, .terminal .warn { color: #d29922; }
+    .step-badge { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
+    .step-active { background: #57d36b; color: #000; }
+    .step-done { background: #059669; color: white; }
+    .step-pending { background: rgba(255,255,255,0.1); color: #64748b; }
+    .progress-bar { height: 3px; background: rgba(57,255,20,0.15); border-radius: 2px; overflow: hidden; }
+    .progress-fill { height: 100%; background: #57d36b; border-radius: 2px; transition: width 0.3s; }
+    select option { background: #0a0a0f; color: #e2e8f0; }
+    select { color-scheme: dark; -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%2357d36b' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") !important; background-repeat: no-repeat !important; background-position: right 12px center !important; padding-right: 32px !important; }
+    ::selection { background: rgba(87,211,107,0.3); color: #fff; }
+  </style>
+</head>
+<body class="min-h-screen md:h-screen flex flex-col">
+
+<!-- Header -->
+<header class="border-b border-white/5 px-4 md:px-6 py-2 md:py-3 flex-shrink-0" style="border-image:linear-gradient(90deg,transparent,#57d36b,transparent) 1">
+  <div class="max-w-5xl mx-auto flex items-center justify-between">
+    <div></div>
+    <div class="flex items-center gap-3">
+      <span id="wallet-balance-badge" class="hidden text-xs px-3 py-1 rounded-full mono" style="background:rgba(57,255,20,0.1);color:#57d36b"></span>
+      <a href="https://github.com/frianowzki/ritual-sovereign-agent-guide" target="_blank" class="text-xs text-slate-500 hover:text-slate-300 flex items-center gap-1">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- Main -->
+<main class="max-w-5xl mx-auto px-4 md:px-6 py-4 flex-1 w-full overflow-y-auto flex flex-col">
+
+  <!-- Hero -->
+  <div class="text-center mb-4">
+    <h1 class="text-2xl font-bold" style="background:linear-gradient(135deg,#57d36b,#57d36b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Let the Ritual Begin</h1>
+    <p class="text-slate-500 text-xs">Autonomous AI agents on Ritual Chain.</p>
+  </div>
+
+  <!-- Wallet Connect -->
+  <div id="wallet-section" class="max-w-xl mx-auto mb-3">
+    <div class="flex items-center justify-center gap-3">
+      <div id="wallet-dot" class="w-2 h-2 rounded-full bg-slate-600 relative"></div>
+      <span id="wallet-status" class="text-xs text-slate-500">Not connected</span>
+      <button id="connect-btn" onclick="connectWallet()" class="btn-outline rounded-lg px-3 py-1.5 text-xs transition flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Connect
+      </button>
+      <button id="disconnect-btn" onclick="disconnectWallet()" class="hidden rounded-lg px-3 py-1.5 text-xs transition flex items-center gap-1.5" style="border:1px solid rgba(239,68,68,0.4);color:#ef4444">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabs (centered) -->
+  <div class="flex justify-center gap-3 md:gap-6 mb-4 border-b border-white/5 overflow-x-auto">
+    <button onclick="switchTab('deploy')" id="tab-deploy" class="tab-active pb-2 text-xs font-medium transition">Deploy</button>
+    <button onclick="switchTab('agents')" id="tab-agents" class="tab-inactive pb-2 text-xs font-medium transition">My Agents</button>
+    <button onclick="switchTab('manage')" id="tab-manage" class="tab-inactive pb-2 text-xs font-medium transition">Manage</button>
+    <button onclick="switchTab('status')" id="tab-status" class="tab-inactive pb-2 text-xs font-medium transition">Check Status</button>
+    <button onclick="switchTab('env')" id="tab-env" class="tab-inactive pb-2 text-xs font-medium transition">.env</button>
+  </div>
+
+  <!-- ═══════════════ DEPLOY TAB ═══════════════ -->
+  <div id="panel-deploy" class="fade-in flex-1 overflow-hidden">
+    <div class="grid md:grid-cols-2 gap-3">
+
+      <!-- Left: Config -->
+      <div class="space-y-3">
+
+        <!-- Step 1: LLM Provider -->
+        <div class="glass rounded-xl p-2 md:p-3">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="step-badge step-active">1</div>
+            <h3 class="text-xs font-semibold" style="color:#57d36b">LLM Provider</h3>
+          </div>
+          <div class="space-y-2">
+            <div>
+              <label class="text-xs text-slate-500 mb-1 block">Provider</label>
+              <select id="d-provider" class="w-full rounded-lg px-3 py-2 text-sm" onchange="updateModelOptions()">
+                <option value="native" selected>Ritual Native (no API key)</option>
+                <option value="openrouter">OpenRouter</option>
+                <option value="openai">OpenAI</option>
+                <option value="anthropic">Anthropic</option>
+                <option value="gemini">Google Gemini</option>
+              </select>
+            </div>
+            <div id="apikey-group" style="display:none">
+              <label class="text-xs text-slate-500 mb-1 block">API Key</label>
+              <input id="d-apikey" type="password" placeholder="sk-or-v1-..." class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 mb-1 block">Model</label>
+              <select id="d-model" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono"></select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: HuggingFace -->
+        <div class="glass rounded-xl p-2 md:p-3">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="step-badge step-active">2</div>
+            <h3 class="text-xs font-semibold" style="color:#57d36b">HuggingFace</h3>
+          </div>
+          <div class="space-y-2">
+            <div>
+              <label class="text-xs text-slate-500 mb-1 block">Dataset (username/repo-name)</label>
+              <input id="d-hfrepo" type="text" placeholder="myname/agent-data" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
+              <a href="https://huggingface.co/new-dataset" target="_blank" class="text-xs mt-1 inline-block" style="color:#57d36b">Create dataset</a>
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 mb-1 block">Token (write access)</label>
+              <input id="d-hftoken" type="password" placeholder="hf_..." class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
+              <p class="text-xs mt-1" style="color:#eab308">Requires <strong>write</strong> access.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Agent Config -->
+        <div class="glass rounded-xl p-2 md:p-3">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="step-badge step-active">3</div>
+            <h3 class="text-xs font-semibold" style="color:#57d36b">Agent Config</h3>
+          </div>
+          <div class="space-y-2">
+            <div>
+              <label class="text-xs text-slate-500 mb-1 block">Salt (unique per agent)</label>
+              <div class="flex gap-2">
+                <input id="d-salt" type="text" value="my-sovereign-agent" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
+                <button onclick="randomizeSalt()" class="btn-outline rounded-lg px-3 py-2 text-sm flex-shrink-0" title="Randomize salt"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3"/></svg></button>
+              </div>
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 mb-1 block">Agent Prompt</label>
+              <div class="flex gap-2 mb-1">
+                <button onclick="loadTemplate('default')" class="btn-outline rounded-lg px-2 py-0.5 text-xs">Default</button>
+                <button onclick="loadTemplate('market')" class="btn-outline rounded-lg px-2 py-0.5 text-xs">Market</button>
+                <button onclick="loadTemplate('research')" class="btn-outline rounded-lg px-2 py-0.5 text-xs">Research</button>
+              </div>
+              <textarea id="d-prompt" rows="3" placeholder="You are a sovereign AI agent on Ritual Chain..." class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Schedule + Budget + Deploy -->
+      <div class="space-y-3">
+
+        <!-- Step 4: Schedule & Budget -->
+        <div class="glass rounded-xl p-2 md:p-3">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="step-badge step-active">4</div>
+            <h3 class="text-xs font-semibold" style="color:#57d36b">Schedule & Budget</h3>
+          </div>
+          <div class="space-y-2">
+            <div>
+              <label class="text-xs text-slate-500 mb-1 block">Execution Frequency</label>
+              <select id="d-freq" class="w-full rounded-lg px-3 py-2 text-sm" onchange="validateSchedule()">
+                <option value="100">~35 sec (100 blocks)</option>
+                <option value="180">~1 min (180 blocks)</option>
+                <option value="300">~1.8 min (300 blocks)</option>
+                <option value="500">~2.9 min (500 blocks)</option>
+                <option value="1000">~5.8 min (1,000 blocks)</option>
+                <option value="2000">~12 min (2,000 blocks)</option>
+                <option value="5000" selected>~29 min (5,000 blocks)</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 mb-1 block">Calls per Window</label>
+              <select id="d-window" class="w-full rounded-lg px-3 py-2 text-sm" onchange="validateSchedule()">
+                <option value="1">1 call</option>
+                <option value="2">2 calls</option>
+                <option value="3">3 calls</option>
+                <option value="5" selected>5 calls</option>
+                <option value="10">10 calls</option>
+                <option value="15">15 calls</option>
+                <option value="20">20 calls</option>
+                <option value="25">25 calls</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 mb-1 block">Scheduler TTL (blocks)</label>
+              <input id="d-schedttl" type="number" value="500" step="100" min="100" max="10000" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" onchange="validateSchedule()" />
+            </div>
+            <!-- Live schedule validation -->
+            <div id="schedule-validation" class="rounded-lg px-3 py-2 border" style="background:rgba(57,255,20,0.08);border-color:rgba(57,255,20,0.2)">
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-slate-400">Total: freq × calls</span>
+                <span id="sched-total" class="font-semibold" style="color:#57d36b"></span>
+              </div>
+              <div class="flex items-center justify-between text-xs mt-0.5">
+                <span class="text-slate-400">Status</span>
+                <span id="sched-status" class="font-semibold"></span>
+              </div>
+            </div>
+
+            <!-- Budget & Lock -->
+            <div class="border-t border-white/5 pt-2 mt-2">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div>
+                  <label class="text-xs text-slate-500 mb-1 block">Fund Amount (RITUAL)</label>
+                  <input id="d-fund" type="number" value="0.15" step="0.01" min="0.15" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
+                  <p class="text-xs text-red-400 mt-0.5">Minimum 0.15</p>
+                </div>
+                <div>
+                  <label class="text-xs text-slate-500 mb-1 block">Max Budget (RITUAL)</label>
+                  <input id="d-maxbudget" type="number" value="0.5" step="0.01" min="0.01" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
+                </div>
+              </div>
+              <div class="mt-2">
+                <label class="text-xs text-slate-500 mb-1 block">Lock Duration</label>
+                <select id="d-lockduration" class="w-full rounded-lg px-3 py-2 text-sm">
+                  <option value="20571">2 hours (20,571 blocks)</option>
+                  <option value="41143">4 hours (41,143 blocks)</option>
+                  <option value="61714">6 hours (61,714 blocks)</option>
+                  <option value="123429">12 hours (123,429 blocks)</option>
+                  <option value="246857">1 day (246,857 blocks)</option>
+                  <option value="740571">3 days (740,571 blocks)</option>
+                  <option value="1728000" selected>7 days (1,728,000 blocks)</option>
+                  <option value="3702857">15 days (3,702,857 blocks)</option>
+                  <option value="7405714">30 days (7,405,714 blocks)</option>
+                  <option value="22217143">3 months (22,217,143 blocks)</option>
+                  <option value="44434286">6 months (44,434,286 blocks)</option>
+                  <option value="66651429">9 months (66,651,429 blocks)</option>
+                  <option value="88868571">12 months (88,868,571 blocks)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Advanced Settings -->
+            <details class="border-t border-white/5 pt-2 mt-2">
+              <summary class="text-xs text-slate-500 cursor-pointer hover:text-slate-300 select-none">Advanced Settings</summary>
+              <div class="space-y-2 mt-2">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div>
+                    <label class="text-xs text-slate-500 mb-1 block">Gas Limit (configure)</label>
+                    <input id="d-gaslimit" type="number" value="5000000" step="500000" min="3000000" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
+                  </div>
+                  <div>
+                    <label class="text-xs text-slate-500 mb-1 block">Deploy Gas Limit</label>
+                    <input id="d-deploygas" type="number" value="3500000" step="500000" min="3000000" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                  <div>
+                    <label class="text-xs text-slate-500 mb-1 block">Scheduler Gas</label>
+                    <input id="d-schedgas" type="number" value="800000" step="100000" min="500000" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
+                  </div>
+                  <div>
+                    <label class="text-xs text-slate-500 mb-1 block">Rollover BPS</label>
+                    <input id="d-rolloverbps" type="number" value="5000" step="500" min="1000" max="9000" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
+                  </div>
+                  <div>
+                    <label class="text-xs text-slate-500 mb-1 block">Rollover Retry</label>
+                    <input id="d-rolloverretry" type="number" value="1" min="1" max="10" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div>
+                    <label class="text-xs text-slate-500 mb-1 block">Max Fee (gwei)</label>
+                    <input id="d-maxfee" type="number" value="20" step="5" min="1" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
+                  </div>
+                  <div>
+                    <label class="text-xs text-slate-500 mb-1 block">Priority Fee (gwei)</label>
+                    <input id="d-priorityfee" type="number" value="1" step="0.5" min="0.1" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
+                  </div>
+                </div>
+              </div>
+            </details>
+
+            <!-- Cost estimate -->
+            <div class="rounded-lg px-3 py-2 border" style="background:rgba(57,255,20,0.08);border-color:rgba(57,255,20,0.2)">
+              <div class="flex flex-wrap items-center gap-2 md:gap-3 text-xs">
+                <span class="text-slate-400">Deploy: ~0.02</span>
+                <span class="text-slate-400">Fund: <span id="est-fund">0.15</span></span>
+                <span class="text-white font-semibold">Total: ~<span id="est-total">0.17</span> RITUAL</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Deploy Button -->
+        <button id="deploy-btn" onclick="deployAgent()" class="btn-primary w-full rounded-xl py-3 font-semibold text-sm transition">
+          Deploy Sovereign Agent
+        </button>
+
+        <!-- Progress -->
+        <div id="deploy-progress" class="hidden glass rounded-xl p-3">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-xs font-semibold" style="color:#57d36b">Deploy Progress</h3>
+            <span id="deploy-step-label" class="text-xs text-slate-500">Step 1/3</span>
+          </div>
+          <div class="progress-bar mb-3">
+            <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+          </div>
+          <div id="deploy-terminal" class="terminal rounded-lg p-2 text-xs mono max-h-32 overflow-y-auto"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ MY AGENTS TAB ═══════════════ -->
+  <div id="panel-agents" class="hidden fade-in flex-1 overflow-y-auto">
+    <div class="max-w-2xl mx-auto space-y-3">
+      <div class="glass rounded-xl p-2 md:p-3">
+        <button onclick="loadMyAgents()" id="agents-btn" class="btn-primary w-full rounded-xl py-2 font-semibold text-xs">
+          Load My Agents
+        </button>
+      </div>
+      <div id="agents-list" class="space-y-2"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ MANAGE TAB ═══════════════ -->
+  <div id="panel-manage" class="hidden fade-in flex-1 overflow-y-auto">
+    <div class="max-w-xl mx-auto space-y-3">
+
+      <!-- Deposit to RitualWallet -->
+      <div class="glass rounded-xl p-2 md:p-3">
+        <h3 class="text-xs font-semibold mb-3" style="color:#57d36b">Deposit to RitualWallet</h3>
+        <div class="space-y-2">
+          <div>
+            <label class="text-xs text-slate-500 mb-1 block">Agent Address</label>
+            <input id="m-deposit-agent" type="text" placeholder="0x..." class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
+          </div>
+          <div>
+            <label class="text-xs text-slate-500 mb-1 block">Amount (RITUAL)</label>
+            <input id="m-deposit-amount" type="number" value="0.1" step="0.01" min="0.01" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
+          </div>
+          <div>
+            <label class="text-xs text-slate-500 mb-1 block">Lock Duration (blocks)</label>
+            <input id="m-deposit-lock" type="number" value="100000" step="1000" min="1000" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
+            <p class="text-xs text-slate-600 mt-0.5">~40.3 hours (100,000 blocks)</p>
+          </div>
+          <button onclick="depositToWallet()" id="deposit-btn" class="btn-primary w-full rounded-xl py-2 font-semibold text-xs">Deposit</button>
+        </div>
+        <div id="deposit-terminal" class="terminal rounded-lg p-2 text-xs mono max-h-32 overflow-y-auto mt-2 hidden"></div>
+      </div>
+
+      <!-- Restart Agent -->
+      <div class="glass rounded-xl p-2 md:p-3">
+        <h3 class="text-xs font-semibold mb-3" style="color:#eab308">Restart Agent</h3>
+        <div class="space-y-2">
+          <div>
+            <label class="text-xs text-slate-500 mb-1 block">Agent Address</label>
+            <input id="m-restart-agent" type="text" placeholder="0x..." class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
+          </div>
+          <button onclick="restartAgent()" id="restart-btn" class="btn-primary w-full rounded-xl py-2 font-semibold text-xs" style="background:linear-gradient(135deg,#eab308,#f59e0b)">Restart Agent</button>
+        </div>
+        <div id="restart-terminal" class="terminal rounded-lg p-2 text-xs mono max-h-32 overflow-y-auto mt-2 hidden"></div>
+      </div>
+
+      <!-- Stop Agent -->
+      <div class="glass rounded-xl p-2 md:p-3">
+        <h3 class="text-xs font-semibold mb-3" style="color:#ef4444">Stop Agent</h3>
+        <div class="space-y-2">
+          <div>
+            <label class="text-xs text-slate-500 mb-1 block">Agent Address</label>
+            <input id="m-stop-agent" type="text" placeholder="0x..." class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
+          </div>
+          <button onclick="stopAgent()" id="stop-btn" class="btn-primary w-full rounded-xl py-2 font-semibold text-xs" style="background:linear-gradient(135deg,#ef4444,#dc2626)">Stop Agent</button>
+        </div>
+        <div id="stop-terminal" class="terminal rounded-lg p-2 text-xs mono max-h-32 overflow-y-auto mt-2 hidden"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════ CHECK STATUS TAB ═══════════════ -->
+  <div id="panel-status" class="hidden fade-in flex-1 overflow-y-auto">
+    <div class="max-w-xl mx-auto space-y-3">
+      <div class="glass rounded-xl p-2 md:p-3">
+        <div class="space-y-2">
+          <div>
+            <label class="text-xs text-slate-500 mb-1 block">Agent Address</label>
+            <input id="s-agent" type="text" placeholder="0x..." class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
+          </div>
+          <button onclick="checkStatusOnChain()" id="status-btn" class="btn-primary w-full rounded-xl py-2 font-semibold text-xs">Check Status</button>
+        </div>
+      </div>
+      <div id="status-result" class="hidden glass rounded-xl p-4">
+        <div id="status-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ ENV GENERATOR TAB ═══════════════ -->
+  <div id="panel-env" class="hidden fade-in flex-1 overflow-y-auto">
+    <div class="max-w-xl mx-auto space-y-3">
+      <div class="glass rounded-xl p-2 md:p-3">
+        <p class="text-xs text-slate-500 mb-3">Fill in the Deploy tab, then generate the .env file for CLI usage.</p>
+        <button onclick="generateEnv()" class="btn-outline rounded-lg px-3 py-1.5 text-xs mb-3">Generate .env</button>
+        <div class="relative">
+          <pre id="env-output" class="bg-black/40 rounded-lg p-3 text-xs mono overflow-x-auto max-h-64 text-green-400/80 hidden"></pre>
+          <button onclick="copyEnv()" id="env-copy-btn" class="absolute top-2 right-2 btn-outline rounded px-2 py-0.5 text-xs hidden">Copy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Footer -->
+<footer class="border-t border-white/5 px-4 md:px-6 py-2 flex-shrink-0 mt-auto">
+  <div class="max-w-5xl mx-auto">
+    <span class="text-xs text-slate-600">Built by Frianowzki on Ritual Testnet</span>
+  </div>
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  CONSTANTS
+// ═══════════════════════════════════════════════════════════
+const RITUAL_CHAIN_ID = 1979;
+const RITUAL_RPC = 'https://rpc.ritualfoundation.org';
+const SOVEREIGN_FACTORY = '0x9dC4C054e53bCc4Ce0A0Ff09E890A7a8e817f304';
+const REGISTRY = '0x9644e8562cE0Fe12b4deeC4163c064A8862Bf47F';
+const TRACKER = '0xC069FFCa0389f44eCA2C626e55491b0ab045AEF5';
+const RITUAL_WALLET = '0x532F0dF0896F353d8C3DD8cc134e8129DA2a3948';
+
+const FACTORY_ABI = [
+  "function predictHarness(address owner, bytes32 userSalt) view returns (address harness, bytes32 childSalt)",
+  "function deployHarness(bytes32 userSalt) returns (address harness)",
+  "event DeployHarness(address indexed owner, address indexed harness, bytes32 childSalt)"
+];
+
+const REGISTRY_ABI = [
+  "function getServicesByCapability(uint8 capability, bool checkValidity) view returns (tuple(tuple(address paymentAddress, address teeAddress, uint8 teeType, bytes publicKey, string endpoint, bytes32 certPubKeyHash, uint8 capability) node, bool isValid, bytes32 workloadId)[])"
+];
+
+const WALLET_ABI = [
+  "function balanceOf(address user) view returns (uint256)",
+  "function lockUntil(address user) view returns (uint256)",
+  "function depositFor(address user, uint256 lockDuration) payable"
+];
+
+const MODELS = {
+  native: ['zai-org/GLM-4.7-FP8', 'meta-llama/Llama-3.3-70B-Instruct', 'Qwen/Qwen3-32B', 'deepseek-ai/DeepSeek-R1'],
+  openrouter: ['google/gemini-2.5-flash', 'anthropic/claude-sonnet-4-5-20250929', 'openai/gpt-4o-mini', 'deepseek/deepseek-chat', 'meta-llama/llama-4-maverick'],
+  openai: ['gpt-4o-mini', 'gpt-4o', 'gpt-4.1-mini', 'gpt-4.1-nano'],
+  anthropic: ['claude-sonnet-4-5-20250929', 'claude-haiku-4-5-20250929', 'claude-opus-4-20250514'],
+  gemini: ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash'],
+};
+
+const TEMPLATES = {
+  default: `You are a DeFi analytics sovereign agent on Ritual Chain. Every time you wake up:
+
+1. Fetch the top 10 cryptocurrency prices from CoinGecko API
+2. Calculate 24h change percentages
+3. Identify the biggest movers (gainers and losers)
+4. Summarize overall market sentiment (Fear/Greed)
+5. Store results in your HuggingFace dataset
+
+Return a concise market summary with actionable insights.`,
+  market: `You are a market monitoring sovereign agent. On each execution:
+
+1. Check ETH, BTC, SOL, and top 5 altcoin prices
+2. Alert if any coin moves >5% in the last hour
+3. Track volume spikes (>2x average)
+4. Monitor gas prices on Ethereum mainnet
+5. Write a brief alert report to your dataset
+
+Focus on actionable alerts, not general commentary.`,
+  research: `You are a research sovereign agent. Each cycle:
+
+1. Search for the latest crypto/Web3 news from the past 24 hours
+2. Identify 3 most important developments
+3. Analyze potential market impact of each
+4. Cross-reference with on-chain data if available
+5. Publish a research brief to your dataset
+
+Be analytical and evidence-based. No speculation without data.`,
+};
+
+// Block time: ~3.5s per block on Ritual
+const BLOCKS_PER_HOUR = 1029; // 3600 / 3.5
+
+// ═══════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════
+let provider = null;
+let signer = null;
+let userAddress = null;
+let balanceInterval = null;
+
+// ═══════════════════════════════════════════════════════════
+//  WALLET
+// ═══════════════════════════════════════════════════════════
+async function connectWallet() {
+  if (!window.ethereum) {
+    alert('No wallet detected. Install MetaMask, Rabby, or another EVM wallet.');
+    return;
+  }
+  try {
+    const web3Provider = new ethers.BrowserProvider(window.ethereum);
+    await web3Provider.send('eth_requestAccounts', []);
+    signer = await web3Provider.getSigner();
+    userAddress = await signer.getAddress();
+
+    // Verify ownership via personal sign (no private key stored)
+    try {
+      const msg = `Ritual Sovereign Deployer\nAddress: ${userAddress}\nTimestamp: ${Date.now()}`;
+      await signer.signMessage(msg);
+    } catch(signErr) {
+      if (signErr.code === 'ACTION_REJECTED') {
+        alert('Signature rejected. Please sign to verify wallet ownership.');
+        return;
+      }
+    }
+
+    // Check chain
+    const network = await web3Provider.getNetwork();
+    if (Number(network.chainId) !== RITUAL_CHAIN_ID) {
+      try {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x' + RITUAL_CHAIN_ID.toString(16) }],
+        });
+      } catch (switchError) {
+        if (switchError.code === 4902) {
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [{
+              chainId: '0x' + RITUAL_CHAIN_ID.toString(16),
+              chainName: 'Ritual Chain',
+              nativeCurrency: { name: 'RITUAL', symbol: 'RITUAL', decimals: 18 },
+              rpcUrls: [RITUAL_RPC],
+              blockExplorerUrls: ['https://explorer.ritualfoundation.org'],
+            }],
+          });
+        } else { throw switchError; }
+      }
+      const newNetwork = await web3Provider.getNetwork();
+      if (Number(newNetwork.chainId) !== RITUAL_CHAIN_ID) {
+        throw new Error('Please switch to Ritual Chain (ID 1979)');
+      }
+    }
+
+    provider = web3Provider;
+    localStorage.setItem('sr_connected', '1');
+    startBalancePolling();
+    updateWalletUI(true);
+
+  } catch (err) {
+    console.error(err);
+    alert('Failed to connect: ' + err.message);
+  }
+}
+
+function disconnectWallet() {
+  stopBalancePolling();
+  localStorage.removeItem('sr_connected');
+  provider = null;
+  signer = null;
+  userAddress = null;
+  setTimeout(() => location.reload(), 200);
+}
+
+function updateWalletUI(connected) {
+  const dot = document.getElementById('wallet-dot');
+  const status = document.getElementById('wallet-status');
+  const connectBtn = document.getElementById('connect-btn');
+  const disconnectBtn = document.getElementById('disconnect-btn');
+
+  if (connected) {
+    dot.classList.remove('bg-slate-600');
+    dot.classList.add('bg-green-500', 'pulse-dot');
+    status.textContent = `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
+    status.classList.remove('text-slate-500');
+    status.classList.add('text-green-400');
+    connectBtn.classList.add('hidden');
+    disconnectBtn.classList.remove('hidden');
+    // Fetch balance
+    provider.getBalance(userAddress).then(bal => {
+      const badge = document.getElementById('wallet-balance-badge');
+      badge.textContent = `${parseFloat(ethers.formatEther(bal)).toFixed(2)} RITUAL`;
+      badge.classList.remove('hidden');
+    }).catch(()=>{});
+  } else {
+    dot.classList.remove('bg-green-500', 'pulse-dot');
+    dot.classList.add('bg-slate-600');
+    status.textContent = 'Not connected';
+    status.classList.remove('text-green-400');
+    status.classList.add('text-slate-500');
+    connectBtn.classList.remove('hidden');
+    disconnectBtn.classList.add('hidden');
+    document.getElementById('wallet-balance-badge').classList.add('hidden');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  BALANCE POLLING (real-time, every 5s)
+// ═══════════════════════════════════════════════════════════
+function startBalancePolling() {
+  stopBalancePolling();
+  balanceInterval = setInterval(async () => {
+    if (!provider || !userAddress) return;
+    try {
+      const bal = await provider.getBalance(userAddress);
+      const balFmt = parseFloat(ethers.formatEther(bal)).toFixed(2);
+      const badge = document.getElementById('wallet-balance-badge');
+      if (badge) {
+        const prev = badge.dataset.prev || '';
+        if (prev && prev !== balFmt) {
+          badge.style.background = 'rgba(57,255,20,0.3)';
+          setTimeout(() => { badge.style.background = 'rgba(57,255,20,0.1)'; }, 400);
+        }
+        badge.textContent = `${balFmt} RITUAL`;
+        badge.dataset.prev = balFmt;
+      }
+    } catch(e) {}
+  }, 5000);
+}
+
+function stopBalancePolling() {
+  if (balanceInterval) { clearInterval(balanceInterval); balanceInterval = null; }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  AUTO-RECONNECT
+// ═══════════════════════════════════════════════════════════
+async function autoReconnect() {
+  if (!localStorage.getItem('sr_connected')) return;
+  if (!window.ethereum) return;
+  try {
+    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+    if (!accounts || accounts.length === 0) { localStorage.removeItem('sr_connected'); return; }
+    const web3Provider = new ethers.BrowserProvider(window.ethereum);
+    signer = await web3Provider.getSigner();
+    userAddress = await signer.getAddress();
+    provider = web3Provider;
+    startBalancePolling();
+    updateWalletUI(true);
+  } catch(e) { localStorage.removeItem('sr_connected'); }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  TABS
+// ═══════════════════════════════════════════════════════════
+function switchTab(tab) {
+  ['deploy','agents','manage','status','env'].forEach(t => {
+    const panel = document.getElementById(`panel-${t}`);
+    if (panel) panel.classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById(`tab-${t}`);
+    if (btn) btn.className = t === tab ? 'tab-active pb-2 text-xs font-medium transition' : 'tab-inactive pb-2 text-xs font-medium transition';
+  });
+}
+
+function updateModelOptions() {
+  const p = document.getElementById('d-provider').value;
+  const sel = document.getElementById('d-model');
+  sel.innerHTML = MODELS[p].map(m => `<option value="${m}">${m}</option>`).join('');
+  document.getElementById('apikey-group').style.display = p === 'native' ? 'none' : '';
+}
+
+function loadTemplate(name) {
+  document.getElementById('d-prompt').value = TEMPLATES[name] || '';
+}
+
+function updateEstimate() {
+  const fund = parseFloat(document.getElementById('d-fund').value) || 0;
+  document.getElementById('est-fund').textContent = fund.toFixed(2);
+  document.getElementById('est-total').textContent = (fund + 0.02).toFixed(2);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SCHEDULE VALIDATION
+// ═══════════════════════════════════════════════════════════
+function validateSchedule() {
+  const freq = parseInt(document.getElementById('d-freq').value) || 0;
+  const calls = parseInt(document.getElementById('d-window').value) || 0;
+  const total = freq * calls;
+  const totalEl = document.getElementById('sched-total');
+  const statusEl = document.getElementById('sched-status');
+
+  totalEl.textContent = `${freq.toLocaleString()} × ${calls} = ${total.toLocaleString()} blocks`;
+
+  if (total > 10000) {
+    statusEl.textContent = 'Exceeds 10,000 limit';
+    statusEl.className = 'font-semibold text-red-400';
+    totalEl.style.color = '#ef4444';
+  } else if (total > 7500) {
+    statusEl.textContent = 'Close to limit';
+    statusEl.className = 'font-semibold';
+    statusEl.style.color = '#eab308';
+    totalEl.style.color = '#eab308';
+  } else {
+    statusEl.textContent = 'Safe range';
+    statusEl.className = 'font-semibold';
+    statusEl.style.color = '#57d36b';
+    totalEl.style.color = '#57d36b';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  DEPLOY
+// ═══════════════════════════════════════════════════════════
+async function deployAgent() {
+  if (!signer || !userAddress) { alert('Connect wallet first'); return; }
+
+  const apiKey = document.getElementById('d-apikey').value.trim();
+  const provider_name = document.getElementById('d-provider').value;
+  const model = document.getElementById('d-model').value;
+  const hfToken = document.getElementById('d-hftoken').value.trim();
+  const hfRepo = document.getElementById('d-hfrepo').value.trim();
+  const salt = document.getElementById('d-salt').value.trim();
+  const prompt = document.getElementById('d-prompt').value.trim();
+  const freq = parseInt(document.getElementById('d-freq').value);
+  const windowCalls = parseInt(document.getElementById('d-window').value);
+  const schedulerTtl = parseInt(document.getElementById('d-schedttl').value) || 500;
+  const fundAmount = parseFloat(document.getElementById('d-fund').value);
+
+  const scheduleTotal = freq * windowCalls;
+  if (scheduleTotal > 10000) {
+    alert(`Schedule too aggressive: ${freq} × ${windowCalls} = ${scheduleTotal} blocks. Must be < 10,000.`);
+    return;
+  }
+  if (fundAmount < 0.15) {
+    alert(`Minimum fund is 0.15 RITUAL.`);
+    return;
+  }
+
+  const maxBudget = parseFloat(document.getElementById('d-maxbudget').value);
+  const lockDuration = parseInt(document.getElementById('d-lockduration').value);
+  const gasLimit = parseInt(document.getElementById('d-gaslimit').value) || 5_000_000;
+  const deployGasLimit = parseInt(document.getElementById('d-deploygas').value) || 3_500_000;
+  const schedulerGas = parseInt(document.getElementById('d-schedgas').value) || 800_000;
+  const rolloverBps = parseInt(document.getElementById('d-rolloverbps').value) || 5000;
+  const rolloverRetry = parseInt(document.getElementById('d-rolloverretry').value) || 1;
+  const maxFeeGwei = parseInt(document.getElementById('d-maxfee').value) || 20;
+  const priorityFeeGwei = parseInt(document.getElementById('d-priorityfee').value) || 1;
+
+  if ((provider_name !== 'native' && !apiKey) || !hfToken || !hfRepo) {
+    alert('Fill in all required fields');
+    return;
+  }
+
+  const progressDiv = document.getElementById('deploy-progress');
+  progressDiv.classList.remove('hidden');
+  const termDiv = document.getElementById('deploy-terminal');
+  termDiv.innerHTML = '';
+  const btn = document.getElementById('deploy-btn');
+  btn.disabled = true;
+  btn.innerHTML = 'Deploying...';
+
+  try {
+    // Step 1: Deploy Harness
+    updateProgress(33, 'Step 1/3 — Deploy Harness');
+    log(termDiv, 'comment', '── Step 1: deployHarness ──');
+
+    const factory = new ethers.Contract(SOVEREIGN_FACTORY, FACTORY_ABI, signer);
+    const userSalt = ethers.keccak256(ethers.toUtf8Bytes(salt));
+
+    log(termDiv, 'cmd', `Salt: ${salt} → ${userSalt.slice(0,18)}...`);
+
+    const [predicted, childSalt] = await factory.predictHarness(userAddress, userSalt);
+    log(termDiv, 'info', `Predicted: ${predicted}`);
+
+    const code = await provider.getCode(predicted);
+    let harnessAddr = predicted;
+
+    if (code && code !== '0x' && code !== '0x0') {
+      log(termDiv, 'warn', `Harness already exists at ${predicted}`);
+    } else {
+      log(termDiv, 'cmd', 'Sending deployHarness tx...');
+      const tx = await factory.deployHarness(userSalt, { gasLimit: deployGasLimit });
+      log(termDiv, 'info', `TX: <a href='https://explorer.ritualfoundation.org/tx/${tx.hash}' target='_blank' class='tx-hash'>${tx.hash}</a>`);
+      log(termDiv, 'cmd', 'Waiting for confirmation...');
+
+      let receipt = null;
+      for (let i = 0; i < 60; i++) {
+        await new Promise(r => setTimeout(r, 2000));
+        try {
+          const rawReceipt = await provider.send('eth_getTransactionReceipt', [tx.hash]);
+          if (rawReceipt) { receipt = rawReceipt; break; }
+        } catch(e) {}
+      }
+      if (!receipt) throw new Error('deployHarness timed out');
+      const status = receipt.status === '0x1' || receipt.status === '0x01' || receipt.status === 1;
+      if (!status) throw new Error('deployHarness reverted');
+      log(termDiv, 'info', `Confirmed block ${parseInt(receipt.blockNumber, 16)}`);
+      log(termDiv, 'success', `Harness deployed: ${harnessAddr}`);
+    }
+
+    // Step 2: Prepare
+    updateProgress(66, 'Step 2/3 — Prepare');
+    log(termDiv, 'comment', '── Step 2: Prepare ──');
+
+    // Step 3: configureFundAndStart
+    updateProgress(90, 'Step 3/3 — Configure & Fund');
+    log(termDiv, 'comment', '── Step 3: configureFundAndStart ──');
+    log(termDiv, 'cmd', `Fund: ${fundAmount} RITUAL | Lock: ${lockDuration} blocks | Freq: ${freq} blocks`);
+
+    const secretsObj = { LLM_PROVIDER: provider_name, HF_TOKEN: hfToken };
+    if (provider_name === 'openrouter') secretsObj.OPENROUTER_API_KEY = apiKey;
+    else if (provider_name === 'openai') secretsObj.OPENAI_API_KEY = apiKey;
+    else if (provider_name === 'anthropic') secretsObj.ANTHROPIC_API_KEY = apiKey;
+    else if (provider_name === 'gemini') secretsObj.GEMINI_API_KEY = apiKey;
+
+    let fullCalldata;
+    try {
+      const encodeResp = await fetch('/api/encode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          harness: harnessAddr,
+          prompt: prompt || 'You are a sovereign AI agent on Ritual Chain.',
+          model: model,
+          hfRepo: hfRepo,
+          hfToken: hfToken,
+          secrets: JSON.stringify(secretsObj),
+          fundAmount: fundAmount.toString(),
+          frequency: freq,
+          windowCalls: windowCalls,
+          lockDuration: lockDuration,
+          schedulerGas: schedulerGas,
+          schedulerTtl: schedulerTtl,
+          rolloverBps: rolloverBps,
+          rolloverRetry: rolloverRetry,
+          maxFeeGwei: maxFeeGwei,
+          priorityFeeGwei: priorityFeeGwei,
+          cliType: 6
+        })
+      });
+
+      if (!encodeResp.ok) {
+        const err = await encodeResp.json();
+        throw new Error(err.error || 'Encoding failed');
+      }
+
+      const encodeResult = await encodeResp.json();
+      fullCalldata = encodeResult.calldata;
+      log(termDiv, 'info', `Executor: <a href='https://explorer.ritualfoundation.org/address/${encodeResult.executor}' target='_blank' class='tx-hash'>${encodeResult.executor}</a>`);
+      log(termDiv, 'info', `Secrets: ${encodeResult.encryptedSize} bytes | Calldata: ${encodeResult.calldataSize} bytes`);
+    } catch (encodeErr) {
+      throw new Error(`Calldata encoding failed: ${encodeErr.message}`);
+    }
+
+    const txValue = ethers.parseEther(fundAmount.toString());
+
+    // Simulate
+    log(termDiv, 'cmd', 'Simulating...');
+    try {
+      await provider.send('eth_call', [{
+        from: userAddress,
+        to: harnessAddr,
+        value: '0x' + txValue.toString(16),
+        data: fullCalldata,
+        gasLimit: '0x' + gasLimit.toString(16),
+      }, 'latest']);
+      log(termDiv, 'success', 'Simulation passed');
+    } catch (simErr) {
+      const simMsg = simErr.data?.message || simErr.message || 'unknown revert';
+      log(termDiv, 'error', `Simulation REVERTED: ${simMsg}`);
+      throw new Error(`Simulation reverted: ${simMsg}`);
+    }
+
+    log(termDiv, 'cmd', 'Sending configureFundAndStart tx...');
+    const tx2 = await signer.sendTransaction({
+      to: harnessAddr,
+      value: txValue,
+      data: fullCalldata,
+      gasLimit: gasLimit,
+    });
+    log(termDiv, 'info', `TX: <a href='https://explorer.ritualfoundation.org/tx/${tx2.hash}' target='_blank' class='tx-hash'>${tx2.hash}</a>`);
+    log(termDiv, 'cmd', 'Waiting for confirmation...');
+
+    let receipt2 = null;
+    for (let i = 0; i < 60; i++) {
+      await new Promise(r => setTimeout(r, 2000));
+      try {
+        const rawReceipt = await provider.send('eth_getTransactionReceipt', [tx2.hash]);
+        if (rawReceipt) { receipt2 = rawReceipt; break; }
+      } catch(e) {}
+    }
+
+    if (!receipt2) throw new Error('Transaction timed out');
+    const status2 = receipt2.status === '0x1' || receipt2.status === '0x01' || receipt2.status === 1;
+    if (!status2) throw new Error('configureFundAndStart reverted');
+    log(termDiv, 'info', `Confirmed block ${parseInt(receipt2.blockNumber, 16)}`);
+
+    updateProgress(100, 'Complete');
+    log(termDiv, 'success', '═══════════════════════════════════════');
+    log(termDiv, 'success', `SOVEREIGN AGENT DEPLOYED`);
+    log(termDiv, 'success', `Harness: <a href='https://explorer.ritualfoundation.org/agents/${harnessAddr}' target='_blank' class='tx-hash'>${harnessAddr}</a>`);
+    log(termDiv, 'success', `Model: ${model} | Fund: ${fundAmount} RITUAL`);
+    log(termDiv, 'success', '═══════════════════════════════════════');
+
+    btn.innerHTML = 'Deployed!';
+    btn.classList.remove('btn-primary');
+    btn.classList.add('btn-outline');
+
+    // Save to localStorage for My Agents
+    const agents = JSON.parse(localStorage.getItem('sr_agents') || '[]');
+    if (!agents.find(a => a.address.toLowerCase() === harnessAddr.toLowerCase())) {
+      agents.push({ address: harnessAddr, salt, timestamp: Date.now() });
+      localStorage.setItem('sr_agents', JSON.stringify(agents));
+    }
+
+  } catch (err) {
+    console.error(err);
+    log(termDiv, 'error', `Error: ${err.message}`);
+    btn.disabled = false;
+    btn.innerHTML = 'Retry Deploy';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CHECK STATUS (ON-CHAIN) — clean, no pills/badges
+// ═══════════════════════════════════════════════════════════
+async function checkStatusOnChain() {
+  const harness = document.getElementById('s-agent').value.trim();
+  if (!harness) { alert('Enter a harness address'); return; }
+
+  const btn = document.getElementById('status-btn');
+  btn.disabled = true;
+  btn.innerHTML = 'Checking...';
+
+  const resultDiv = document.getElementById('status-result');
+  resultDiv.classList.remove('hidden');
+  const content = document.getElementById('status-content');
+  content.innerHTML = '<p class="text-sm text-slate-500">Loading...</p>';
+
+  try {
+    const rpcProvider = new ethers.JsonRpcProvider(RITUAL_RPC);
+    const code = await rpcProvider.getCode(harness);
+    const hasCode = code && code !== '0x' && code !== '0x0';
+
+    let owner = 'N/A', balance = 0n, lockUntil = 0n, currentBlock = 0;
+    let blocksRemaining = 0, daysRemaining = 0, heartbeats = 0;
+
+    if (hasCode) {
+      try {
+        const result = await rpcProvider.call({ to: harness, data: '0x8da5cb5b' });
+        owner = '0x' + result.slice(26);
+      } catch(e) {}
+
+      const wallet = new ethers.Contract(RITUAL_WALLET, WALLET_ABI, rpcProvider);
+      balance = await wallet.balanceOf(harness);
+      lockUntil = await wallet.lockUntil(harness);
+      currentBlock = await rpcProvider.getBlockNumber();
+      blocksRemaining = Number(lockUntil) - currentBlock;
+      daysRemaining = blocksRemaining * BLOCKS_PER_HOUR / 1029 / 24;
+      heartbeats = Number(balance) / Number(ethers.parseEther('0.003'));
+    }
+
+    if (!hasCode) {
+      content.innerHTML = `
+        <div class="space-y-3">
+          <p class="text-red-400 text-sm">No contract at this address</p>
+          <p class="text-xs text-slate-500">This address has no deployed bytecode on Ritual Chain.</p>
+          <div class="flex justify-center gap-3 pt-2">
+            <a href="https://explorer.ritualfoundation.org/address/${harness}" target="_blank" class="btn-outline rounded-lg px-3 py-1.5 text-xs">View on Explorer</a>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    content.innerHTML = `
+      <div class="space-y-3">
+        <div class="space-y-1.5">
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-500">Bytecode</span>
+            <span class="text-slate-300">${(code.length - 2) / 2} bytes</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-500">Owner</span>
+            <span class="text-slate-300 mono text-xs">${owner.length > 10 ? owner.slice(0,10) + '...' + owner.slice(-8) : owner}</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-500">Balance</span>
+            <span style="color:#57d36b" class="font-semibold">${ethers.formatEther(balance)} RITUAL</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-500">Lock Until</span>
+            <span class="text-slate-300">Block ${Number(lockUntil).toLocaleString()} ${blocksRemaining > 0 ? '(~' + Math.round(blocksRemaining / BLOCKS_PER_HOUR) + 'h left)' : blocksRemaining < 0 ? '(expired)' : ''}</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-500">Est. Heartbeats</span>
+            <span class="text-slate-300">~${Math.round(heartbeats)}</span>
+          </div>
+        </div>
+        <div class="flex justify-center gap-3 pt-2 border-t border-white/5">
+          <a href="https://explorer.ritualfoundation.org/agents/${harness}" target="_blank" class="btn-outline rounded-lg px-3 py-1.5 text-xs">View Agent</a>
+          <a href="https://explorer.ritualfoundation.org/agents" target="_blank" class="btn-outline rounded-lg px-3 py-1.5 text-xs">All Agents</a>
+        </div>
+      </div>
+    `;
+  } catch (err) {
+    content.innerHTML = `<p class="text-red-400 text-sm">Error: ${err.message}</p>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Check Status';
+  }
+}
+
+function randomizeSalt() {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let salt = 'agent-';
+  for (let i = 0; i < 8; i++) salt += chars[Math.floor(Math.random() * chars.length)];
+  document.getElementById('d-salt').value = salt;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  MANAGE — Deposit / Restart / Stop
+// ═══════════════════════════════════════════════════════════
+async function depositToWallet() {
+  if (!signer || !userAddress) { alert('Connect wallet first'); return; }
+  const agent = document.getElementById('m-deposit-agent').value.trim();
+  const amount = parseFloat(document.getElementById('m-deposit-amount').value);
+  const lockBlocks = parseInt(document.getElementById('m-deposit-lock').value);
+  if (!agent) { alert('Enter an agent address'); return; }
+  if (!amount || amount <= 0) { alert('Enter a valid amount'); return; }
+
+  const btn = document.getElementById('deposit-btn');
+  const termDiv = document.getElementById('deposit-terminal');
+  termDiv.classList.remove('hidden');
+  termDiv.innerHTML = '';
+  btn.disabled = true;
+  btn.innerHTML = 'Depositing...';
+
+  try {
+    log(termDiv, 'comment', `Deposit ${amount} RITUAL to ${agent}`);
+    const wallet = new ethers.Contract(RITUAL_WALLET, WALLET_ABI, signer);
+    const value = ethers.parseEther(amount.toString());
+    const tx = await wallet.depositFor(agent, lockBlocks, { value, gasLimit: 3_000_000 });
+    log(termDiv, 'info', `TX: <a href='https://explorer.ritualfoundation.org/tx/${tx.hash}' target='_blank' class='tx-hash'>${tx.hash}</a>`);
+    let receipt = null;
+    for (let i = 0; i < 60; i++) {
+      await new Promise(r => setTimeout(r, 2000));
+      try { const raw = await provider.send('eth_getTransactionReceipt', [tx.hash]); if (raw) { receipt = raw; break; } } catch(e) {}
+    }
+    if (!receipt) throw new Error('Transaction timed out');
+    const status = receipt.status === '0x1' || receipt.status === '0x01' || receipt.status === 1;
+    if (!status) throw new Error('Deposit reverted');
+    log(termDiv, 'success', `Deposited ${amount} RITUAL`);
+  } catch (err) {
+    log(termDiv, 'error', `Error: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Deposit';
+  }
+}
+
+async function restartAgent() {
+  if (!signer || !userAddress) { alert('Connect wallet first'); return; }
+  const agent = document.getElementById('m-restart-agent').value.trim();
+  if (!agent) { alert('Enter an agent address'); return; }
+
+  const btn = document.getElementById('restart-btn');
+  const termDiv = document.getElementById('restart-terminal');
+  termDiv.classList.remove('hidden');
+  termDiv.innerHTML = '';
+  btn.disabled = true;
+  btn.innerHTML = 'Restarting...';
+
+  try {
+    log(termDiv, 'comment', `Restart agent ${agent}`);
+    try { await provider.call({ to: agent, data: '0xc0406226', from: userAddress }); } catch(e) {
+      throw new Error('restart() would revert');
+    }
+    const tx = await signer.sendTransaction({ to: agent, data: '0xc0406226', gasLimit: 5_000_000 });
+    log(termDiv, 'info', `TX: <a href='https://explorer.ritualfoundation.org/tx/${tx.hash}' target='_blank' class='tx-hash'>${tx.hash}</a>`);
+    let receipt = null;
+    for (let i = 0; i < 60; i++) {
+      await new Promise(r => setTimeout(r, 2000));
+      try { const raw = await provider.send('eth_getTransactionReceipt', [tx.hash]); if (raw) { receipt = raw; break; } } catch(e) {}
+    }
+    if (!receipt) throw new Error('Transaction timed out');
+    const status = receipt.status === '0x1' || receipt.status === '0x01' || receipt.status === 1;
+    if (!status) throw new Error('restart() reverted');
+    log(termDiv, 'success', 'Agent restarted');
+  } catch (err) {
+    log(termDiv, 'error', `Error: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Restart Agent';
+  }
+}
+
+async function stopAgent() {
+  if (!signer || !userAddress) { alert('Connect wallet first'); return; }
+  const agent = document.getElementById('m-stop-agent').value.trim();
+  if (!agent) { alert('Enter an agent address'); return; }
+
+  const btn = document.getElementById('stop-btn');
+  const termDiv = document.getElementById('stop-terminal');
+  termDiv.classList.remove('hidden');
+  termDiv.innerHTML = '';
+  btn.disabled = true;
+  btn.innerHTML = 'Stopping...';
+
+  try {
+    log(termDiv, 'comment', `Stop agent ${agent}`);
+    try { await provider.call({ to: agent, data: '0x07da28de', from: userAddress }); } catch(e) {
+      throw new Error('stop() would revert');
+    }
+    const tx = await signer.sendTransaction({ to: agent, data: '0x07da28de', gasLimit: 3_500_000 });
+    log(termDiv, 'info', `TX: <a href='https://explorer.ritualfoundation.org/tx/${tx.hash}' target='_blank' class='tx-hash'>${tx.hash}</a>`);
+    let receipt = null;
+    for (let i = 0; i < 60; i++) {
+      await new Promise(r => setTimeout(r, 2000));
+      try { const raw = await provider.send('eth_getTransactionReceipt', [tx.hash]); if (raw) { receipt = raw; break; } } catch(e) {}
+    }
+    if (!receipt) throw new Error('Transaction timed out');
+    const status = receipt.status === '0x1' || receipt.status === '0x01' || receipt.status === 1;
+    if (!status) throw new Error('stop() reverted');
+    log(termDiv, 'success', 'Agent stopped');
+  } catch (err) {
+    log(termDiv, 'error', `Error: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Stop Agent';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  MY AGENTS — hybrid: localStorage + on-chain events + explorer
+// ═══════════════════════════════════════════════════════════
+async function loadMyAgents() {
+  if (!signer || !userAddress) { alert('Connect wallet first'); return; }
+
+  const btn = document.getElementById('agents-btn');
+  const listDiv = document.getElementById('agents-list');
+  btn.disabled = true;
+  btn.innerHTML = 'Scanning...';
+  listDiv.innerHTML = '';
+
+  try {
+    const rpcProvider = new ethers.JsonRpcProvider(RITUAL_RPC);
+    const factory = new ethers.Contract(SOVEREIGN_FACTORY, FACTORY_ABI, rpcProvider);
+    const wallet = new ethers.Contract(RITUAL_WALLET, WALLET_ABI, rpcProvider);
+    const currentBlock = await rpcProvider.getBlockNumber();
+    const agents = new Map();
+
+    // 1. localStorage (instant)
+    const saved = JSON.parse(localStorage.getItem('sr_agents') || '[]');
+    for (const a of saved) {
+      agents.set(a.address.toLowerCase(), { ...a, source: 'local' });
+    }
+
+    // 2. On-chain events (most reliable — last ~3 months)
+    try {
+      const fromBlock = Math.max(0, currentBlock - 7_776_000); // ~3 months
+      const filter = factory.filters.DeployHarness(userAddress);
+      const events = await factory.queryFilter(filter, fromBlock, currentBlock);
+      for (const ev of events) {
+        const addr = ev.args.harness.toLowerCase();
+        if (!agents.has(addr)) {
+          agents.set(addr, { address: ev.args.harness, salt: 'on-chain', timestamp: ev.blockNumber * 350, source: 'on-chain' });
+        }
+      }
+    } catch(e) { console.warn('Event scan failed:', e.message); }
+
+    // 3. Explorer API (fallback)
+    try {
+      const resp = await fetch('https://explorer.ritualfoundation.org/api/agents/cache');
+      const cache = await resp.json();
+      const allAgents = [...(cache.sovereign || []), ...(cache.persistent || [])];
+      for (const agent of allAgents) {
+        if (agent.info?.owner?.toLowerCase() === userAddress.toLowerCase()) {
+          const addr = agent.address.toLowerCase();
+          if (!agents.has(addr)) {
+            agents.set(addr, { address: agent.address, salt: 'explorer', timestamp: 0, source: 'explorer' });
+          }
+          // Enrich with explorer data
+          const existing = agents.get(addr);
+          existing.agentType = agent.info?.type || 'sovereign';
+          existing.agentState = agent.info?.state;
+          existing.isAlive = agent.info?.isAlive;
+          existing.lastBlock = agent.lastActivityBlock || agent.info?.lastHeartbeatBlock;
+        }
+      }
+    } catch(e) { console.warn('Explorer scan failed:', e.message); }
+
+    // Save all found agents to localStorage for next time
+    const allAgentsArr = Array.from(agents.values());
+    localStorage.setItem('sr_agents', JSON.stringify(allAgentsArr.map(a => ({ address: a.address, salt: a.salt, timestamp: a.timestamp }))));
+
+    if (agents.size === 0) {
+      listDiv.innerHTML = `<div class="glass rounded-xl p-4 text-center"><p class="text-slate-500 text-xs">No agents found. Deploy one from the Deploy tab.</p></div>`;
+      return;
+    }
+
+    // Render
+    const cards = [];
+    for (const [addr, agent] of agents) {
+      let balance = 0n, lockUntil = 0n, wakeMode = 0, configured = false;
+      let owner = 'N/A';
+
+      const code = await rpcProvider.getCode(addr);
+      const hasCode = code && code !== '0x' && code !== '0x0';
+
+      if (hasCode) {
+        try { const r = await rpcProvider.call({ to: addr, data: '0x8da5cb5b' }); owner = '0x' + r.slice(26); } catch(e) {}
+        try { const r = await rpcProvider.call({ to: addr, data: '0xf42a46d7' }); configured = r.slice(66 - 2) === '01'; } catch(e) {}
+        try { const r = await rpcProvider.call({ to: addr, data: '0x78a01a68' }); wakeMode = parseInt(r.slice(66 - 2), 16); } catch(e) {}
+        try { balance = await wallet.balanceOf(addr); } catch(e) {}
+        try { lockUntil = await wallet.lockUntil(addr); } catch(e) {}
+      }
+
+      const stateLabel = wakeMode >= 1 ? 'Monitored' : configured ? 'Stopped' : 'Unconfigured';
+      const stateColor = wakeMode >= 1 ? '#57d36b' : configured ? '#eab308' : '#ef4444';
+      const balStr = balance > 0n ? ethers.formatEther(balance) : '0';
+      const blocksLeft = Number(lockUntil) - currentBlock;
+
+      cards.push(`
+        <div class="glass rounded-xl p-2 md:p-3">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full" style="background:${stateColor}"></span>
+              <span class="text-xs font-semibold text-slate-200">${agent.salt || addr.slice(0,10)}</span>
+            </div>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full" style="background:${stateColor}20;color:${stateColor}">${stateLabel}</span>
+          </div>
+          <div class="space-y-1 text-xs">
+            <div class="flex justify-between">
+              <span class="text-slate-500">Address</span>
+              <a href="https://explorer.ritualfoundation.org/agents/${addr}" target="_blank" class="mono tx-hash">${addr.slice(0,10)}...${addr.slice(-8)}</a>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500">Balance</span>
+              <span class="text-slate-300 font-semibold">${balStr} RITUAL</span>
+            </div>
+            ${blocksLeft > 0 ? `<div class="flex justify-between"><span class="text-slate-500">Lock</span><span class="text-slate-300">${Math.round(blocksLeft / BLOCKS_PER_HOUR)}h left</span></div>` : ''}
+            ${agent.lastBlock ? `<div class="flex justify-between"><span class="text-slate-500">Last Heartbeat</span><span class="text-slate-300">Block ${Number(agent.lastBlock).toLocaleString()}</span></div>` : ''}
+          </div>
+          <div class="flex gap-2 mt-2 pt-2 border-t border-white/5">
+            <button onclick="document.getElementById('m-deposit-agent').value='${addr}';switchTab('manage')" class="btn-outline rounded-lg px-2 py-1 text-xs flex-1">Deposit</button>
+            <button onclick="document.getElementById('m-restart-agent').value='${addr}';switchTab('manage')" class="btn-outline rounded-lg px-2 py-1 text-xs flex-1">Restart</button>
+            <button onclick="document.getElementById('m-stop-agent').value='${addr}';switchTab('manage')" class="btn-outline rounded-lg px-2 py-1 text-xs flex-1" style="border-color:rgba(239,68,68,0.3);color:#ef4444">Stop</button>
+          </div>
+        </div>
+      `);
+    }
+
+    listDiv.innerHTML = cards.join('');
+
+  } catch (err) {
+    listDiv.innerHTML = `<div class="glass rounded-xl p-4"><p class="text-red-400 text-xs">Error: ${err.message}</p></div>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Load My Agents';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ENV GENERATOR
+// ═══════════════════════════════════════════════════════════
+function generateEnv() {
+  const provider_name = document.getElementById('d-provider').value;
+  const apikey = document.getElementById('d-apikey').value.trim() || 'your-api-key';
+  const model = document.getElementById('d-model').value || 'zai-org/GLM-4.7-FP8';
+  const hftoken = document.getElementById('d-hftoken').value.trim() || 'hf_your_token';
+  const hfrepo = document.getElementById('d-hfrepo').value.trim() || 'yourname/agent-data';
+  const salt = document.getElementById('d-salt').value.trim() || 'my-sovereign-agent';
+  const prompt = document.getElementById('d-prompt').value.trim();
+  const freq = document.getElementById('d-freq').value;
+  const windowCalls = document.getElementById('d-window').value;
+  const schedulerTtl = document.getElementById('d-schedttl').value || '500';
+  const fund = document.getElementById('d-fund').value;
+  const lockBlocks = document.getElementById('d-lockduration').value;
+
+  const apiKeyName = provider_name === 'openrouter' ? 'OPENROUTER_API_KEY' : provider_name === 'openai' ? 'OPENAI_API_KEY' : provider_name === 'anthropic' ? 'ANTHROPIC_API_KEY' : 'GEMINI_API_KEY';
+
+  const env = `# ═══════════════════════════════════════════════════════
+# Ritual Sovereign Agent — Environment Configuration
+# ═══════════════════════════════════════════════════════
+
+# ── Blockchain ──────────────────────────────────────
+PRIVATE_KEY=***
+RPC_URL=https://rpc.ritualfoundation.org
+
+# ── LLM Provider ────────────────────────────────────
+# native = Ritual precompile (no API key needed)
+# External: openrouter / openai / anthropic / gemini
+LLM_PROVIDER=${provider_name === 'native' ? 'native' : provider_name}
+# ${apiKeyName}=${provider_name === 'native' ? '# uncomment if using external provider' : apikey}
+MODEL=${model}
+
+# ── HuggingFace ─────────────────────────────────────
+HF_TOKEN=***
+HF_REPO_ID=${hfrepo}
+
+# ── Agent Prompt ────────────────────────────────────
+AGENT_PROMPT=${prompt || ''}
+
+# ── Deployment Config ───────────────────────────────
+SALT=${salt}
+CLI_TYPE=6
+FREQUENCY=${freq}
+WINDOW_NUM_CALLS=${windowCalls}
+SCHEDULER_TTL=${schedulerTtl}
+ROLLOVER_THRESHOLD_BPS=5000
+FUND_AMOUNT=${fund}
+LOCK_DURATION=${lockBlocks}`;
+
+  const output = document.getElementById('env-output');
+  output.textContent = env;
+  output.classList.remove('hidden');
+  document.getElementById('env-copy-btn').classList.remove('hidden');
+}
+
+function copyEnv() {
+  const text = document.getElementById('env-output').textContent;
+  navigator.clipboard.writeText(text);
+  const btn = document.getElementById('env-copy-btn');
+  btn.textContent = 'Copied!';
+  setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════════
+function log(container, cls, text) {
+  if (typeof container === 'string') container = document.getElementById(container);
+  if (!container) return;
+  const line = document.createElement('div');
+  line.className = `line ${cls}`;
+  line.innerHTML = text;
+  container.appendChild(line);
+  container.scrollTop = container.scrollHeight;
+}
+
+function updateProgress(percent, label) {
+  document.getElementById('progress-fill').style.width = percent + '%';
+  document.getElementById('deploy-step-label').textContent = label;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════
+updateModelOptions();
+document.getElementById('d-fund').addEventListener('input', updateEstimate);
+document.getElementById('d-lockduration').addEventListener('change', updateEstimate);
+updateEstimate();
+validateSchedule();
+autoReconnect();
+</script>
+
+</body>
+</html>
