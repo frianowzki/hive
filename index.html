@@ -12,8 +12,8 @@
         :root{
             --bg:#000;--bg-card:rgba(255,255,255,0.03);--bg-card-hover:rgba(255,255,255,0.06);
             --text:#fff;--text-dim:#888;--text-muted:#555;
-            --accent:#8b5cf6;--accent-light:#a78bfa;--accent-dark:#7c3aed;
-            --accent-glow:rgba(139,92,246,0.12);--green:#22c55e;
+            --accent:#72cc63;--accent-light:#8ed682;--accent-dark:#5ba34f;
+            --accent-glow:rgba(114,204,99,0.12);--green:#22c55e;
             --border:rgba(255,255,255,0.06);
             --font:'Inter',-apple-system,sans-serif;
             --font-display:'Space Grotesk','Inter',sans-serif;
@@ -43,7 +43,7 @@
         .page-dots.visible{opacity:1}
         .dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.12);cursor:pointer;transition:all .3s}
         .dot:hover{background:rgba(255,255,255,0.35)}
-        .dot.active{background:var(--accent);box-shadow:0 0 6px rgba(139,92,246,0.4)}
+        .dot.active{background:var(--accent);box-shadow:0 0 6px rgba(114,204,99,0.4)}
 
         /* FOOTER */
         .mini-footer{position:fixed;bottom:0;left:0;right:0;z-index:100;padding:.6rem 3rem;display:flex;justify-content:space-between;align-items:center;background:transparent;font-size:.7rem;color:var(--text-muted)}
@@ -75,8 +75,8 @@
 
         /* ═══ BUTTONS ═══ */
         .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.65rem 1.25rem;font-family:var(--font);font-size:.75rem;font-weight:600;border-radius:6px;cursor:pointer;transition:all .3s;border:none;outline:none}
-        .btn-p{background:var(--accent);color:#fff;box-shadow:0 4px 16px rgba(139,92,246,.25)}
-        .btn-p:hover{background:var(--accent-dark);transform:translateY(-1px);box-shadow:0 6px 24px rgba(139,92,246,.3)}
+        .btn-p{background:var(--accent);color:#fff;box-shadow:0 4px 16px rgba(114,204,99,.25)}
+        .btn-p:hover{background:var(--accent-dark);transform:translateY(-1px);box-shadow:0 6px 24px rgba(114,204,99,.3)}
         .btn-o{background:transparent;color:var(--text);border:1px solid var(--border)}
         .btn-o:hover{border-color:var(--accent);color:var(--accent-light);background:var(--accent-glow)}
         .btn-i{width:13px;height:13px}
@@ -98,7 +98,7 @@
         .feat-card .fc-tag{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.15em;color:var(--accent);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem}
         .feat-card .fc-tag::before{content:'';width:20px;height:1px;background:var(--accent)}
         .feat-card .fc-num{font-family:var(--font-display);font-size:5rem;font-weight:900;line-height:1;color:rgba(255,255,255,.03);position:absolute;bottom:1.5rem;right:2rem;pointer-events:none}
-        .feat-card .fc-icon{width:56px;height:56px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.15);border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:1.5rem}
+        .feat-card .fc-icon{width:56px;height:56px;background:rgba(114,204,99,.08);border:1px solid rgba(114,204,99,.15);border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:1.5rem}
         .feat-card .fc-icon svg{width:26px;height:26px;color:var(--accent-light)}
         .feat-card .fc-title{font-family:var(--font-display);font-size:1.6rem;font-weight:800;letter-spacing:-.02em;margin-bottom:1rem;background:linear-gradient(135deg,#fff,rgba(255,255,255,.7));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
         .feat-card .fc-desc{font-size:.9rem;color:var(--text-dim);line-height:1.8;max-width:90%}
@@ -137,14 +137,14 @@
         .about-feat i{color:var(--accent);font-style:normal}
         .team-card{background:var(--bg-card);border-radius:12px;padding:1.5rem;border:1px solid var(--border);display:grid;grid-template-columns:auto 1fr;gap:1.25rem;align-items:center;transition:all .3s}
         .team-card:hover{border-color:rgba(255,255,255,.1);background:var(--bg-card-hover)}
-        .team-avatar{width:64px;height:64px;border-radius:14px;overflow:hidden;border:1px solid rgba(139,92,246,.15);flex-shrink:0}
+        .team-avatar{width:64px;height:64px;border-radius:14px;overflow:hidden;border:1px solid rgba(114,204,99,.15);flex-shrink:0}
         .team-avatar img{width:100%;height:100%;object-fit:cover}
         .team-role{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:.1rem}
         .team-name{font-family:var(--font-display);font-size:1.05rem;font-weight:700;margin-bottom:.25rem}
         .team-bio{font-size:.75rem;color:var(--text-dim);line-height:1.5}
-.warp-container{position:relative;border-radius:16px;padding:2px;background:conic-gradient(from var(--warp-angle,0deg),transparent 20%,rgba(139,92,246,.4) 30%,rgba(168,85,247,.8) 35%,rgba(139,92,246,.4) 40%,transparent 50%,transparent 70%,rgba(99,102,241,.4) 80%,rgba(129,140,248,.6) 85%,rgba(99,102,241,.4) 90%,transparent 100%);animation:warp-spin 4s linear infinite}.warp-container::before{content:"";position:absolute;inset:0;border-radius:16px;background:conic-gradient(from calc(var(--warp-angle,0deg) + 180deg),transparent 20%,rgba(168,85,247,.3) 30%,rgba(192,132,252,.5) 35%,rgba(168,85,247,.3) 40%,transparent 50%);animation:warp-spin 6s linear infinite;filter:blur(4px)}.team-card{position:relative;z-index:1;background:rgba(10,10,10,.95)!important;border-radius:14px}@keyframes warp-spin{to{--warp-angle:360deg}}@property --warp-angle{syntax:"<angle>";initial-value:0deg;inherits:false}
-        .team-link{display:inline-block;margin-top:.4rem;font-size:.65rem;font-weight:600;padding:.3rem .6rem;background:var(--accent-glow);border:1px solid rgba(139,92,246,.15);border-radius:5px;color:var(--accent-light);transition:all .3s}
-        .team-link:hover{background:rgba(139,92,246,.2);border-color:var(--accent)}
+.warp-container{position:relative;border-radius:16px;padding:2px;background:conic-gradient(from var(--warp-angle,0deg),transparent 20%,rgba(114,204,99,.4) 30%,rgba(114,204,99,.8) 35%,rgba(114,204,99,.4) 40%,transparent 50%,transparent 70%,rgba(99,102,241,.4) 80%,rgba(129,140,248,.6) 85%,rgba(99,102,241,.4) 90%,transparent 100%);animation:warp-spin 4s linear infinite}.warp-container::before{content:"";position:absolute;inset:0;border-radius:16px;background:conic-gradient(from calc(var(--warp-angle,0deg) + 180deg),transparent 20%,rgba(114,204,99,.3) 30%,rgba(192,132,252,.5) 35%,rgba(114,204,99,.3) 40%,transparent 50%);animation:warp-spin 6s linear infinite;filter:blur(4px)}.team-card{position:relative;z-index:1;background:rgba(10,10,10,.95)!important;border-radius:14px}@keyframes warp-spin{to{--warp-angle:360deg}}@property --warp-angle{syntax:"<angle>";initial-value:0deg;inherits:false}
+        .team-link{display:inline-block;margin-top:.4rem;font-size:.65rem;font-weight:600;padding:.3rem .6rem;background:var(--accent-glow);border:1px solid rgba(114,204,99,.15);border-radius:5px;color:var(--accent-light);transition:all .3s}
+        .team-link:hover{background:rgba(114,204,99,.2);border-color:var(--accent)}
 
         /* ═══ PAGE 5: CONTACT ═══ */
         .contact-page{text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center}
@@ -294,8 +294,8 @@
         .role-card{display:flex;align-items:center;gap:1rem;padding:1rem 1.25rem;background:rgba(15,15,15,.9);border:1px solid rgba(255,255,255,.06);border-radius:12px;cursor:pointer;transition:all .3s}
         .role-card:hover{border-color:var(--accent);background:var(--accent-glow)}
         .role-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;overflow:hidden}
-        .role-icon.user{background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.12)}
-        .role-icon.user::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(139,92,246,.15),transparent 70%)}
+        .role-icon.user{background:rgba(114,204,99,.08);border:1px solid rgba(114,204,99,.12)}
+        .role-icon.user::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(114,204,99,.15),transparent 70%)}
         .role-icon.retail{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.12)}
         .role-icon.retail::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(34,197,94,.15),transparent 70%)}
         .role-icon svg{width:24px;height:24px;position:relative;z-index:1}
@@ -303,7 +303,7 @@
         .role-name{font-family:var(--font-display);font-size:.95rem;font-weight:700;margin-bottom:.15rem}
         .role-desc{font-size:.7rem;color:var(--text-dim);line-height:1.4}
         .role-badge{font-size:.55rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;padding:.2rem .5rem;border-radius:4px;flex-shrink:0}
-        .role-badge.no-kyc{background:rgba(139,92,246,.1);color:var(--accent-light);border:1px solid rgba(139,92,246,.15)}
+        .role-badge.no-kyc{background:rgba(114,204,99,.1);color:var(--accent-light);border:1px solid rgba(114,204,99,.15)}
         .role-badge.kyb{background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.15)}
 
         /* Wallet Connect */
@@ -319,8 +319,8 @@
         .modal-back svg{width:14px;height:14px}
 
         /* Sign Modal */
-        .sign-icon-wrap{display:flex;align-items:center;justify-content:center;width:80px;height:80px;border-radius:20px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.12);margin:1.5rem auto;position:relative;overflow:hidden}
-        .sign-icon-wrap::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(139,92,246,.15),transparent 70%)}
+        .sign-icon-wrap{display:flex;align-items:center;justify-content:center;width:80px;height:80px;border-radius:20px;background:rgba(114,204,99,.08);border:1px solid rgba(114,204,99,.12);margin:1.5rem auto;position:relative;overflow:hidden}
+        .sign-icon-wrap::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(114,204,99,.15),transparent 70%)}
         .sign-icon-wrap svg{position:relative;z-index:1;color:var(--accent)}
         .sign-status{display:flex;align-items:center;justify-content:center;gap:.5rem;font-size:.75rem;color:var(--text-dim);margin-bottom:1.5rem;min-height:24px}
         .sign-status.success{color:var(--green)}
@@ -361,12 +361,12 @@
     <div class="modal-overlay" id="roleModal">
         <div class="modal modal-frosted">
             <button class="modal-close" onclick="closeModal('roleModal')">&times;</button>
-            <div class="modal-title">Open Hive</div>
+            <div class="modal-title">Open Hive ❖</div>
             <div class="modal-sub">Choose how you want to access the platform.</div>
             <div class="role-options">
                 <div class="role-card" onclick="selectRole('user')">
                     <div class="role-icon user">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#8ed682" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     </div>
                     <div class="role-info">
                         <div class="role-name">Login as a User</div>
@@ -558,7 +558,7 @@
                     <h1 class="fi">The <span class="g">compliant AI launchpad</span> for forward-thinking DeFi.</h1>
                     <p class="hero-desc fi d1">Fully on-chain, zk-proofed AI launchpad built on Ritual Chain.<br>AI market makers, federated learning, autonomous agents,<br>and DAO governance — all with KYC/KYB compliance.</p>
                     <div class="hero-actions fi d2">
-                        <a href="/dashboard" class="btn btn-p cool-btn" id="ctaBtn" onclick="coolClick(this);setTimeout(()=>window.location.href='/dashboard',600);return false">Open Hive<svg class="btn-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+                        <a href="/dashboard" class="btn btn-p cool-btn" id="ctaBtn" onclick="coolClick(this);setTimeout(()=>window.location.href='/dashboard',600);return false">Open Hive ❖</a>
                     </div>
                 </div>
             </div>
@@ -873,7 +873,7 @@
         (function(){
             const btn=document.getElementById('ctaBtn');
             if(!btn)return;
-            const colors=['#8b5cf6','#a78bfa','#c4b5fd','#7c3aed','#ddd6fe','#fff'];
+            const colors=['#72cc63','#8ed682','#b8e6b0','#5ba34f','#d4f0d0','#fff'];
             function spawnParticles(x,y){
                 const count=18;
                 for(let i=0;i<count;i++){
@@ -917,7 +917,7 @@
         function coolClick(el){
             const r=el.getBoundingClientRect();
             // trigger particle burst
-            const colors=['#8b5cf6','#a78bfa','#c4b5fd','#7c3aed','#ddd6fe','#fff'];
+            const colors=['#72cc63','#8ed682','#b8e6b0','#5ba34f','#d4f0d0','#fff'];
             for(let i=0;i<22;i++){
                 const p=document.createElement('div');
                 const size=Math.random()*7+3;

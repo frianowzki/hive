@@ -17,8 +17,8 @@
         :root{
             --bg:#000;--bg-card:rgba(255,255,255,0.03);--bg-card-hover:rgba(255,255,255,0.06);
             --text:#fff;--text-dim:#888;--text-muted:#555;
-            --accent:#8b5cf6;--accent-light:#a78bfa;--accent-dark:#7c3aed;
-            --accent-glow:rgba(139,92,246,0.12);--green:#22c55e;--red:#ef4444;--yellow:#eab308;
+            --accent:#72cc63;--accent-light:#8ed682;--accent-dark:#5ba34f;
+            --accent-glow:rgba(114,204,99,0.12);--green:#22c55e;--red:#ef4444;--yellow:#eab308;
             --border:rgba(255,255,255,0.06);
             --font:'Inter',-apple-system,sans-serif;
             --font-display:'Space Grotesk','Inter',sans-serif;
@@ -35,14 +35,14 @@
         .section-card{background:linear-gradient(135deg,rgba(255,255,255,.015),rgba(255,255,255,.005));transition:border-color .2s ease}
         .section-card:hover{border-color:rgba(255,255,255,.1)}
         .action-btn{transition:all .2s ease}
-        .action-btn:hover{border-color:var(--accent);background:rgba(139,92,246,.05);transform:translateY(-1px)}
+        .action-btn:hover{border-color:var(--accent);background:rgba(114,204,99,.05);transform:translateY(-1px)}
         .data-table tr{transition:background .15s ease}
         .data-table tbody tr:hover{background:rgba(255,255,255,.02)}
         ::-webkit-scrollbar{width:6px;height:6px}
         ::-webkit-scrollbar-track{background:transparent}
         ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
         ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.15)}
-        ::selection{background:rgba(139,92,246,.3);color:#fff}
+        ::selection{background:rgba(114,204,99,.3);color:#fff}
         a{color:inherit;text-decoration:none}
 
         /* ═══ SIDEBAR ═══ */
@@ -57,7 +57,7 @@
         }
         .sidebar:hover,.sidebar.expanded{
             width:var(--sidebar-width);
-            box-shadow:4px 0 24px rgba(139,92,246,.06);
+            box-shadow:4px 0 24px rgba(114,204,99,.06);
         }
         .sidebar-top{
             display:flex;align-items:center;justify-content:space-between;
@@ -87,7 +87,7 @@
             width:28px;height:28px;border-radius:6px;
             cursor:pointer;transition:all .15s;
         }
-        .sidebar-toggle:hover{background:rgba(139,92,246,.1)}
+        .sidebar-toggle:hover{background:rgba(114,204,99,.1)}
         .hamburger{display:none}
         .toggle-arrow{
             font-size:1rem;color:var(--text-dim);transition:transform .2s;
@@ -114,10 +114,10 @@
             border-left:2px solid transparent;position:relative;
             border-radius:0;
         }
-        .nav-item:hover{background:rgba(139,92,246,.05)}
+        .nav-item:hover{background:rgba(114,204,99,.05)}
         .nav-item.active{
             border-left-color:var(--accent);background:var(--accent-glow);
-            box-shadow:inset 0 0 20px rgba(139,92,246,.05);
+            box-shadow:inset 0 0 20px rgba(114,204,99,.05);
         }
         .nav-item .nav-icon{
             width:24px;height:24px;display:flex;align-items:center;justify-content:center;
@@ -125,7 +125,7 @@
         }
         .nav-item:hover .nav-icon,.nav-item.active .nav-icon{
             color:var(--accent-light);
-            filter:drop-shadow(0 0 4px rgba(139,92,246,.3));
+            filter:drop-shadow(0 0 4px rgba(114,204,99,.3));
         }
         .nav-item .nav-icon svg{width:18px;height:18px}
         .nav-item .nav-label{
@@ -270,7 +270,7 @@
         .action-btn:hover{border-color:var(--accent);background:var(--accent-glow)}
         .action-btn .action-icon{
             width:36px;height:36px;border-radius:8px;
-            background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.12);
+            background:rgba(114,204,99,.08);border:1px solid rgba(114,204,99,.12);
             display:flex;align-items:center;justify-content:center;flex-shrink:0;
         }
         .action-btn .action-icon svg{width:18px;height:18px;color:var(--accent-light)}
@@ -278,8 +278,8 @@
 
         /* CTA Button (same as landing page) */
         .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.65rem 1.25rem;font-family:var(--font);font-size:.75rem;font-weight:600;border-radius:6px;cursor:pointer;transition:all .3s;border:none;outline:none}
-        .btn-p{background:var(--accent);color:#fff;box-shadow:0 4px 16px rgba(139,92,246,.25)}
-        .btn-p:hover{background:var(--accent-dark);transform:translateY(-1px);box-shadow:0 6px 24px rgba(139,92,246,.3)}
+        .btn-p{background:var(--accent);color:#fff;box-shadow:0 4px 16px rgba(114,204,99,.25)}
+        .btn-p:hover{background:var(--accent-dark);transform:translateY(-1px);box-shadow:0 6px 24px rgba(114,204,99,.3)}
         .btn-p:active{transform:translateY(0)}
 
         /* Responsive */
@@ -304,7 +304,7 @@
 
             /* Hamburger button */
             .hamburger{display:flex;flex-direction:column;gap:4px;cursor:pointer;padding:4px;border-radius:6px;transition:background .15s}
-            .hamburger:hover{background:rgba(139,92,246,.1)}
+            .hamburger:hover{background:rgba(114,204,99,.1)}
             .hamburger span{display:block;width:18px;height:2px;background:var(--text-dim);border-radius:1px;transition:all .2s}
             .hamburger.active span:nth-child(1){transform:rotate(45deg) translate(4px,4px)}
             .hamburger.active span:nth-child(2){opacity:0}
@@ -650,7 +650,7 @@
                     </div>
                     <div style="display:flex;flex-direction:column;gap:.5rem">
                         <div style="display:flex;align-items:center;gap:.5rem;padding:.5rem;background:var(--bg);border-radius:6px">
-                            <div style="width:28px;height:28px;border-radius:6px;background:rgba(139,92,246,.15);color:#8b5cf6;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;flex-shrink:0">H</div>
+                            <div style="width:28px;height:28px;border-radius:6px;background:rgba(114,204,99,.15);color:#72cc63;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;flex-shrink:0">H</div>
                             <div style="flex:1;min-width:0">
                                 <div style="font-size:.7rem;font-weight:600">HIVE</div>
                                 <div style="font-size:.55rem;color:var(--text-dim)">Block 101/120 · 84%</div>
@@ -1272,7 +1272,7 @@
                         .lock-row{display:flex;gap:.35rem;flex-wrap:wrap}
                         .lock-opt{padding:.46rem .75rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;cursor:pointer;transition:all .15s;font-size:.65rem;text-align:center;flex:1}
                         .lock-opt:hover{border-color:rgba(255,255,255,.15)}
-                        .lock-opt.active{border-color:var(--accent);background:rgba(139,92,246,.08)}
+                        .lock-opt.active{border-color:var(--accent);background:rgba(114,204,99,.08)}
                         .lock-opt .lk-days{font-weight:700;display:block;font-size:.7rem}
                         .lock-opt .lk-apy{color:var(--green);font-size:.5rem;display:block}
                         .stk-btn-sm{padding:.58rem .86rem;border-radius:6px;border:none;font-weight:600;font-size:.7rem;cursor:pointer;transition:all .15s;width:100%;text-align:left}
@@ -1528,7 +1528,7 @@
                     '0x637573746f6d0000000000000000000000000000000000000000000000000000': 'Custom',
                 };
                 const sectorColors = {
-                    'DeFi': '#8b5cf6', 'Trading': '#22c55e', 'Research': '#3b82f6',
+                    'DeFi': '#72cc63', 'Trading': '#22c55e', 'Research': '#3b82f6',
                     'Governance': '#f59e0b', 'Security': '#ef4444', 'Custom': '#6b7280',
                 };
 
@@ -1705,7 +1705,7 @@
 
         // ═══ SECTOR DATA ═══
         const SECTOR_DATA = {
-            DeFi: { color:'#8b5cf6', icon:'💎', desc:'Automated yield farming, liquidity management, and DeFi protocol interactions' },
+            DeFi: { color:'#72cc63', icon:'💎', desc:'Automated yield farming, liquidity management, and DeFi protocol interactions' },
             Trading: { color:'#22c55e', icon:'📈', desc:'Market analysis, order execution, and portfolio rebalancing across DEXs' },
             Research: { color:'#3b82f6', icon:'🔬', desc:'On-chain data analysis, protocol research, and alpha discovery' },
             Governance: { color:'#f59e0b', icon:'🏛️', desc:'Proposal analysis, voting, and DAO participation automation' },
@@ -1765,7 +1765,7 @@
             return text
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                 .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                .replace(/`(.*?)`/g, '<code style="background:rgba(139,92,246,.15);padding:.1rem .3rem;border-radius:3px;font-size:.8em">$1</code>')
+                .replace(/`(.*?)`/g, '<code style="background:rgba(114,204,99,.15);padding:.1rem .3rem;border-radius:3px;font-size:.8em">$1</code>')
                 .replace(/\n/g, '<br>');
         }
 
@@ -1873,7 +1873,7 @@
                             return '<div onclick="selectSectorByName(\'' + s + '\')" style="padding:.5rem;border-radius:8px;border:1px solid ' + (i===0 ? d.color : 'var(--border)') + ';background:' + (i===0 ? d.color+'15' : 'transparent') + ';color:' + (i===0 ? d.color : 'var(--text-dim)') + ';font-size:.7rem;font-weight:600;text-align:center;cursor:pointer;transition:all .2s" data-sector="' + s + '" data-color="' + d.color + '">' + s + '</div>';
                         }).join('')}
                     </div>
-                    <div id="sector-desc" style="font-size:.65rem;color:var(--text-dim);margin-top:.4rem;padding:.4rem .6rem;background:rgba(139,92,246,.05);border-radius:6px">${SECTOR_DATA.DeFi.desc}</div>
+                    <div id="sector-desc" style="font-size:.65rem;color:var(--text-dim);margin-top:.4rem;padding:.4rem .6rem;background:rgba(114,204,99,.05);border-radius:6px">${SECTOR_DATA.DeFi.desc}</div>
                     <input type="hidden" id="summon-sector" value="DeFi" />
                 </div>
 
@@ -1911,7 +1911,7 @@
                 </div>
 
                 <!-- Custom Limits -->
-                <div style="margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;padding:.65rem .85rem;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.15);border-radius:8px">
+                <div style="margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;padding:.65rem .85rem;background:rgba(114,204,99,.06);border:1px solid rgba(114,204,99,.15);border-radius:8px">
                     <div>
                         <div style="font-size:.75rem;font-weight:600;color:var(--text)">Custom Limits</div>
                         <div style="font-size:.6rem;color:var(--text-dim)">Override defaults — 2x fee</div>
@@ -2161,7 +2161,7 @@
                     data: {
                         labels: labels,
                         datasets: [
-                            { label: 'Wake Count', data: wakeData, backgroundColor: '#8b5cf680', borderColor: '#8b5cf6', borderWidth: 1 },
+                            { label: 'Wake Count', data: wakeData, backgroundColor: '#72cc6380', borderColor: '#72cc63', borderWidth: 1 },
                             { label: 'Successful Trades', data: tradeData, backgroundColor: '#22c55e80', borderColor: '#22c55e', borderWidth: 1 }
                         ]
                     },
@@ -2226,7 +2226,7 @@
         // ═══ STRATEGIES PAGE ═══
         const STRAT_STORE = 'hive_strategies';
         const STRAT_TYPES = {
-            dca: { label:'DCA', color:'#8b5cf6', icon:'📈', desc:'Dollar-cost average into tokens on a schedule' },
+            dca: { label:'DCA', color:'#72cc63', icon:'📈', desc:'Dollar-cost average into tokens on a schedule' },
             yield: { label:'Yield Farm', color:'#22c55e', icon:'🌾', desc:'Auto-move funds to highest yielding protocols' },
             arb: { label:'Arbitrage', color:'#3b82f6', icon:'⚡', desc:'Cross-DEX price difference exploitation' },
             liquidation: { label:'Liquidation', color:'#ef4444', icon:'💥', desc:'Liquidate undercollateralized positions' },
@@ -2480,7 +2480,7 @@
                 // Pre-fill type
                 document.querySelectorAll('.strat-type-pill').forEach(p => {
                     p.style.borderColor = p.dataset.type === type ? 'var(--accent)' : 'var(--border)';
-                    p.style.background = p.dataset.type === type ? 'rgba(139,92,246,.1)' : 'transparent';
+                    p.style.background = p.dataset.type === type ? 'rgba(114,204,99,.1)' : 'transparent';
                 });
             }, 100);
         }
@@ -2499,7 +2499,7 @@
             }
             new Chart(canvas.getContext('2d'), {
                 type: 'line',
-                data: { labels: days, datasets: [{ label: 'Portfolio Value', data: values, borderColor: '#8b5cf6', backgroundColor: '#8b5cf615', fill: true, tension: 0.3, pointRadius: 0, borderWidth: 2 }] },
+                data: { labels: days, datasets: [{ label: 'Portfolio Value', data: values, borderColor: '#72cc63', backgroundColor: '#72cc6315', fill: true, tension: 0.3, pointRadius: 0, borderWidth: 2 }] },
                 options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#666', maxTicksLimit: 8, font: { size: 10 } }, grid: { color: 'rgba(255,255,255,.03)' } }, y: { ticks: { color: '#666', font: { size: 10 }, callback: v => '$' + v.toLocaleString() }, grid: { color: 'rgba(255,255,255,.05)' } } } }
             });
         }
@@ -2541,12 +2541,12 @@
                 // Select type
                 document.querySelectorAll('.strat-type-pill').forEach(p => {
                     p.style.borderColor = p.dataset.type === s.type ? 'var(--accent)' : 'var(--border)';
-                    p.style.background = p.dataset.type === s.type ? 'rgba(139,92,246,.1)' : 'transparent';
+                    p.style.background = p.dataset.type === s.type ? 'rgba(114,204,99,.1)' : 'transparent';
                 });
                 // Select risk
                 document.querySelectorAll('.strat-risk-pill').forEach(p => {
                     p.style.borderColor = p.dataset.risk === s.risk ? 'var(--accent)' : 'var(--border)';
-                    p.style.background = p.dataset.risk === s.risk ? 'rgba(139,92,246,.1)' : 'transparent';
+                    p.style.background = p.dataset.risk === s.risk ? 'rgba(114,204,99,.1)' : 'transparent';
                 });
                 document.getElementById('stratModalTitle').textContent = 'Edit Strategy';
             }, 100);
@@ -2563,12 +2563,12 @@
                 // Select type
                 document.querySelectorAll('.strat-type-pill').forEach(p => {
                     p.style.borderColor = p.dataset.type === t.type ? 'var(--accent)' : 'var(--border)';
-                    p.style.background = p.dataset.type === t.type ? 'rgba(139,92,246,.1)' : 'transparent';
+                    p.style.background = p.dataset.type === t.type ? 'rgba(114,204,99,.1)' : 'transparent';
                 });
                 // Select risk
                 document.querySelectorAll('.strat-risk-pill').forEach(p => {
                     p.style.borderColor = p.dataset.risk === t.risk ? 'var(--accent)' : 'var(--border)';
-                    p.style.background = p.dataset.risk === t.risk ? 'rgba(139,92,246,.1)' : 'transparent';
+                    p.style.background = p.dataset.risk === t.risk ? 'rgba(114,204,99,.1)' : 'transparent';
                 });
             }, 100);
         }
@@ -2588,7 +2588,7 @@
             let typeHTML = '';
             Object.entries(STRAT_TYPES).forEach(([k, v]) => {
                 const sel = k === _selectedStratType;
-                typeHTML += '<div class="strat-type-pill" data-type="'+k+'" onclick="selectStratType(\''+k+'\')" style="padding:.5rem;text-align:center;border:1px solid '+(sel?'var(--accent)':'var(--border)')+';border-radius:8px;cursor:pointer;font-size:.7rem;background:'+(sel?'rgba(139,92,246,.1)':'transparent')+';transition:all .15s">';
+                typeHTML += '<div class="strat-type-pill" data-type="'+k+'" onclick="selectStratType(\''+k+'\')" style="padding:.5rem;text-align:center;border:1px solid '+(sel?'var(--accent)':'var(--border)')+';border-radius:8px;cursor:pointer;font-size:.7rem;background:'+(sel?'rgba(114,204,99,.1)':'transparent')+';transition:all .15s">';
                 typeHTML += '<div style="font-size:.9rem;margin-bottom:.15rem">'+v.icon+'</div>';
                 typeHTML += '<div style="font-weight:600">'+v.label+'</div>';
                 typeHTML += '</div>';
@@ -2599,7 +2599,7 @@
             let riskHTML = '';
             Object.entries(RISK_LEVELS).forEach(([k, v]) => {
                 const sel = k === _selectedStratRisk;
-                riskHTML += '<div class="strat-risk-pill" data-risk="'+k+'" onclick="selectStratRisk(\''+k+'\')" style="padding:.5rem;text-align:center;border:1px solid '+(sel?'var(--accent)':'var(--border)')+';border-radius:8px;cursor:pointer;font-size:.7rem;background:'+(sel?'rgba(139,92,246,.1)':'transparent')+';transition:all .15s;color:'+v.color+'">';
+                riskHTML += '<div class="strat-risk-pill" data-risk="'+k+'" onclick="selectStratRisk(\''+k+'\')" style="padding:.5rem;text-align:center;border:1px solid '+(sel?'var(--accent)':'var(--border)')+';border-radius:8px;cursor:pointer;font-size:.7rem;background:'+(sel?'rgba(114,204,99,.1)':'transparent')+';transition:all .15s;color:'+v.color+'">';
                 riskHTML += '<div style="font-weight:600">'+v.label+'</div>';
                 riskHTML += '</div>';
             });
@@ -2630,7 +2630,7 @@
             _selectedStratType = type;
             document.querySelectorAll('.strat-type-pill').forEach(p => {
                 p.style.borderColor = p.dataset.type === type ? 'var(--accent)' : 'var(--border)';
-                p.style.background = p.dataset.type === type ? 'rgba(139,92,246,.1)' : 'transparent';
+                p.style.background = p.dataset.type === type ? 'rgba(114,204,99,.1)' : 'transparent';
             });
             updateStratParams();
         }
@@ -2639,7 +2639,7 @@
             _selectedStratRisk = risk;
             document.querySelectorAll('.strat-risk-pill').forEach(p => {
                 p.style.borderColor = p.dataset.risk === risk ? 'var(--accent)' : 'var(--border)';
-                p.style.background = p.dataset.risk === risk ? 'rgba(139,92,246,.1)' : 'transparent';
+                p.style.background = p.dataset.risk === risk ? 'rgba(114,204,99,.1)' : 'transparent';
             });
         }
 
@@ -3008,7 +3008,7 @@
                         .p-pnl span{font-size:.75rem;opacity:.7;margin-left:.25rem}
                         .p-actions{display:flex;gap:.75rem;margin-bottom:2rem}
                         .p-action{flex:1;padding:.85rem 1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:all .15s;text-align:center}
-                        .p-action:hover{border-color:var(--accent);background:rgba(139,92,246,.05)}
+                        .p-action:hover{border-color:var(--accent);background:rgba(114,204,99,.05)}
                         .p-action svg{width:20px;height:20px;margin-bottom:.35rem;stroke:var(--text-dim)}
                         .p-action .lbl{font-size:.75rem;color:var(--text-dim);font-weight:500}
                         .chart-wrap{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;margin-bottom:2rem;overflow:hidden}
@@ -3070,10 +3070,10 @@
                     </div>
 
                     <div class="asset-list">
-                        <div class="asset-row"><div class="a-name"><div class="a-icon" style="background:rgba(139,92,246,.15);color:var(--accent)">R</div>RITUAL</div><div class="a-amount">${ritual.toFixed(4)}</div><div class="a-value">$${ritualValue.toFixed(2)}</div></div>
+                        <div class="asset-row"><div class="a-name"><div class="a-icon" style="background:rgba(114,204,99,.15);color:var(--accent)">R</div>RITUAL</div><div class="a-amount">${ritual.toFixed(4)}</div><div class="a-value">$${ritualValue.toFixed(2)}</div></div>
                                                 <div class="asset-row"><div class="a-name"><div class="a-icon" style="background:rgba(34,197,94,.15);color:var(--green)">H</div>HIVE</div><div class="a-amount">${hivBal.toFixed(2)}</div><div class="a-value">$${hiveValue.toFixed(2)}</div></div>
                                                 <div class="asset-row"><div class="a-name"><div class="a-icon" style="background:rgba(234,179,8,.15);color:var(--yellow)">$</div>hiveUSD</div><div class="a-amount">${usdBal.toFixed(2)}</div><div class="a-value">$${usdValue.toFixed(2)}</div></div>
-                                                <div class="asset-row"><div class="a-name"><div class="a-icon" style="background:rgba(139,92,246,.15);color:var(--accent)">S</div>Staked RITUAL</div><div class="a-amount">${staked.toFixed(4)}</div><div class="a-value">$${stakedValue.toFixed(2)}</div></div>
+                                                <div class="asset-row"><div class="a-name"><div class="a-icon" style="background:rgba(114,204,99,.15);color:var(--accent)">S</div>Staked RITUAL</div><div class="a-amount">${staked.toFixed(4)}</div><div class="a-value">$${stakedValue.toFixed(2)}</div></div>
                     </div>
                 `;
 
@@ -3525,7 +3525,7 @@
                     for(const a of result.auctions){
                         const item = {
                             name: 'Token Auction #'+a.id, symbol:'TKN'+a.id, logo:'T',
-                            color: ['#8b5cf6','#22c55e','#3b82f6','#f59e0b'][a.id % 4],
+                            color: ['#72cc63','#22c55e','#3b82f6','#f59e0b'][a.id % 4],
                             blocks: Number(a.tokenSupply) || 100,
                             logoUrl:''
                         };
@@ -4014,7 +4014,7 @@
                         </div>
                     </div>
 
-                    <div style="display:flex;justify-content:space-between;margin-bottom:1rem;padding:.5rem .75rem;background:rgba(139,92,246,.08);border-radius:6px">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:1rem;padding:.5rem .75rem;background:rgba(114,204,99,.08);border-radius:6px">
                         <span style="font-size:.65rem;color:var(--text-dim)">Your hiveUSD Balance</span>
                         <span style="font-size:.7rem;font-weight:700" id="buy-balance">Loading...</span>
                     </div>
@@ -4241,12 +4241,12 @@
                     .form-hint{font-size:.65rem;color:var(--text-muted);margin-top:.3rem}
                     .phase-card{padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:.75rem;cursor:pointer;transition:all .15s}
                     .phase-card:hover{border-color:rgba(255,255,255,.1)}
-                    .phase-card.selected{border-color:var(--accent);background:rgba(139,92,246,.05)}
+                    .phase-card.selected{border-color:var(--accent);background:rgba(114,204,99,.05)}
                     .phase-card .phase-name{font-size:.85rem;font-weight:600;margin-bottom:.25rem}
                     .phase-card .phase-desc{font-size:.7rem;color:var(--text-dim)}
                     .phase-card .phase-badge{display:inline-block;font-size:.55rem;font-weight:600;padding:.15rem .4rem;border-radius:3px;margin-left:.5rem}
                     .badge-kyc{background:rgba(34,197,94,.15);color:var(--green)}
-                    .badge-kycb{background:rgba(139,92,246,.15);color:var(--accent-light)}
+                    .badge-kycb{background:rgba(114,204,99,.15);color:var(--accent-light)}
                     .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:2rem}
                     .stat-card{padding:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px}
                     .stat-card .stat-label{font-size:.6rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem}
@@ -4263,7 +4263,7 @@
                     .progress-bar{height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin-bottom:.35rem}
                     .progress-fill{height:100%;border-radius:3px;background:var(--accent);transition:width .3s}
                     .progress-text{font-size:.65rem;color:var(--text-dim);text-align:right}
-                    .btn-launch{padding:.85rem 2rem;border-radius:10px;background:var(--accent);border:none;color:#fff;font-weight:700;cursor:pointer;font-size:.85rem;transition:all .15s;box-shadow:0 4px 16px rgba(139,92,246,.25)}
+                    .btn-launch{padding:.85rem 2rem;border-radius:10px;background:var(--accent);border:none;color:#fff;font-weight:700;cursor:pointer;font-size:.85rem;transition:all .15s;box-shadow:0 4px 16px rgba(114,204,99,.25)}
                     .btn-launch:hover{background:var(--accent-dark);transform:translateY(-1px)}
                     .btn-launch:disabled{opacity:.4;cursor:not-allowed;transform:none}
                     .allocation-bar{display:flex;gap:.25rem;height:24px;border-radius:6px;overflow:hidden;margin:.75rem 0}
@@ -4386,7 +4386,7 @@
                                     <div style="font-size:.7rem;font-weight:600">Team & Reserve</div>
                                     <div style="font-size:.65rem;color:var(--text-muted)" id="autoSplit">55% — configured separately after deploy</div>
                                 </div>
-                                <span style="font-size:.55rem;padding:.2rem .5rem;border-radius:4px;background:rgba(139,92,246,.1);color:var(--accent-light)">Auto-split</span>
+                                <span style="font-size:.55rem;padding:.2rem .5rem;border-radius:4px;background:rgba(114,204,99,.1);color:var(--accent-light)">Auto-split</span>
                             </div>
                         </div>
 
@@ -4503,7 +4503,7 @@
                                     </div>
                                 </div>
 
-                                <div style="margin-top:1rem;padding:1rem;background:rgba(139,92,246,.05);border:1px solid rgba(139,92,246,.15);border-radius:8px">
+                                <div style="margin-top:1rem;padding:1rem;background:rgba(114,204,99,.05);border:1px solid rgba(114,204,99,.15);border-radius:8px">
                                     <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                                         <span style="font-size:.7rem;font-weight:600;color:var(--accent)">Automated Trigger</span>
@@ -4773,7 +4773,7 @@
             if(autoEl) autoEl.textContent = teamReserve + '% — configured separately after deploy';
 
             const data = [];
-            if(salePct > 0) data.push({ name: 'Sale', pct: salePct, color: '#8b5cf6', vest: 'HCA (no vesting)' });
+            if(salePct > 0) data.push({ name: 'Sale', pct: salePct, color: '#72cc63', vest: 'HCA (no vesting)' });
             if(liqPct > 0) data.push({ name: 'Liquidity', pct: liqPct, color: '#eab308', vest: 'Auto-added to DEX' });
             if(teamReserve > 0) data.push({ name: 'Team & Reserve', pct: teamReserve, color: '#64748b', vest: 'Configured post-deploy' });
 
@@ -5237,7 +5237,7 @@
                     </div>
                     <div style="display:flex;gap:.5rem;align-items:center">
                         <div style="padding:.35rem .7rem;background:rgba(34,197,94,.1);border-radius:6px;font-size:.6rem;color:var(--green);font-weight:600">● 3 Agents Online</div>
-                        <div style="padding:.35rem .7rem;background:rgba(139,92,246,.1);border-radius:6px;font-size:.6rem;color:var(--accent-light);font-weight:600">4 Strategies</div>
+                        <div style="padding:.35rem .7rem;background:rgba(114,204,99,.1);border-radius:6px;font-size:.6rem;color:var(--accent-light);font-weight:600">4 Strategies</div>
                     </div>
                 </div>
                 ${tabHTML}
@@ -5277,7 +5277,7 @@
                         `).join('')}
 
                         <!-- Mid Price -->
-                        <div style="padding:.5rem .6rem;text-align:center;margin:.25rem 0;background:rgba(139,92,246,.06);border-radius:6px">
+                        <div style="padding:.5rem .6rem;text-align:center;margin:.25rem 0;background:rgba(114,204,99,.06);border-radius:6px">
                             <span style="font-size:.9rem;font-weight:800;color:var(--accent-light)">$${midPrice.toFixed(4)}</span>
                             <span style="font-size:.55rem;color:var(--text-dim);margin-left:.5rem">Spread: $${spread.toFixed(4)} (${(spread/midPrice*100).toFixed(2)}%)</span>
                         </div>
@@ -5370,7 +5370,7 @@
                             </div>
 
                             <!-- AI Recommendation -->
-                            <div style="padding:.6rem;background:rgba(139,92,246,.08);border-radius:8px;margin-bottom:1rem">
+                            <div style="padding:.6rem;background:rgba(114,204,99,.08);border-radius:8px;margin-bottom:1rem">
                                 <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.3rem">
                                     <span style="font-size:.6rem;color:var(--accent);font-weight:600">🧠 AI Suggestion</span>
                                 </div>
@@ -5464,7 +5464,7 @@
                     ${agentsData.map(a => `
                         <div class="agent-card">
                             <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.75rem">
-                                <div style="width:40px;height:40px;border-radius:10px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;font-size:1.1rem">${typeIcons[a.type]||'🤖'}</div>
+                                <div style="width:40px;height:40px;border-radius:10px;background:rgba(114,204,99,.1);display:flex;align-items:center;justify-content:center;font-size:1.1rem">${typeIcons[a.type]||'🤖'}</div>
                                 <div style="flex:1">
                                     <div style="font-size:.85rem;font-weight:700">${a.name} <span style="font-size:.6rem;color:var(--text-dim);font-weight:400">${a.type}</span></div>
                                     <div style="display:flex;align-items:center;gap:.4rem">
@@ -5492,9 +5492,9 @@
                     <div style="font-size:.85rem;font-weight:700;margin-bottom:.75rem">Your Agents</div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.5rem">
                         ${userSummonedAgents.map(a => `
-                            <div class="agent-card" style="border-color:rgba(139,92,246,.2)">
+                            <div class="agent-card" style="border-color:rgba(114,204,99,.2)">
                                 <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.75rem">
-                                    <div style="width:40px;height:40px;border-radius:10px;background:rgba(139,92,246,.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem">${a.icon}</div>
+                                    <div style="width:40px;height:40px;border-radius:10px;background:rgba(114,204,99,.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem">${a.icon}</div>
                                     <div style="flex:1">
                                         <div style="font-size:.85rem;font-weight:700">${a.name}</div>
                                         <div style="display:flex;align-items:center;gap:.4rem">
@@ -5504,7 +5504,7 @@
                                         </div>
                                     </div>
                                     <div style="text-align:right">
-                                        <div style="font-size:.55rem;padding:.15rem .35rem;border-radius:3px;background:rgba(139,92,246,.1);color:var(--accent-light);font-weight:600">Sovereign</div>
+                                        <div style="font-size:.55rem;padding:.15rem .35rem;border-radius:3px;background:rgba(114,204,99,.1);color:var(--accent-light);font-weight:600">Sovereign</div>
                                     </div>
                                 </div>
                                 <div style="padding:.5rem .6rem;background:var(--bg);border-radius:6px;margin-bottom:.5rem">
@@ -5634,7 +5634,7 @@
                     </div>
 
                     <!-- Fee -->
-                    <div style="padding:.6rem;background:rgba(139,92,246,.06);border-radius:8px;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center">
+                    <div style="padding:.6rem;background:rgba(114,204,99,.06);border-radius:8px;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center">
                         <div>
                             <div style="font-size:.6rem;color:var(--text-dim)">Deployment Fee</div>
                             <div style="font-size:.5rem;color:var(--text-muted)">Governor + Agent + Scheduler</div>
@@ -5741,7 +5741,7 @@
                 <div style="margin-bottom:1.5rem">
                     ${oracleFeeds.map(f => `
                         <div class="oracle-row">
-                            <div style="width:36px;height:36px;border-radius:8px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:var(--accent)">${f.token.charAt(0)}</div>
+                            <div style="width:36px;height:36px;border-radius:8px;background:rgba(114,204,99,.1);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:var(--accent)">${f.token.charAt(0)}</div>
                             <div style="flex:1">
                                 <div style="font-size:.8rem;font-weight:700">${f.token}</div>
                                 <div style="font-size:.55rem;color:var(--text-dim);font-family:var(--font-mono)">${f.address.slice(0,10)}...${f.address.slice(-6)}</div>
@@ -5788,7 +5788,7 @@
                         <div style="font-size:.8rem;font-weight:700">HIVE Price Feed (24h)</div>
                         <div style="display:flex;gap:.35rem">
                             ${['1H','4H','24H','7D'].map((t,i) => `
-                                <div style="padding:.25rem .5rem;font-size:.55rem;font-weight:600;cursor:pointer;border-radius:4px;background:${i===2?'rgba(139,92,246,.15)':'transparent'};color:${i===2?'var(--accent-light)':'var(--text-dim)'}">${t}</div>
+                                <div style="padding:.25rem .5rem;font-size:.55rem;font-weight:600;cursor:pointer;border-radius:4px;background:${i===2?'rgba(114,204,99,.15)':'transparent'};color:${i===2?'var(--accent-light)':'var(--text-dim)'}">${t}</div>
                             `).join('')}
                         </div>
                     </div>
@@ -6098,7 +6098,7 @@
                 html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem">';
                 html += '<div><h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:800">Lock / Vesting</h1>';
                 html += '<p style="font-size:.8rem;color:var(--text-dim);margin-top:.25rem">Token vesting schedules with linear, cliff, and custom unlock</p></div>';
-                if(totalClaimable > 0) html += '<button onclick="claimAllVesting()" style="padding:.6rem 1.2rem;border-radius:8px;border:1px solid var(--accent);background:rgba(139,92,246,.1);color:var(--accent-light);font-weight:600;cursor:pointer;font-size:.8rem">Claim All</button>';
+                if(totalClaimable > 0) html += '<button onclick="claimAllVesting()" style="padding:.6rem 1.2rem;border-radius:8px;border:1px solid var(--accent);background:rgba(114,204,99,.1);color:var(--accent-light);font-weight:600;cursor:pointer;font-size:.8rem">Claim All</button>';
                 html += '</div>';
 
                 // Summary stats
@@ -6128,7 +6128,7 @@
                     html += '<div style="padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px">';
                     html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">';
                     html += '<div style="display:flex;align-items:center;gap:.75rem">';
-                    html += '<div style="width:36px;height:36px;border-radius:8px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:var(--accent-light)">' + s.label.charAt(0).toUpperCase() + '</div>';
+                    html += '<div style="width:36px;height:36px;border-radius:8px;background:rgba(114,204,99,.1);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:var(--accent-light)">' + s.label.charAt(0).toUpperCase() + '</div>';
                     html += '<div><div style="font-weight:600;font-size:.9rem">' + s.label + '</div>';
                     html += '<div style="font-size:.65rem;color:var(--text-dim)">' + s.typeLabel + ' · ' + hive.shortAddr(s.token) + '</div></div></div>';
                     html += '<div style="text-align:right">';
@@ -6196,7 +6196,7 @@
                 html += '<p style="font-size:.8rem;color:var(--text-dim);margin-top:.25rem">Protocol fee collector & distributor</p></div>';
 
                 // Balance card
-                html += '<div style="padding:2rem;background:linear-gradient(135deg,rgba(139,92,246,.08),rgba(139,92,246,.02));border:1px solid rgba(139,92,246,.15);border-radius:16px;margin-bottom:2rem;text-align:center">';
+                html += '<div style="padding:2rem;background:linear-gradient(135deg,rgba(114,204,99,.08),rgba(114,204,99,.02));border:1px solid rgba(114,204,99,.15);border-radius:16px;margin-bottom:2rem;text-align:center">';
                 html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem">Treasury Balance</div>';
                 html += '<div style="font-size:2.5rem;font-weight:800;font-family:var(--font-display)">' + formatNum(Math.round(bal)) + ' <span style="font-size:1rem;font-weight:400;color:var(--text-dim)">RITUAL</span></div>';
                 html += '<div style="font-size:.75rem;color:var(--text-dim);margin-top:.5rem">Available for distribution</div>';
@@ -6293,7 +6293,7 @@
             ];
             html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem">';
             events.forEach(e => {
-                html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;background:' + (e.active ? 'rgba(139,92,246,.05)' : 'var(--bg)') + ';border:1px solid ' + (e.active ? 'rgba(139,92,246,.15)' : 'var(--border)') + ';border-radius:8px;cursor:pointer" onclick="toggleEventSub(this)">';
+                html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;background:' + (e.active ? 'rgba(114,204,99,.05)' : 'var(--bg)') + ';border:1px solid ' + (e.active ? 'rgba(114,204,99,.15)' : 'var(--border)') + ';border-radius:8px;cursor:pointer" onclick="toggleEventSub(this)">';
                 html += '<div style="display:flex;align-items:center;gap:.75rem"><span style="font-size:1.1rem">' + e.icon + '</span>';
                 html += '<div><div style="font-size:.8rem;font-weight:600">' + e.name + '</div><div style="font-size:.6rem;color:var(--text-dim)">' + e.desc + '</div></div></div>';
                 html += '<div style="width:36px;height:20px;border-radius:10px;background:' + (e.active ? 'var(--accent)' : 'rgba(255,255,255,.1)') + ';position:relative;cursor:pointer">';
@@ -6306,7 +6306,7 @@
             html += '<div style="padding:1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;margin-bottom:2rem">';
             html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">';
             html += '<div style="font-size:.85rem;font-weight:600">Price Alerts <span style="font-size:.65rem;color:var(--text-dim);font-weight:400">(' + alertCount + ' active)</span></div>';
-            html += '<button onclick="addPriceAlert()" style="padding:.35rem .75rem;border-radius:6px;border:1px solid var(--accent);background:rgba(139,92,246,.1);color:var(--accent-light);font-weight:600;cursor:pointer;font-size:.7rem">+ Add Alert</button></div>';
+            html += '<button onclick="addPriceAlert()" style="padding:.35rem .75rem;border-radius:6px;border:1px solid var(--accent);background:rgba(114,204,99,.1);color:var(--accent-light);font-weight:600;cursor:pointer;font-size:.7rem">+ Add Alert</button></div>';
             
             if(alertCount === 0){
                 html += '<div style="text-align:center;padding:2rem;color:var(--text-muted);font-size:.8rem">No price alerts set</div>';
@@ -6330,9 +6330,9 @@
         }
 
         function toggleEventSub(el) {
-            const isActive = el.style.borderColor.indexOf('139,92,246') >= 0;
-            el.style.borderColor = isActive ? 'var(--border)' : 'rgba(139,92,246,.15)';
-            el.style.background = isActive ? 'var(--bg)' : 'rgba(139,92,246,.05)';
+            const isActive = el.style.borderColor.indexOf('114,204,99') >= 0;
+            el.style.borderColor = isActive ? 'var(--border)' : 'rgba(114,204,99,.15)';
+            el.style.background = isActive ? 'var(--bg)' : 'rgba(114,204,99,.05)';
         }
         function markAllRead(){
             if(!connectedAddress) return;
@@ -6400,11 +6400,11 @@
             html += '<p style="font-size:.8rem;color:var(--text-dim);margin-top:.25rem">Refer friends, earn rewards, climb tiers</p></div>';
 
             // Referral code card
-            html += '<div style="padding:1.5rem;background:linear-gradient(135deg,rgba(139,92,246,.08),rgba(34,197,94,.04));border:1px solid rgba(139,92,246,.15);border-radius:16px;margin-bottom:2rem;text-align:center">';
+            html += '<div style="padding:1.5rem;background:linear-gradient(135deg,rgba(114,204,99,.08),rgba(34,197,94,.04));border:1px solid rgba(114,204,99,.15);border-radius:16px;margin-bottom:2rem;text-align:center">';
             html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem">Your Referral Code</div>';
             html += '<div style="font-size:1.8rem;font-weight:800;font-family:var(--font-mono);letter-spacing:.15em;color:var(--accent-light)">' + myCode + '</div>';
             html += '<div style="margin-top:1rem;display:flex;gap:.75rem;justify-content:center">';
-            html += '<button onclick="copyToClipboard(this,\'' + myCode + '\', \'Copy Code\')" style="padding:.5rem 1.2rem;border-radius:8px;border:1px solid var(--accent);background:rgba(139,92,246,.1);color:var(--accent-light);font-weight:600;cursor:pointer;font-size:.8rem">Copy Code</button>';
+            html += '<button onclick="copyToClipboard(this,\'' + myCode + '\', \'Copy Code\')" style="padding:.5rem 1.2rem;border-radius:8px;border:1px solid var(--accent);background:rgba(114,204,99,.1);color:var(--accent-light);font-weight:600;cursor:pointer;font-size:.8rem">Copy Code</button>';
             html += '<button onclick="copyToClipboard(this, window.location.origin + \'/?ref=' + myCode + '\', \'Copy Link\')" style="padding:.5rem 1.2rem;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-weight:500;cursor:pointer;font-size:.8rem">Copy Link</button>';
             html += '</div></div>';
 
@@ -6454,7 +6454,7 @@
                     const isActive = r.claimed;
                     html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:.65rem 0;border-bottom:1px solid var(--border)">';
                     html += '<div style="display:flex;align-items:center;gap:.75rem">';
-                    html += '<div style="width:28px;height:28px;border-radius:6px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;color:var(--accent-light)">' + (r.refereeHash ? r.refereeHash.slice(2,4).toUpperCase() : '?') + '</div>';
+                    html += '<div style="width:28px;height:28px;border-radius:6px;background:rgba(114,204,99,.1);display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;color:var(--accent-light)">' + (r.refereeHash ? r.refereeHash.slice(2,4).toUpperCase() : '?') + '</div>';
                     html += '<div><div style="font-size:.8rem;font-weight:500;font-family:var(--font-mono)">' + addrShort + '</div>';
                     html += '<div style="font-size:.6rem;color:var(--text-dim)">' + hive.timeAgo(r.timestamp) + '</div></div></div>';
                     html += '<div style="display:flex;align-items:center;gap:.75rem">';
@@ -6510,7 +6510,7 @@
             const sectorMap = {};
             networkAgents.forEach(a => { if(!sectorMap[a.sector]) sectorMap[a.sector] = 0; sectorMap[a.sector]++; });
             const avgWR = networkAgents.length > 0 ? Math.round(networkAgents.reduce((a,b) => a+b.winRate, 0) / networkAgents.length) : 0;
-            const sectorColors = {DeFi:'#8b5cf6',Trading:'#22c55e',Research:'#3b82f6',Governance:'#f59e0b',Security:'#ef4444',Custom:'#6b7280'};
+            const sectorColors = {DeFi:'#72cc63',Trading:'#22c55e',Research:'#3b82f6',Governance:'#f59e0b',Security:'#ef4444',Custom:'#6b7280'};
             const sectorIcons = {DeFi:'💰',Trading:'📈',Research:'🔬',Governance:'🛡️',Security:'🔒',Custom:'⚡'};
 
             let html = '';
@@ -6521,7 +6521,7 @@
             html += '<h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:800;margin:0">Federated Learning</h1>';
             html += '<div style="display:flex;gap:.4rem">';
             html += '<div style="padding:.4rem .65rem;background:rgba(34,197,94,.1);border-radius:5px;font-size:.65rem;color:var(--green);font-weight:600">● '+activeNetwork+' Active</div>';
-            html += '<div style="padding:.4rem .65rem;background:rgba(139,92,246,.1);border-radius:5px;font-size:.65rem;color:var(--accent-light);font-weight:600">'+networkAgents.length+' Agents</div>';
+            html += '<div style="padding:.4rem .65rem;background:rgba(114,204,99,.1);border-radius:5px;font-size:.65rem;color:var(--accent-light);font-weight:600">'+networkAgents.length+' Agents</div>';
             html += '</div></div>';
             html += '<div style="font-size:.8rem;color:var(--text-dim)">Network-wide agent intelligence sharing on Ritual Chain</div>';
             html += '</div>';
@@ -6666,7 +6666,7 @@
                     
                     html += '<tr style="border-bottom:1px solid rgba(255,255,255,.03)">';
                     html += '<td style="padding:.75rem .5rem"><div style="display:flex;align-items:center;gap:.5rem">';
-                    html += '<div style="width:28px;height:28px;border-radius:6px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:var(--accent-light)">' + t.symbol.charAt(0) + '</div>';
+                    html += '<div style="width:28px;height:28px;border-radius:6px;background:rgba(114,204,99,.1);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:var(--accent-light)">' + t.symbol.charAt(0) + '</div>';
                     html += '<div><div style="font-size:.8rem;font-weight:600">' + t.symbol + '</div>';
                     html += '<div style="font-size:.55rem;color:var(--text-dim)">' + hive.shortAddr(t.addr) + '</div></div></div></td>';
                     html += '<td style="text-align:right;padding:.75rem .5rem;font-size:.85rem;font-weight:700;font-family:var(--font-mono)">$' + price.toFixed(6) + '</td>';
@@ -6880,7 +6880,7 @@
                     html += '</div>';
                 });
                 html += '</div>';
-                html += '<div style="margin-top:1.5rem;padding:1rem;background:rgba(139,92,246,.05);border:1px solid rgba(139,92,246,.2);border-radius:10px">';
+                html += '<div style="margin-top:1.5rem;padding:1rem;background:rgba(114,204,99,.05);border:1px solid rgba(114,204,99,.2);border-radius:10px">';
                 html += '<div style="font-size:.75rem;font-weight:600;color:var(--accent);margin-bottom:.3rem">ℹ️ How DKMS Works</div>';
                 html += '<div style="font-size:.7rem;color:var(--text-muted);line-height:1.6">1. Key derivation request sent to Ritual DKMS precompile (0x0803)<br>2. TEE enclave generates key pair — private key NEVER leaves enclave<br>3. Public key returned to contract, stored on-chain<br>4. Data encrypted with ECIES using the derived public key<br>5. Only the TEE enclave can decrypt — owner calls decrypt() to get plaintext</div>';
                 html += '</div>';
@@ -6927,7 +6927,7 @@
                     // Claim buttons
                     html += '<div style="display:flex;gap:1rem">';
                     html += '<button onclick="claimStakerReward()" style="padding:.6rem 1.5rem;border-radius:8px;border:1px solid var(--green);background:rgba(34,197,94,.1);color:var(--green);font-weight:600;cursor:pointer;font-size:.8rem">Claim Staker Reward</button>';
-                    html += '<button onclick="claimReferrerFee()" style="padding:.6rem 1.5rem;border-radius:8px;border:1px solid var(--accent);background:rgba(139,92,246,.1);color:var(--accent);font-weight:600;cursor:pointer;font-size:.8rem">Claim Referrer Fee</button>';
+                    html += '<button onclick="claimReferrerFee()" style="padding:.6rem 1.5rem;border-radius:8px;border:1px solid var(--accent);background:rgba(114,204,99,.1);color:var(--accent);font-weight:600;cursor:pointer;font-size:.8rem">Claim Referrer Fee</button>';
                     html += '</div>';
                 }
 
