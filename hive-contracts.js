@@ -28,7 +28,7 @@ const HIVE = {
     HiveAutoStrategy: '0x1b3A537D4572c1020Bc72c9f4951704966d3BEF9',
 
     // AI
-    HiveBrain:        '0x0ad0234d3EA8bd41ee571b1B317fA98d46E642B4',
+    HiveBrain:        '0xCB7B3C9D008aE6ad5075936df5d44d37185352e8',
     HiveAgent:        '0x842441aB565a3C6C8183ABB08a735B2DEA184327',
     HiveFLock:        '0xb0f436d799935Fbe6c7D8885E4345B588B16F5d2',
     Strategy:         '0xc2d24F72D2B5A82F9cBb0C6Aa4bd5157bc66b202',
@@ -892,7 +892,8 @@ class HiveProvider {
     try {
       const [totalFees, totalDistributed, reserve, pendingStaker, pendingReferrer] = await Promise.allSettled([
         hp.totalFeesCollected(),
-        hp.totalDistributed(),
+        // totalDistributed not in contract
+        Promise.resolve(0n),
         hp.reserveBalance(),
         address ? hp.pendingStakerReward(address) : Promise.resolve(0n),
         address ? hp.pendingReferrerFees(address) : Promise.resolve(0n),
