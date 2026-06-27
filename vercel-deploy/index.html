@@ -60,10 +60,10 @@
     ::selection { background: rgba(87,211,107,0.3); color: #fff; }
   </style>
 </head>
-<body class="h-screen flex flex-col overflow-hidden">
+<body class="min-h-screen md:h-screen flex flex-col">
 
 <!-- Header -->
-<header class="border-b border-white/5 px-6 py-3 flex-shrink-0" style="border-image:linear-gradient(90deg,transparent,#57d36b,transparent) 1">
+<header class="border-b border-white/5 px-4 md:px-6 py-2 md:py-3 flex-shrink-0" style="border-image:linear-gradient(90deg,transparent,#57d36b,transparent) 1">
   <div class="max-w-5xl mx-auto flex items-center justify-between">
     <div></div>
     <div class="flex items-center gap-3">
@@ -76,7 +76,7 @@
 </header>
 
 <!-- Main -->
-<main class="max-w-5xl mx-auto px-6 py-4 flex-1 w-full overflow-hidden flex flex-col">
+<main class="max-w-5xl mx-auto px-4 md:px-6 py-4 flex-1 w-full overflow-y-auto flex flex-col">
 
   <!-- Hero -->
   <div class="text-center mb-4">
@@ -100,7 +100,7 @@
   </div>
 
   <!-- Tabs (centered) -->
-  <div class="flex justify-center gap-6 mb-4 border-b border-white/5">
+  <div class="flex justify-center gap-3 md:gap-6 mb-4 border-b border-white/5 overflow-x-auto">
     <button onclick="switchTab('deploy')" id="tab-deploy" class="tab-active pb-2 text-xs font-medium transition">Deploy</button>
     <button onclick="switchTab('agents')" id="tab-agents" class="tab-inactive pb-2 text-xs font-medium transition">My Agents</button>
     <button onclick="switchTab('manage')" id="tab-manage" class="tab-inactive pb-2 text-xs font-medium transition">Manage</button>
@@ -110,13 +110,13 @@
 
   <!-- ═══════════════ DEPLOY TAB ═══════════════ -->
   <div id="panel-deploy" class="fade-in flex-1 overflow-hidden">
-    <div class="grid md:grid-cols-2 gap-3 h-full">
+    <div class="grid md:grid-cols-2 gap-3">
 
       <!-- Left: Config -->
-      <div class="space-y-3 overflow-hidden">
+      <div class="space-y-3">
 
         <!-- Step 1: LLM Provider -->
-        <div class="glass rounded-xl p-3">
+        <div class="glass rounded-xl p-2 md:p-3">
           <div class="flex items-center gap-2 mb-3">
             <div class="step-badge step-active">1</div>
             <h3 class="text-xs font-semibold" style="color:#57d36b">LLM Provider</h3>
@@ -134,17 +134,17 @@
             </div>
             <div id="apikey-group" style="display:none">
               <label class="text-xs text-slate-500 mb-1 block">API Key</label>
-              <input id="d-apikey" type="password" placeholder="sk-or-v1-..." class="w-full rounded-lg px-3 py-2 text-sm mono" />
+              <input id="d-apikey" type="password" placeholder="sk-or-v1-..." class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
             </div>
             <div>
               <label class="text-xs text-slate-500 mb-1 block">Model</label>
-              <select id="d-model" class="w-full rounded-lg px-3 py-2 text-sm mono"></select>
+              <select id="d-model" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono"></select>
             </div>
           </div>
         </div>
 
         <!-- Step 2: HuggingFace -->
-        <div class="glass rounded-xl p-3">
+        <div class="glass rounded-xl p-2 md:p-3">
           <div class="flex items-center gap-2 mb-3">
             <div class="step-badge step-active">2</div>
             <h3 class="text-xs font-semibold" style="color:#57d36b">HuggingFace</h3>
@@ -152,19 +152,19 @@
           <div class="space-y-2">
             <div>
               <label class="text-xs text-slate-500 mb-1 block">Dataset (username/repo-name)</label>
-              <input id="d-hfrepo" type="text" placeholder="myname/agent-data" class="w-full rounded-lg px-3 py-2 text-sm mono" />
+              <input id="d-hfrepo" type="text" placeholder="myname/agent-data" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
               <a href="https://huggingface.co/new-dataset" target="_blank" class="text-xs mt-1 inline-block" style="color:#57d36b">Create dataset</a>
             </div>
             <div>
               <label class="text-xs text-slate-500 mb-1 block">Token (write access)</label>
-              <input id="d-hftoken" type="password" placeholder="hf_..." class="w-full rounded-lg px-3 py-2 text-sm mono" />
+              <input id="d-hftoken" type="password" placeholder="hf_..." class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
               <p class="text-xs mt-1" style="color:#eab308">Requires <strong>write</strong> access.</p>
             </div>
           </div>
         </div>
 
         <!-- Step 3: Agent Config -->
-        <div class="glass rounded-xl p-3">
+        <div class="glass rounded-xl p-2 md:p-3">
           <div class="flex items-center gap-2 mb-3">
             <div class="step-badge step-active">3</div>
             <h3 class="text-xs font-semibold" style="color:#57d36b">Agent Config</h3>
@@ -173,7 +173,7 @@
             <div>
               <label class="text-xs text-slate-500 mb-1 block">Salt (unique per agent)</label>
               <div class="flex gap-2">
-                <input id="d-salt" type="text" value="my-sovereign-agent" class="w-full rounded-lg px-3 py-2 text-sm mono" />
+                <input id="d-salt" type="text" value="my-sovereign-agent" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
                 <button onclick="randomizeSalt()" class="btn-outline rounded-lg px-3 py-2 text-sm flex-shrink-0" title="Randomize salt"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3"/></svg></button>
               </div>
             </div>
@@ -184,17 +184,17 @@
                 <button onclick="loadTemplate('market')" class="btn-outline rounded-lg px-2 py-0.5 text-xs">Market</button>
                 <button onclick="loadTemplate('research')" class="btn-outline rounded-lg px-2 py-0.5 text-xs">Research</button>
               </div>
-              <textarea id="d-prompt" rows="3" placeholder="You are a sovereign AI agent on Ritual Chain..." class="w-full rounded-lg px-3 py-2 text-sm mono"></textarea>
+              <textarea id="d-prompt" rows="3" placeholder="You are a sovereign AI agent on Ritual Chain..." class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono"></textarea>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Right: Schedule + Budget + Deploy -->
-      <div class="space-y-3 overflow-hidden">
+      <div class="space-y-3">
 
         <!-- Step 4: Schedule & Budget -->
-        <div class="glass rounded-xl p-3">
+        <div class="glass rounded-xl p-2 md:p-3">
           <div class="flex items-center gap-2 mb-3">
             <div class="step-badge step-active">4</div>
             <h3 class="text-xs font-semibold" style="color:#57d36b">Schedule & Budget</h3>
@@ -227,7 +227,7 @@
             </div>
             <div>
               <label class="text-xs text-slate-500 mb-1 block">Scheduler TTL (blocks)</label>
-              <input id="d-schedttl" type="number" value="500" step="100" min="100" max="10000" class="w-full rounded-lg px-3 py-2 text-sm mono" onchange="validateSchedule()" />
+              <input id="d-schedttl" type="number" value="500" step="100" min="100" max="10000" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" onchange="validateSchedule()" />
             </div>
             <!-- Live schedule validation -->
             <div id="schedule-validation" class="rounded-lg px-3 py-2 border" style="background:rgba(57,255,20,0.08);border-color:rgba(57,255,20,0.2)">
@@ -243,15 +243,15 @@
 
             <!-- Budget & Lock -->
             <div class="border-t border-white/5 pt-2 mt-2">
-              <div class="grid grid-cols-2 gap-2">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                 <div>
                   <label class="text-xs text-slate-500 mb-1 block">Fund Amount (RITUAL)</label>
-                  <input id="d-fund" type="number" value="0.15" step="0.01" min="0.15" class="w-full rounded-lg px-3 py-2 text-sm mono" />
+                  <input id="d-fund" type="number" value="0.15" step="0.01" min="0.15" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
                   <p class="text-xs text-red-400 mt-0.5">Minimum 0.15</p>
                 </div>
                 <div>
                   <label class="text-xs text-slate-500 mb-1 block">Max Budget (RITUAL)</label>
-                  <input id="d-maxbudget" type="number" value="0.5" step="0.01" min="0.01" class="w-full rounded-lg px-3 py-2 text-sm mono" />
+                  <input id="d-maxbudget" type="number" value="0.5" step="0.01" min="0.01" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
                 </div>
               </div>
               <div class="mt-2">
@@ -278,38 +278,38 @@
             <details class="border-t border-white/5 pt-2 mt-2">
               <summary class="text-xs text-slate-500 cursor-pointer hover:text-slate-300 select-none">Advanced Settings</summary>
               <div class="space-y-2 mt-2">
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                   <div>
                     <label class="text-xs text-slate-500 mb-1 block">Gas Limit (configure)</label>
-                    <input id="d-gaslimit" type="number" value="5000000" step="500000" min="3000000" class="w-full rounded-lg px-3 py-2 text-sm mono" />
+                    <input id="d-gaslimit" type="number" value="5000000" step="500000" min="3000000" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
                   </div>
                   <div>
                     <label class="text-xs text-slate-500 mb-1 block">Deploy Gas Limit</label>
-                    <input id="d-deploygas" type="number" value="3500000" step="500000" min="3000000" class="w-full rounded-lg px-3 py-2 text-sm mono" />
+                    <input id="d-deploygas" type="number" value="3500000" step="500000" min="3000000" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
                   </div>
                 </div>
-                <div class="grid grid-cols-3 gap-2">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                   <div>
                     <label class="text-xs text-slate-500 mb-1 block">Scheduler Gas</label>
-                    <input id="d-schedgas" type="number" value="800000" step="100000" min="500000" class="w-full rounded-lg px-3 py-2 text-sm mono" />
+                    <input id="d-schedgas" type="number" value="800000" step="100000" min="500000" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
                   </div>
                   <div>
                     <label class="text-xs text-slate-500 mb-1 block">Rollover BPS</label>
-                    <input id="d-rolloverbps" type="number" value="5000" step="500" min="1000" max="9000" class="w-full rounded-lg px-3 py-2 text-sm mono" />
+                    <input id="d-rolloverbps" type="number" value="5000" step="500" min="1000" max="9000" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
                   </div>
                   <div>
                     <label class="text-xs text-slate-500 mb-1 block">Rollover Retry</label>
-                    <input id="d-rolloverretry" type="number" value="1" min="1" max="10" class="w-full rounded-lg px-3 py-2 text-sm mono" />
+                    <input id="d-rolloverretry" type="number" value="1" min="1" max="10" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
                   </div>
                 </div>
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                   <div>
                     <label class="text-xs text-slate-500 mb-1 block">Max Fee (gwei)</label>
-                    <input id="d-maxfee" type="number" value="20" step="5" min="1" class="w-full rounded-lg px-3 py-2 text-sm mono" />
+                    <input id="d-maxfee" type="number" value="20" step="5" min="1" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
                   </div>
                   <div>
                     <label class="text-xs text-slate-500 mb-1 block">Priority Fee (gwei)</label>
-                    <input id="d-priorityfee" type="number" value="1" step="0.5" min="0.1" class="w-full rounded-lg px-3 py-2 text-sm mono" />
+                    <input id="d-priorityfee" type="number" value="1" step="0.5" min="0.1" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
                   </div>
                 </div>
               </div>
@@ -317,7 +317,7 @@
 
             <!-- Cost estimate -->
             <div class="rounded-lg px-3 py-2 border" style="background:rgba(57,255,20,0.08);border-color:rgba(57,255,20,0.2)">
-              <div class="flex items-center gap-3 text-xs">
+              <div class="flex flex-wrap items-center gap-2 md:gap-3 text-xs">
                 <span class="text-slate-400">Deploy: ~0.02</span>
                 <span class="text-slate-400">Fund: <span id="est-fund">0.15</span></span>
                 <span class="text-white font-semibold">Total: ~<span id="est-total">0.17</span> RITUAL</span>
@@ -349,7 +349,7 @@
   <!-- ═══════════════ MY AGENTS TAB ═══════════════ -->
   <div id="panel-agents" class="hidden fade-in flex-1 overflow-y-auto">
     <div class="max-w-2xl mx-auto space-y-3">
-      <div class="glass rounded-xl p-3">
+      <div class="glass rounded-xl p-2 md:p-3">
         <button onclick="loadMyAgents()" id="agents-btn" class="btn-primary w-full rounded-xl py-2 font-semibold text-xs">
           Load My Agents
         </button>
@@ -363,20 +363,20 @@
     <div class="max-w-xl mx-auto space-y-3">
 
       <!-- Deposit to RitualWallet -->
-      <div class="glass rounded-xl p-3">
+      <div class="glass rounded-xl p-2 md:p-3">
         <h3 class="text-xs font-semibold mb-3" style="color:#57d36b">Deposit to RitualWallet</h3>
         <div class="space-y-2">
           <div>
             <label class="text-xs text-slate-500 mb-1 block">Agent Address</label>
-            <input id="m-deposit-agent" type="text" placeholder="0x..." class="w-full rounded-lg px-3 py-2 text-sm mono" />
+            <input id="m-deposit-agent" type="text" placeholder="0x..." class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
           </div>
           <div>
             <label class="text-xs text-slate-500 mb-1 block">Amount (RITUAL)</label>
-            <input id="m-deposit-amount" type="number" value="0.1" step="0.01" min="0.01" class="w-full rounded-lg px-3 py-2 text-sm mono" />
+            <input id="m-deposit-amount" type="number" value="0.1" step="0.01" min="0.01" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
           </div>
           <div>
             <label class="text-xs text-slate-500 mb-1 block">Lock Duration (blocks)</label>
-            <input id="m-deposit-lock" type="number" value="100000" step="1000" min="1000" class="w-full rounded-lg px-3 py-2 text-sm mono" />
+            <input id="m-deposit-lock" type="number" value="100000" step="1000" min="1000" class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
             <p class="text-xs text-slate-600 mt-0.5">~40.3 hours (100,000 blocks)</p>
           </div>
           <button onclick="depositToWallet()" id="deposit-btn" class="btn-primary w-full rounded-xl py-2 font-semibold text-xs">Deposit</button>
@@ -385,12 +385,12 @@
       </div>
 
       <!-- Restart Agent -->
-      <div class="glass rounded-xl p-3">
+      <div class="glass rounded-xl p-2 md:p-3">
         <h3 class="text-xs font-semibold mb-3" style="color:#eab308">Restart Agent</h3>
         <div class="space-y-2">
           <div>
             <label class="text-xs text-slate-500 mb-1 block">Agent Address</label>
-            <input id="m-restart-agent" type="text" placeholder="0x..." class="w-full rounded-lg px-3 py-2 text-sm mono" />
+            <input id="m-restart-agent" type="text" placeholder="0x..." class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
           </div>
           <button onclick="restartAgent()" id="restart-btn" class="btn-primary w-full rounded-xl py-2 font-semibold text-xs" style="background:linear-gradient(135deg,#eab308,#f59e0b)">Restart Agent</button>
         </div>
@@ -398,12 +398,12 @@
       </div>
 
       <!-- Stop Agent -->
-      <div class="glass rounded-xl p-3">
+      <div class="glass rounded-xl p-2 md:p-3">
         <h3 class="text-xs font-semibold mb-3" style="color:#ef4444">Stop Agent</h3>
         <div class="space-y-2">
           <div>
             <label class="text-xs text-slate-500 mb-1 block">Agent Address</label>
-            <input id="m-stop-agent" type="text" placeholder="0x..." class="w-full rounded-lg px-3 py-2 text-sm mono" />
+            <input id="m-stop-agent" type="text" placeholder="0x..." class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
           </div>
           <button onclick="stopAgent()" id="stop-btn" class="btn-primary w-full rounded-xl py-2 font-semibold text-xs" style="background:linear-gradient(135deg,#ef4444,#dc2626)">Stop Agent</button>
         </div>
@@ -416,11 +416,11 @@
   <!-- ═══════════════ CHECK STATUS TAB ═══════════════ -->
   <div id="panel-status" class="hidden fade-in flex-1 overflow-y-auto">
     <div class="max-w-xl mx-auto space-y-3">
-      <div class="glass rounded-xl p-3">
+      <div class="glass rounded-xl p-2 md:p-3">
         <div class="space-y-2">
           <div>
             <label class="text-xs text-slate-500 mb-1 block">Agent Address</label>
-            <input id="s-agent" type="text" placeholder="0x..." class="w-full rounded-lg px-3 py-2 text-sm mono" />
+            <input id="s-agent" type="text" placeholder="0x..." class="w-full rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm mono" />
           </div>
           <button onclick="checkStatusOnChain()" id="status-btn" class="btn-primary w-full rounded-xl py-2 font-semibold text-xs">Check Status</button>
         </div>
@@ -434,7 +434,7 @@
   <!-- ═══════════════ ENV GENERATOR TAB ═══════════════ -->
   <div id="panel-env" class="hidden fade-in flex-1 overflow-y-auto">
     <div class="max-w-xl mx-auto space-y-3">
-      <div class="glass rounded-xl p-3">
+      <div class="glass rounded-xl p-2 md:p-3">
         <p class="text-xs text-slate-500 mb-3">Fill in the Deploy tab, then generate the .env file for CLI usage.</p>
         <button onclick="generateEnv()" class="btn-outline rounded-lg px-3 py-1.5 text-xs mb-3">Generate .env</button>
         <div class="relative">
@@ -448,7 +448,7 @@
 </main>
 
 <!-- Footer -->
-<footer class="border-t border-white/5 px-6 py-2 flex-shrink-0">
+<footer class="border-t border-white/5 px-4 md:px-6 py-2 flex-shrink-0 mt-auto">
   <div class="max-w-5xl mx-auto">
     <span class="text-xs text-slate-600">Built by Frianowzki on Ritual Testnet</span>
   </div>
@@ -1253,7 +1253,7 @@ async function loadMyAgents() {
       const blocksLeft = Number(lockUntil) - currentBlock;
 
       cards.push(`
-        <div class="glass rounded-xl p-3">
+        <div class="glass rounded-xl p-2 md:p-3">
           <div class="flex items-center justify-between mb-2">
             <div class="flex items-center gap-2">
               <span class="w-2 h-2 rounded-full" style="background:${stateColor}"></span>
