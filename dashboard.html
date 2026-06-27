@@ -3612,18 +3612,18 @@
                         const item = {
                             name: 'Token Auction #'+a.id, symbol:'TKN'+a.id, logo:'T',
                             color: ['#8b5cf6','#22c55e','#3b82f6','#f59e0b'][a.id % 4],
-                            blocks: Number(a.totalSupply) || 100,
+                            blocks: Number(a.tokenSupply) || 100,
                             logoUrl:''
                         };
-                        if(a.settled){
-                            completed.push({...item, ended:'Settled', participants:'--', raisedUSD:0});
+                        if(a.finalized){
+                            completed.push({...item, ended:'Finalized', participants:'--', raisedUSD:0});
                         } else if(Number(a.endTime) > now){
                             const secsLeft = Number(a.endTime) - now;
                             const hrs = Math.floor(secsLeft/3600);
                             const mins = Math.floor((secsLeft%3600)/60);
-                            active.push({...item, endsIn: hrs+'h '+mins+'m', soldBlocks:0, participants:0, raisedUSD:0, currentPrice: a.currentPrice, minPrice: a.minPrice, maxPrice: a.maxPrice});
+                            active.push({...item, endsIn: hrs+'h '+mins+'m', soldBlocks:0, participants:0, raisedUSD:0, minPrice: a.minPrice, maxPrice: a.maxPrice, totalRaised: a.totalRaised});
                         } else {
-                            upcoming.push({...item, startsIn:'Pending', blocks: Number(a.totalSupply)||100});
+                            upcoming.push({...item, startsIn:'Pending', blocks: Number(a.tokenSupply)||100});
                         }
                     }
                     mockAuctions.active = active.length > 0 ? active : mockAuctions.active;

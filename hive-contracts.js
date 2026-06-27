@@ -14,7 +14,7 @@ const HIVE = {
   addr: {
     // Core
     HiveToken:        '0xDA8185F0742b46A8B6D413Dc10eFC25E9FBd5ec3',
-    HiveFactory:      '0x3fa4e0Db20b15A730a1b2C5B30531404BCdE0036',
+    HiveFactory:      '0xDAf09A8F6f461C0961172de6E3bFa4308118d88c',
     HiveRegistry:     '0x89Cff106458261b48597ee0307017504080182eE',
     HivePoints:       '0xC031064390952259a42885219dB16F66677fbfaa',
 
@@ -195,12 +195,23 @@ const HIVE = {
     // Clearing (Auctions)
     HiveClearing: [
       'function auctionCount() view returns (uint256)',
-      'function getAuction(uint256) view returns (address token, uint256 totalSupply, uint256 minPrice, uint256 maxPrice, uint256 currentPrice, uint256 startTime, uint256 endTime, bool settled)',
-      'function placeBid(uint256,uint256) payable',
-      'function settle(uint256)',
-      'function getUserBids(uint256,address) view returns (uint256 amount, uint256 price)',
-      'event AuctionCreated(uint256 indexed auctionId, address token)',
+      'function auctions(uint256) view returns (address token, uint256 tokenSupply, uint256 minPrice, uint256 maxPrice, uint256 startTime, uint256 endTime, uint256 softCap, uint256 totalRaised, uint256 clearingPrice, bool finalized)',
+      'function placeBid(uint256) payable',
+      'function finalize(uint256,uint256)',
+      'function claim(uint256)',
+      'function claimRefund(uint256)',
+      'function getAuction(uint256) view returns (address token, uint256 tokenSupply, uint256 minPrice, uint256 maxPrice, uint256 startTime, uint256 endTime, uint256 softCap, uint256 totalRaised, uint256 clearingPrice, bool finalized)',
+      'function getBid(uint256,address) view returns (uint256)',
+      'function getTotalRaised(uint256) view returns (uint256)',
+      'function getBidders(uint256) view returns (address[])',
+      'function isActive(uint256) view returns (bool)',
+      'function FEE_BPS() view returns (uint256)',
+      'function owner() view returns (address)',
+      'event AuctionCreated(uint256 indexed auctionId, address indexed token, uint256 tokenSupply)',
       'event BidPlaced(uint256 indexed auctionId, address indexed bidder, uint256 amount)',
+      'event AuctionFinalized(uint256 indexed auctionId, uint256 clearingPrice)',
+      'event Claimed(uint256 indexed auctionId, address indexed bidder, uint256 tokens)',
+      'event Refunded(uint256 indexed auctionId, address indexed bidder, uint256 amount)',
     ],
 
     // Factory
@@ -362,19 +373,35 @@ const HIVE = {
 
     // HiveBrain — Sovereign agent brain
     HiveBrain: [
-      'function think(bytes32,string) returns (string)',
-      'function plan(bytes32,string) returns (string)',
-      'function act(bytes32,string) returns (string)',
-      'function lastThought(address) view returns (string)',
-      'function confidence(address) view returns (uint256)',
+      'function think(string) returns (uint256)',
+      'function thinkAsync(string) returns (uint256)',
+      'function receiveResult(uint256,string)',
+      'function plan() returns (uint256)',
+      'function act(uint256)',
+      'function approve(uint256)',
+      'function reject(uint256)',
+      'function storeMemory(string,string)',
+      'function getMemory(string) view returns (string)',
+      'function getThought(uint256) view returns (tuple(string context, string reasoning, uint256 confidence, uint256 timestamp, bool resolved))',
+      'function getPendingAction(uint256) view returns (tuple(uint8 actionType, address target, bytes data, uint256 value, bool executed, bool approved))',
+      'function successRate() view returns (uint256)',
       'function setOracle(address)',
       'function setFlock(address)',
+      'function setQueen(address)',
+      'function setAutonomousMode(bool)',
+      'function getOraclePrice(address) returns (uint256)',
       'function oracle() view returns (address)',
       'function flock() view returns (address)',
+      'function queen() view returns (address)',
       'function owner() view returns (address)',
-      'event Thought(address indexed agent, bytes32 topic, string response)',
-      'event PlanCreated(address indexed agent, bytes32 topic, string plan)',
-      'event ActionExecuted(address indexed agent, bytes32 topic, string action)',
+      'function autonomous() view returns (bool)',
+      'function thoughtCount() view returns (uint256)',
+      'function actionCount() view returns (uint256)',
+      'event ThoughtRecorded(uint256 indexed thoughtId, string context, uint256 confidence)',
+      'event ActionPlanned(uint256 indexed actionId, uint8 actionType, address target)',
+      'event ActionExecuted(uint256 indexed actionId, bool success)',
+      'event OracleSet(address indexed oracle)',
+      'event FlockSet(address indexed flock)',
     ],
 
     // HiveReferral
@@ -925,14 +952,16 @@ class HiveProvider {
           const a = await clearing.getAuction(i);
           auctions.push({
             id: i,
-            token: a[0],
-            totalSupply: a[1],
-            minPrice: a[2],
-            maxPrice: a[3],
-            currentPrice: a[4],
-            startTime: a[5],
-            endTime: a[6],
-            settled: a[7],
+            token: a.token,
+            tokenSupply: a.tokenSupply,
+            minPrice: a.minPrice,
+            maxPrice: a.maxPrice,
+            startTime: a.startTime,
+            endTime: a.endTime,
+            softCap: a.softCap,
+            totalRaised: a.totalRaised,
+            clearingPrice: a.clearingPrice,
+            finalized: a.finalized,
           });
         } catch (e) { break; }
       }

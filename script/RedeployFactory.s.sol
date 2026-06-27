@@ -39,7 +39,7 @@ contract RedeployFactory is Script {
             0x90fbd495c888ae010e40FD299E143FabFcf08C18, // treasury
             0x9533BD3D3baD7182EE52e054ca9c73780069AD5E, // dkms (NEW!)
             0x4DF77A4f06b792BA964B3dD751a0672cFa2bAb69, // honeyPot (NEW!)
-            0x0ad0234d3EA8bd41ee571b1B317fA98d46E642B4, // brain
+            0xCB7B3C9D008aE6ad5075936df5d44d37185352e8, // brain (redeployed)
             0x842441aB565a3C6C8183ABB08a735B2DEA184327, // agent
             0x1b3A537D4572c1020Bc72c9f4951704966d3BEF9, // autoStrategy
             0x1b3A537D4572c1020Bc72c9f4951704966d3BEF9, // strategy (same)
@@ -55,9 +55,8 @@ contract RedeployFactory is Script {
         );
         console.log("Factory wired (Layer 2-7)");
 
-        // Wire cross-module connections
-        factory.wireAll();
-        console.log("Cross-module wiring complete");
+        // wireAll() skipped — uses this.wireAILayer() = external call = wrong msg.sender
+        // Cross-module wiring done via updateModule() post-deploy
 
         vm.stopBroadcast();
 
