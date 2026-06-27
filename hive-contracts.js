@@ -321,7 +321,7 @@ const HIVE = {
       'function pendingStakerReward(address) view returns (uint256)',
       'function pendingReferrerFees(address) view returns (uint256)',
       'function claimStakerReward()',
-      'function claimReferrerFees()',
+      'function claimReferrerReward()',
       'function reserveBalance() view returns (uint256)',
       'function owner() view returns (address)',
       'event FeeCollected(address indexed from, uint256 amount, uint256 stakerShare, uint256 referrerShare, uint256 reserveShare)',
