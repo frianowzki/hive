@@ -164,54 +164,101 @@
             .feat-card{width:90%;max-width:580px}
         }
         @media(max-width:768px){
-            .navbar{padding:0 1rem}
+            /* Kill full-page scroll, enable normal scroll */
+            html,body{overflow:auto;height:auto}
+            .pages-wrapper{height:auto;overflow:visible}
+            .page{height:auto;min-height:auto;position:relative;transform:none!important;opacity:1!important;pointer-events:all!important;display:block;padding:3rem 1.25rem 2rem;overflow:visible}
+            .page.active{transform:none!important}
+            .page:not(.active){display:block!important;opacity:1!important;pointer-events:all!important}
+
+            /* Navbar */
+            .navbar{padding:0 1rem;height:52px}
             .nav-links{display:none}
-            .page{padding:56px 1rem 3rem}
-            .hero h1{font-size:1.75rem;line-height:1.15}
-            .hero-desc{font-size:.85rem;line-height:1.6}
+
+            /* Hero */
+            .hero{padding-top:2rem;padding-bottom:2rem;align-items:flex-start}
+            .hero h1{font-size:1.65rem;line-height:1.12;letter-spacing:-.03em}
+            .hero-desc{font-size:.82rem;line-height:1.55;margin-bottom:1.25rem}
             .hero-desc br{display:none}
-            .sec-title{font-size:1.3rem}
-            .caps-grid,.svc-grid{grid-template-columns:1fr}
-            .about-feats{grid-template-columns:1fr}
-            .contact-info{flex-direction:column;gap:.75rem}
-            .contact-actions{flex-direction:column}
+            .hero-actions{flex-direction:column;gap:.5rem}
+            .hero-actions .btn{width:100%;justify-content:center;padding:.7rem 1rem}
+            .hero-stats{gap:1rem;flex-wrap:wrap}
+            .stat-val{font-size:1.3rem}
+
+            /* Sections */
+            .sec-title{font-size:1.2rem;margin-bottom:.75rem}
+            .sec-lbl{font-size:.6rem}
+            .section-card{padding:1.25rem 1rem}
+
+            /* Features — disable card stack, show all */
+            .feat-stack{position:relative;width:100%;min-height:auto;perspective:none}
+            .feat-card{position:relative;width:100%;opacity:1;pointer-events:all;transform:none;margin-bottom:1rem;border-radius:14px}
+            .feat-card.active{opacity:1;transform:none}
+            .feat-card.prev,.feat-card.next{display:block;opacity:1;transform:none}
+            .feat-card .fc-body{padding:1.5rem 1.25rem}
+            .feat-card .fc-title{font-size:1.05rem;margin-bottom:.5rem}
+            .feat-card .fc-desc{font-size:.78rem;line-height:1.55;max-width:100%}
+            .feat-card .fc-icon{width:42px;height:42px;border-radius:10px;margin-bottom:1rem}
+            .feat-card .fc-icon svg{width:20px;height:20px}
+            .feat-card .fc-num{font-size:3rem}
+            .feat-card .fc-tag{font-size:.55rem;margin-bottom:1rem}
+            .feat-nav{display:none}
+            .feat-dots{display:none}
+
+            /* Marquee — slower, smaller */
+            .marquee-row{animation-duration:80s!important}
+            .marquee-item{padding:.45rem .75rem;border-radius:6px}
+            .marquee-item .svc-name{font-size:.65rem}
+            .marquee-item .svc-icon{width:14px;height:14px}
+            .marquee-fade::before,.marquee-fade::after{width:40px}
+
+            /* About */
+            .about-grid{grid-template-columns:1fr;gap:1.5rem}
+            .about-text h3{font-size:1.15rem}
+            .about-text p{font-size:.8rem;line-height:1.6}
+            .about-feats{grid-template-columns:1fr;gap:.4rem}
+            .about-feat{font-size:.7rem;padding:.4rem .6rem}
+            .team-card{flex-direction:column;text-align:center;padding:1.25rem}
+            .team-avatar{width:52px;height:52px;border-radius:12px}
+            .team-name{font-size:.95rem}
+            .team-bio{font-size:.7rem}
+
+            /* Contact */
+            .contact-page{padding:2rem 0}
+            .contact-sub{font-size:.85rem;margin-bottom:1.5rem}
+            .contact-actions{flex-direction:column;gap:.5rem}
+            .contact-actions .btn{width:100%;justify-content:center}
+            .contact-info{flex-direction:column;gap:.6rem}
+            .contact-info-item{font-size:.75rem}
+
+            /* Footer */
             .page-dots{display:none}
-            .mini-footer{padding:.4rem 1rem}
+            .mini-footer{position:relative;padding:.75rem 1rem;font-size:.6rem;justify-content:center}
             .mini-footer-links{display:none}
-            .btn{padding:.55rem 1rem;font-size:.8rem}
-            .btn-i{width:11px;height:11px}
-            .feat-card{width:95%;padding:1.5rem}
-            .feat-card .fc-title{font-size:1.1rem}
-            .feat-card .fc-desc{font-size:.8rem;line-height:1.6}
-            .feat-nav{gap:.5rem}
-            .feat-nav-btn{width:36px;height:36px}
-            .marquee-item{padding:.5rem .85rem;font-size:.7rem}
-            .marquee-item .svc-name{font-size:.7rem}
-            .team-card{flex-direction:column;text-align:center}
-            .team-avatar{width:56px;height:56px}
-            .section-card{padding:1.5rem 1rem}
-            .about-feats{gap:.5rem}
-            .about-feat{font-size:.75rem;padding:.5rem .75rem}
-            .modal{width:100%;max-width:100%;border-radius:16px 16px 0 0;max-height:90vh;padding:1.5rem}
+
+            /* Modals — bottom sheet */
+            .modal{width:100%;max-width:100%;border-radius:16px 16px 0 0;max-height:90vh;padding:1.25rem}
             .modal-overlay{align-items:flex-end}
-            .wallet-btn{padding:.6rem .75rem}
-            .wallet-btn-name{font-size:.85rem}
-            .role-btn{padding:1rem}
-            .role-icon{width:40px;height:40px}
-            .role-title{font-size:.9rem}
-            .role-desc{font-size:.75rem}
+            .wallet-btn{padding:.55rem .75rem}
+            .wallet-btn-name{font-size:.8rem}
+            .role-btn{padding:.85rem}
+            .role-icon{width:36px;height:36px}
+            .role-title{font-size:.85rem}
+            .role-desc{font-size:.7rem}
+
+            /* Grids */
+            .caps-grid,.svc-grid{grid-template-columns:1fr}
         }
         @media(max-width:480px){
-            .hero h1{font-size:1.4rem}
-            .hero-desc{font-size:.8rem}
-            .hero-actions{flex-direction:column;gap:.5rem}
-            .hero-actions .btn{width:100%;justify-content:center}
-            .sec-title{font-size:1.1rem}
-            .page-inner{padding:0 .5rem}
-            .feat-card{padding:1rem}
-            .feat-card .fc-title{font-size:1rem}
-            .about-text p{font-size:.8rem}
-            .about-feat{font-size:.7rem}
+            .hero h1{font-size:1.35rem}
+            .hero-desc{font-size:.78rem}
+            .page{padding:2.5rem 1rem 1.5rem}
+            .sec-title{font-size:1.05rem}
+            .feat-card .fc-body{padding:1.25rem 1rem}
+            .feat-card .fc-title{font-size:.95rem}
+            .feat-card .fc-desc{font-size:.75rem}
+            .marquee-item{padding:.35rem .6rem}
+            .marquee-item .svc-name{font-size:.6rem}
         }
 
         /* ═══ MODALS ═══ */
@@ -796,17 +843,31 @@
         (function(){const c=document.querySelectorAll('.feat-card');if(c.length>1)c[1].classList.add('next');})();
 
         let wheelTimeout;
-        document.addEventListener('wheel',e=>{e.preventDefault();clearTimeout(wheelTimeout);wheelTimeout=setTimeout(()=>{if(e.deltaY>0)nextPage();else prevPage()},60)},{passive:false});
+        const isMobile = () => window.innerWidth <= 768;
+        document.addEventListener('wheel',e=>{if(isMobile())return;e.preventDefault();clearTimeout(wheelTimeout);wheelTimeout=setTimeout(()=>{if(e.deltaY>0)nextPage();else prevPage()},60)},{passive:false});
         let touchY=0;
-        document.addEventListener('touchstart',e=>{touchY=e.touches[0].clientY});
-        document.addEventListener('touchend',e=>{const d=touchY-e.changedTouches[0].clientY;if(Math.abs(d)>50){if(d>0)nextPage();else prevPage()}});
-        document.addEventListener('keydown',e=>{if(e.key==='ArrowDown'||e.key==='ArrowRight'||e.key===' '){e.preventDefault();nextPage()}else if(e.key==='ArrowUp'||e.key==='ArrowLeft'){e.preventDefault();prevPage()}});
-        document.querySelectorAll('.nav-links a[data-page]').forEach(l=>{l.addEventListener('click',()=>{goToPage(parseInt(l.dataset.page))})});
-        document.querySelectorAll('.dot').forEach(d=>{d.addEventListener('click',()=>{goToPage(parseInt(d.dataset.page))})});
+        document.addEventListener('touchstart',e=>{if(isMobile())return;touchY=e.touches[0].clientY});
+        document.addEventListener('touchend',e=>{if(isMobile())return;const d=touchY-e.changedTouches[0].clientY;if(Math.abs(d)>50){if(d>0)nextPage();else prevPage()}});
+        document.addEventListener('keydown',e=>{if(isMobile())return;if(e.key==='ArrowDown'||e.key==='ArrowRight'||e.key===' '){e.preventDefault();nextPage()}else if(e.key==='ArrowUp'||e.key==='ArrowLeft'){e.preventDefault();prevPage()}});
+        document.querySelectorAll('.nav-links a[data-page]').forEach(l=>{l.addEventListener('click',()=>{if(isMobile())return;goToPage(parseInt(l.dataset.page))})});
+        document.querySelectorAll('.dot').forEach(d=>{d.addEventListener('click',()=>{if(isMobile())return;goToPage(parseInt(d.dataset.page))})});
 
         animatePage(0);
         showDots();
         // Auto-scroll disabled — user navigates manually
+
+        // On mobile, show all pages as normal scroll sections
+        if(isMobile()){
+            document.querySelectorAll('.page').forEach(p=>{
+                p.classList.add('active');
+                p.style.opacity='1';
+                p.style.pointerEvents='all';
+                p.style.transform='none';
+                p.querySelectorAll('.fi').forEach(el=>el.classList.add('v'));
+            });
+            document.querySelector('.page-dots')?.style.setProperty('display','none');
+            document.querySelector('.mini-footer')?.style.setProperty('position','relative');
+        }
 
         /* Flickering Grid for marquee items */
         (function(){
