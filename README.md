@@ -1,278 +1,343 @@
-<p align="center">
-  <img src="assets/system-flow.svg" alt="Ritual dApp Skills — System Architecture" width="800">
-</p>
+<div align="center">
 
-<h1 align="center">ritual-dapp-skills</h1>
+<img src="assets/logo.png" alt="Hive Logo" width="200"/>
 
-<p align="center">
-  <strong>Skills and agents that teach AI coding assistants how to build dApps on Ritual.</strong>
-</p>
+# 🐝 HIVE
 
-<p align="center">
-  <a href="https://skills.ritualfoundation.org"><img src="https://img.shields.io/badge/docs-microsite-f97316?style=flat-square" alt="Docs"></a>
-  <a href="https://github.com/ritual-foundation/ritual-dapp-skills"><img src="https://img.shields.io/badge/license-Clear%20BSD-blue?style=flat-square" alt="License: Clear BSD"></a>
-  <img src="https://img.shields.io/badge/chain-1979-09090b?style=flat-square&labelColor=f97316" alt="Chain ID 1979">
-  <img src="https://img.shields.io/badge/skills-32-22c55e?style=flat-square" alt="32 Skills">
-  <img src="https://img.shields.io/badge/agents-2-c084fc?style=flat-square" alt="2 Agents">
-  <img src="https://img.shields.io/badge/meta--protocols-9-ea580c?style=flat-square" alt="9 Meta-Protocols">
-  <img src="https://img.shields.io/badge/precompiles-16-22d3ee?style=flat-square" alt="16 Precompiles">
-</p>
+### AI-Native Memecoin Launchpad on Ritual Chain
+
+**Spawn autonomous AI agents as tokens. Each agent has its own personality, lore, and on-chain behavior — powered by Ritual's AI precompiles.**
+
+[![Ritual Testnet](https://img.shields.io/badge/Network-Ritual%20Testnet-1979?color=10B981&style=flat-square)](https://ritual.foundation)
+[![License](https://img.shields.io/badge/License-MIT-10B981?style=flat-square)](LICENSE)
+[![Foundry](https://img.shields.io/badge/Built%20with-Foundry-F59E0B?style=flat-square)](https://book.getfoundry.sh)
+[![Next.js](https://img.shields.io/badge/Frontend-Next.js-000?style=flat-square)](https://nextjs.org)
+
+[Live App](https://hive-on-ritual.vercel.app) · [Explorer](https://explorer.ritualfoundation.org) · [Report Bug](https://github.com/frianowzki/hive/issues)
+
+</div>
 
 ---
 
-## Quick Start
+## 📋 Table of Contents
+
+- [Overview](#-overview)
+- [Architecture](#-architecture)
+- [Smart Contracts](#-smart-contracts)
+- [Frontend](#-frontend)
+- [Getting Started](#-getting-started)
+- [Deployment](#-deployment)
+- [Security](#-security)
+- [Roadmap](#-roadmap)
+- [Contributing](#-contributing)
+- [License](#-license)
+
+---
+
+## 🌟 Overview
+
+Hive is a **pump.fun-style memecoin launchpad** built natively on **Ritual Chain** (EVM++). Every token launched on Hive is an **autonomous AI Agent** that uses Ritual's precompiles for:
+
+- 🧠 **LLM Inference** — Generate token name, symbol, and lore
+- 🎨 **Image Generation** — Create unique AI-generated agent avatars
+- ⚡ **Autonomous Scheduler** — Agent posts updates and tweets autonomously
+- 🔐 **TEE Security** — Credentials stored encrypted via ECIES
+
+### How It Works
+
+1. **User describes an agent** — "A cynical space hamster who loves leveraged trading"
+2. **LLM generates metadata** — Token name, symbol, lore created on-chain
+3. **Bonding curve launches** — Linear curve (0.1 RITUAL target)
+4. **Trading begins** — Buy/sell with slippage protection
+5. **Graduation** — At 0.1 RITUAL, liquidity auto-deployed to DEX, LP burned
+
+---
+
+## 🏗 Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    HIVE ARCHITECTURE                     │
+├─────────────────────────────────────────────────────────┤
+│                                                          │
+│  ┌──────────────┐    ┌──────────────┐    ┌───────────┐ │
+│  │   Frontend   │◄──►│  Smart       │◄──►│  Ritual   │ │
+│  │   Next.js    │    │  Contracts   │    │  Chain    │ │
+│  │   Vercel     │    │  Solidity    │    │  RPC      │ │
+│  └──────────────┘    └──────────────┘    └───────────┘ │
+│         │                   │                   │        │
+│         │                   │                   │        │
+│  ┌──────────────┐    ┌──────────────┐    ┌───────────┐ │
+│  │  Wagmi/Viem  │    │  HiveFactory │    │ LLM 0x802 │ │
+│  │  RainbowKit  │    │  BondingCurve│    │ HTTP 0x801│ │
+│  │  React Query │    │  AgentToken  │    │ IMG  0x805│ │
+│  └──────────────┘    └──────────────┘    └───────────┘ │
+│                                                          │
+│  ┌──────────────────────────────────────────────────────┐│
+│  │              DEX LAYER (Phase 6)                     ││
+│  │  RitualV2Factory ──► RitualV2Router02                ││
+│  │  Auto-deploy liquidity on graduation                 ││
+│  └──────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📜 Smart Contracts
+
+### Deployed Contracts (Ritual Testnet)
+
+| Contract | Address | Description |
+|----------|---------|-------------|
+| **HiveFactory** | `0xd44785b6c5a001502fe4ff1a03821c5efff3efda` | Main factory, creates agents |
+| **HiveAgentToken** | `0x5f63F9EEDd35711E44d446e354cce27d7845f731` | Test token (Cat Wizard) |
+| **HiveBondingCurve** | `0xA6B792a52c4fFFB2d9295F2ED0d379d5dc3ee373` | Test bonding curve |
+| **RitualV2Factory** | `0x61E570306f2BfD3E8F98D7cbE1905B5f0bCBb336` | DEX factory |
+| **RitualV2Router** | `0x51BfaE29567120e2CE821F3021BCe593E7D9ccA5` | DEX router |
+
+### Contract Architecture
+
+#### HiveFactory.sol
+- Creates new AI agent tokens with LLM-generated metadata
+- Handles async callbacks from Ritual precompiles
+- Manages agent launches and metadata updates
+
+#### HiveAgentToken.sol
+- ERC20 token with metadata (name, symbol, lore, logo)
+- Agent status tracking (Minting, Launched, Graduated)
+- Factory-only minting and updates
+
+#### HiveBondingCurve.sol
+- **Linear bonding curve** (pump.fun style)
+- **7% total fee** (2% platform + 5% treasury)
+- **Slippage protection** on buy/sell
+- **Reentrancy guard** for security
+- **Auto-graduation** at 0.1 RITUAL → DEX liquidity
+
+#### RitualV2 DEX
+- Minimal Uniswap V2 fork for graduation
+- Auto-deploys liquidity pool on graduation
+- LP tokens sent to dead address (permanently locked)
+
+---
+
+## 🖥 Frontend
+
+### Tech Stack
+
+- **Framework:** Next.js 16 (App Router)
+- **Styling:** Tailwind CSS v4
+- **Web3:** Wagmi v2 + RainbowKit
+- **State:** React Query (TanStack)
+- **Animation:** Framer Motion
+- **Icons:** Lucide React
+
+### Pages
+
+| Route | Description |
+|-------|-------------|
+| `/` | Dashboard — Agent grid, metrics, system status |
+| `/launch` | Spawn chamber — Console simulation launch form |
+| `/token/[address]` | Trading deck — 3-column: Mind, Trading, Diagnostics |
+
+### Features
+
+- 🟢 **Real-time status** — Active, Thinking, Graduated indicators
+- 📊 **Live metrics** — Total agents, volume, graduated count
+- 🔄 **Event-driven UI** — Polls blockchain for updates
+- ⚡ **Optimized caching** — React Query with smart stale times
+- 🎨 **Cypherpunk aesthetic** — Glassmorphism, neon glows, monospace
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) >= 18
+- [Foundry](https://book.getfoundry.sh/getting-started/installation)
+- [Git](https://git-scm.com/)
+
+### Installation
 
 ```bash
-# Claude Code
-git clone https://github.com/ritual-foundation/ritual-dapp-skills.git .claude/skills/ritual-dapp-skills
+# Clone the repo
+git clone https://github.com/frianowzki/hive.git
+cd hive
 
-# Then tell your agent:
-Read the file skills/ritual/SKILL.md and follow its instructions.
+# Install Foundry dependencies
+forge install
 
-WALLET: 0xYOUR_FUNDED_WALLET_ADDRESS_DAPP_CAN_BE_DEPLOYED_FROM
-
-Build me a chatbot that runs on-chain with streaming responses.
+# Install frontend dependencies
+cd hive-frontend
+npm install
 ```
 
-For Cursor, OpenClaw, Hermes, and other harnesses, see the [microsite](https://skills.ritualfoundation.org).
+### Environment Setup
 
----
+Create `.env` file in the root directory:
 
-## How It Works
+```bash
+# Private key for deployment (NEVER commit this!)
+PRIVATE_KEY=0x_YOUR_PRIVATE_KEY_HERE
 
-The system has two entry points, three skill classes, and 10 behavioral protocols running as background middleware.
+# Platform treasury address
+PLATFORM_TREASURY=0x63C5341454F66a32553CE598e06861E11095d39C
 
-**You describe what you want.** The agent activates its behavioral protocols, loads the right skills, builds in phases, verifies each phase, and debugs automatically.
-
-### Entry Points
-
-| Entry                                   | Who   | What It Does                                                                                                                                  |
-| --------------------------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `skills/ritual/SKILL.md`                | Human | Classifies intent (build / debug / learn), runs inspiration if no idea, runs projection to map idea to precompiles, routes to the right agent |
-| `skills/ritual-meta-bootstrap/SKILL.md` | Agent | Activates 10 behavioral rules as invisible middleware for the entire session                                                                  |
-
-### Three Skill Classes
-
-![Three Skill Classes](assets/skill-classes.svg)
-
-**Ω Meta** — Loaded unconditionally. 10 behavioral rules, inspiration (JIT idea generation from live trends), projection (idea-to-Ritual-spec transformation), verification (per-skill checks + 12-step E2E journey).
-
-**α Build** — Feature skills loaded conditionally per the user's goal. The builder agent selects 3-6 per project. Phased execution: architecture → contracts → frontend → backend → testing → deploy.
-
-**β Debug** — Diagnostic skills loaded reactively. Sequential pipeline: triage → smoke tests → quick-match 10 known root causes → systematic diagnosis → fix + verify.
-
-### 10 Behavioral Rules
-
-| #   | Rule                       | Purpose                                                  |
-| --- | -------------------------- | -------------------------------------------------------- |
-| 1   | Track Cost                 | Turn budget governs all thresholds                       |
-| 2   | Distrust Priors            | Ritual violates Ethereum assumptions. No Infernet.       |
-| 3   | Lazy Elicitation           | 0-5 JIT questions, never a static form                   |
-| 4   | Interleave Build+Debug     | Verify after every irreversible action                   |
-| 5   | Circuit Breaker            | Detect trajectory divergence, stop before wasting budget |
-| 6   | Search Before Asking       | Exhaust 5-step resolution hierarchy first                |
-| 7   | Ask at Forks               | Only for expensive preference-based forks                |
-| 8   | Anti-Slop                  | Dimensional decomposition for UI artifacts               |
-| 9   | Verify Non-Interactively   | Per-skill checks + 12-step E2E journey                   |
-| 10  | Scope to Project Directory | All writes within project root, no cross-pollution       |
-
----
-
-## Agents
-
-| Agent                    | Purpose                                                                                                                              | Activation                                                      |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
-| **ritual-dapp-builder**  | End-to-end dApp development: projection → architecture → contracts → frontend → backend → testing → deploy → post-build verification | User describes what they want to build                          |
-| **ritual-dapp-debugger** | Diagnose and fix Ritual-specific issues: stuck transactions, missing callbacks, empty receipts, encoding mismatches                  | User reports a problem, or builder detects a failure post-build |
-
----
-
-## Skills
-
-### Meta Protocols (Ω)
-
-| Skill                              | Purpose                                                               |
-| ---------------------------------- | --------------------------------------------------------------------- |
-| `ritual-meta-bootstrap`            | 10 behavioral rules as background middleware                          |
-| `ritual-meta-inspiration`          | JIT idea generation from live blockchain + AI trends                  |
-| `ritual-meta-projection`           | Transform raw ideas into Ritual-native specs with precompile mappings |
-| `ritual-meta-elicitation`          | Lazy goal-state variance reduction (0-5 contextual questions)         |
-| `ritual-meta-orchestrator`         | Build-debug interleaving with 4 principles                            |
-| `ritual-meta-circuit-breaker`      | Trajectory divergence detection                                       |
-| `ritual-meta-human-in-loop`        | Mid-session fork elicitation                                          |
-| `ritual-meta-non-interactive-bias` | Search before asking                                                  |
-| `ritual-meta-verification`         | Per-skill checks, cross-skill integration, 12-step E2E journey        |
-
-### Architecture & Reference (Ω)
-
-| Skill                     | What It Teaches                                                                                                                                |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ritual-dapp-overview`    | Chain architecture, TEE-EOVMT, non-deterministic computation, 3 execution models, 9-state async lifecycle, sequencing rights, system contracts |
-| `ritual-dapp-precompiles` | All 16 precompile ABIs with field counts, Solidity + viem encoding examples                                                                    |
-| `ritual-dapp-deploy`      | Chain config (ID 1979, testnet), Foundry/Hardhat setup, deployment scripts, faucet                                                             |
-| `ritual-dapp-design`      | Dark-mode terminal aesthetic, typography, color semantics, WCAG 2.1 AA                                                                         |
-
-### Precompile Features (α)
-
-| Skill                     | Precompile                                                                     | Execution Model                   |
-| ------------------------- | ------------------------------------------------------------------------------ | --------------------------------- |
-| `ritual-dapp-http`        | HTTP (0x0801)                                                                  | Short-running async               |
-| `ritual-dapp-llm`         | LLM (0x0802) + SSE streaming                                                   | Short-running async               |
-| `ritual-dapp-agents`      | Persistent Agent (0x0820), Sovereign Agent (0x080C)                            | Long-running async (callback)     |
-| `ritual-dapp-longrunning` | Long HTTP (0x0805)                                                             | Long-running async (poll/deliver) |
-| `ritual-dapp-multimodal`  | Image (0x0818), Audio (0x0819), Video (0x081A)                                 | Long-running async (callback)     |
-| `ritual-dapp-onnx`        | ONNX ML inference (0x0800)                                                     | Synchronous                       |
-| `ritual-dapp-ed25519`     | Ed25519 signature verification (0x0009)                                        | Synchronous                       |
-| `ritual-dapp-scheduler`   | Scheduler system contract + predicates                                         | Scheduled execution               |
-| `ritual-dapp-secrets`     | ECIES encryption, SECRET_NAME string replacement, PII redaction, delegated ACL | Cross-cutting                     |
-| `ritual-dapp-x402`        | X402 micropayments via HTTP                                                    | Pay-per-call APIs                 |
-| `ritual-dapp-passkey`     | SECP256R1 (0x0100) + TxPasskey (0x77)                                          | Synchronous                       |
-
-### Smart Contracts (α)
-
-| Skill                   | What It Teaches                                                                       |
-| ----------------------- | ------------------------------------------------------------------------------------- |
-| `ritual-dapp-contracts` | Consumer patterns: sync, short-running decoding, long-running callbacks, auth, events |
-| `ritual-dapp-wallet`    | RitualWallet deposit/lock/withdraw, fee estimation, emergency withdrawal              |
-
-### Full-Stack (α)
-
-| Skill                  | What It Teaches                                                                     |
-| ---------------------- | ----------------------------------------------------------------------------------- |
-| `ritual-dapp-frontend` | Next.js + wagmi, 9-state async TX machine, spcCalls parsing, SSE streaming          |
-| `ritual-dapp-backend`  | Event indexer, AsyncJobTracker watcher, sender lock serialization, health endpoints |
-| `ritual-dapp-testing`  | Foundry unit/fuzz/fork, vm.mockCall for precompiles, Vitest, Playwright E2E         |
-
----
-
-## Build Execution Trace
-
-When you say "build me X," the agent reads files in this order:
-
-| Step | File                                                                          | Purpose                                |
-| ---- | ----------------------------------------------------------------------------- | -------------------------------------- |
-| 1    | `skills/ritual-meta-projection/SKILL.md`                                      | Transform idea into Ritual-native spec |
-| 2    | `agents/ritual-dapp-builder.md`                                               | Phased build protocol                  |
-| 3    | `examples/registry.json`                                                      | Reference contracts on Ritual Chain    |
-| 4    | `skills/ritual-dapp-overview/SKILL.md`                                        | Chain architecture                     |
-| 5    | `skills/ritual-dapp-precompiles/SKILL.md`                                     | ABI reference                          |
-| 6+   | Feature skills based on selected precompiles                                  | Per-feature patterns                   |
-| 7+   | `contracts`, `wallet`, `frontend`, `design`, `deploy`, `testing`              | Phase-specific skills                  |
-| Last | `agents/ritual-dapp-debugger.md` + `skills/ritual-meta-verification/SKILL.md` | Post-build verification                |
-
-Progress is checkpointed to `.ritual-build/progress.json` after each phase.
-
----
-
-## Works With
-
-| Harness             | Integration                                                      |
-| ------------------- | ---------------------------------------------------------------- |
-| **Claude Code**     | Drop `skills/` into agent skill path. Native `SKILL.md` format.  |
-| **Cursor**          | Add to `.cursor/rules/` or reference as agent skills             |
-| **OpenClaw**        | Drop `skills/` into agent skill path. Native `SKILL.md` format.  |
-| **Hermes Agent**    | Copy to `skills/blockchain/ritual/` or sync via `skills_sync.py` |
-| **Codex / ChatGPT** | Point system prompt at `skills/ritual/SKILL.md`                  |
-
-### Recommended Combinations
-
-- **Claude Code + Opus 4.7 Max**
-- **Cursor + Codex 5.3 Extra High**
-
-Other combinations work but your mileage may vary.
-
----
-
-## Chain Reference
-
-| Property        | Value                                   |
-| --------------- | --------------------------------------- |
-| Chain ID        | `1979`                                  |
-| Currency        | RITUAL (18 decimals, testnet)           |
-| Block time      | ~350ms (conservative baseline)          |
-| RPC (HTTP)      | `https://rpc.ritualfoundation.org`      |
-| RPC (WebSocket) | `wss://rpc.ritualfoundation.org/ws`     |
-| Explorer        | `https://explorer.ritualfoundation.org` |
-
-| System Contract      | Address                                      |
-| -------------------- | -------------------------------------------- |
-| RitualWallet         | `0x532F0dF0896F353d8C3DD8cc134e8129DA2a3948` |
-| AsyncJobTracker      | `0xC069FFCa0389f44eCA2C626e55491b0ab045AEF5` |
-| TEEServiceRegistry   | `0x9644e8562cE0Fe12b4deeC4163c064A8862Bf47F` |
-| Scheduler            | `0x56e776BAE2DD60664b69Bd5F865F1180ffB7D58B` |
-| SecretsAccessControl | `0xf9BF1BC8A3e79B9EBeD0fa2Db70D0513fecE32FD` |
-| AsyncDelivery        | `0x5A16214fF555848411544b005f7Ac063742f39F6` |
-| ModelPricingRegistry | `0x7A85F48b971ceBb75491b61abe279728F4c4384f` |
-
----
-
-## Directory Structure
-
+# Ritual Testnet RPC
+RITUAL_RPC_URL=https://rpc.ritualfoundation.org
 ```
-ritual-dapp-skills/
-├── skills/
-│   ├── ritual/                         # Ω — Human front door
-│   ├── ritual-dapp-overview/           # Ω — Architecture + TEE-EOVMT
-│   ├── ritual-dapp-precompiles/        # Ω — ABI reference (16 precompiles)
-│   ├── ritual-dapp-deploy/             # α — Chain config + deployment
-│   ├── ritual-dapp-design/             # α — Design system
-│   ├── ritual-dapp-contracts/          # α — Solidity patterns
-│   ├── ritual-dapp-wallet/             # α — Fee management
-│   ├── ritual-dapp-http/               # α — HTTP precompile (0x0801)
-│   ├── ritual-dapp-llm/                # α — LLM precompile (0x0802)
-│   ├── ritual-dapp-agents/             # α — Agent precompiles (0x0820/0x080C)
-│   ├── ritual-dapp-longrunning/        # α — Long-running HTTP (0x0805)
-│   ├── ritual-dapp-multimodal/         # α — Image/Audio/Video (0x0818-0x081A)
-│   ├── ritual-dapp-onnx/               # α — ONNX ML inference (0x0800)
-│   ├── ritual-dapp-ed25519/            # α — Ed25519 verification (0x0009)
-│   ├── ritual-dapp-scheduler/          # α — Scheduled operations
-│   ├── ritual-dapp-secrets/            # α — Secret management + PII redaction
-│   ├── ritual-dapp-x402/               # α — Micropayments
-│   ├── ritual-dapp-passkey/            # α — Passkey authentication
-│   ├── ritual-dapp-frontend/           # α — React/Next.js frontend
-│   ├── ritual-dapp-backend/            # α — Backend services
-│   ├── ritual-dapp-testing/            # α/β — Testing patterns
-│   ├── ritual-meta-bootstrap/          # Ω — 10 behavioral rules
-│   ├── ritual-meta-inspiration/        # Ω — JIT idea generation
-│   ├── ritual-meta-projection/         # Ω — Idea → Ritual-native spec
-│   ├── ritual-meta-elicitation/        # Ω — Lazy goal-state variance reduction
-│   ├── ritual-meta-orchestrator/       # Ω — Build-debug interleaving
-│   ├── ritual-meta-circuit-breaker/    # Ω — Trajectory divergence detection
-│   ├── ritual-meta-human-in-loop/      # Ω — Mid-session fork elicitation
-│   ├── ritual-meta-non-interactive-bias/ # Ω — Search before asking
-│   └── ritual-meta-verification/       # Ω — Verification protocols
-├── agents/
-│   ├── ritual-dapp-builder.md          # α — Build orchestrator
-│   ├── ritual-dapp-debugger.md         # β — Debug orchestrator
-│   └── debugger-reference/             # β — Diagnostic pipeline
-├── site/                               # Microsite (deployed to Cloud Run)
-├── assets/                             # SVG diagrams
-├── examples/
-│   ├── persistent-agent/             # Persistent Agent (0x0820) e2e flow
-│   ├── sovereign-agent/              # Sovereign Agent (0x080C) e2e flow
-│   ├── README.md
-│   └── registry.json
-├── templates/
-│   ├── nextjs-starter/
-│   └── hardhat-starter/
-└── scripts/
-    ├── pull_contracts.py
+
+### Running Tests
+
+```bash
+# Run all tests
+forge test
+
+# Run mock tests only (fast, ~5ms)
+forge test --match-path "test/HiveMock.t.sol"
+
+# Run security tests
+forge test --match-path "test/SecurityTest.t.sol"
+
+# Run fork tests (requires RPC, ~30s)
+forge test --match-path "test/HiveFork.t.sol"
+```
+
+### Running Frontend
+
+```bash
+cd hive-frontend
+npm run dev
+```
+
+Visit [http://localhost:3000](http://localhost:3000)
+
+---
+
+## 📦 Deployment
+
+### Smart Contracts
+
+```bash
+# Deploy to Ritual Testnet
+forge script script/DeployHive.s.sol \
+  --rpc-url https://rpc.ritualfoundation.org \
+  --broadcast \
+  --verify
+```
+
+### Frontend (Vercel)
+
+```bash
+cd hive-frontend
+vercel --prod
 ```
 
 ---
 
-## Scheduled Async Debugging Utilities
+## 🔒 Security
 
-For scheduled/scheduled-async tracing, use the embedded runnable Python snippets in:
-`agents/debugger-reference/scheduled-async-rpc-runbook.md`
+### Security Features
 
-That runbook includes:
+| Feature | Status | Description |
+|---------|--------|-------------|
+| ReentrancyGuard | ✅ | Protects buy/sell from reentrancy attacks |
+| Slippage Protection | ✅ | `minTokensOut` / `minRitualOut` params |
+| Access Control | ✅ | Factory-only functions, async delivery verification |
+| Custom Errors | ✅ | Gas-efficient error handling |
+| Callback Security | ✅ | Only AsyncDelivery contract can fulfill |
 
-- deterministic scheduled-hash derivation utility
-- commitment-lookup utility from async origin hashes
+### Audit Status
+
+- [x] Internal testing (40+ tests passing)
+- [x] Mock tests for unit verification
+- [x] Fork tests for live chain integration
+- [ ] External audit (pending)
+
+### Bug Bounty
+
+Found a vulnerability? Please report it responsibly to **frianowzki@gmail.com**
 
 ---
 
-<p align="center">
-  <a href="https://docs.ritualfoundation.org">Docs</a> · <a href="https://explorer.ritualfoundation.org">Explorer</a> · <a href="https://skills.ritualfoundation.org">Microsite</a>
-</p>
+## 🗺 Roadmap
+
+### Phase 1: Core Launchpad ✅
+- [x] Smart contracts (Factory, Token, Bonding Curve)
+- [x] Linear bonding curve with fees
+- [x] Mock + Fork testing (40+ tests)
+- [x] Frontend deployment
+
+### Phase 2: Frontend UI ✅
+- [x] Dashboard with real-time metrics
+- [x] Console simulation launch form
+- [x] 3-column trading deck
+- [x] Glassmorphism design system
+
+### Phase 3: Async Launch UX ✅
+- [x] Event-driven state machine
+- [x] Real-time TX tracking
+- [x] Metadata polling
+- [x] Fallback timeout handling
+
+### Phase 4: DEX Graduation ✅
+- [x] RitualV2 DEX fork (Factory + Router)
+- [x] Auto-liquidity deployment
+- [x] LP token burning (dead address)
+
+### Phase 5: Security Hardening ✅
+- [x] ReentrancyGuard
+- [x] Slippage protection
+- [x] Enhanced events
+- [x] Security test suite
+
+### Phase 6: AI Integration (Coming Soon)
+- [ ] LLM metadata generation (when vLLM activates)
+- [ ] Autonomous agent scheduler
+- [ ] Twitter/social media posting
+- [ ] Image generation
+
+### Phase 7: Advanced Features (Future)
+- [ ] Event indexer + PostgreSQL
+- [ ] TradingView charts
+- [ ] Pay-to-prompt interaction
+- [ ] Multi-agent orchestration
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- [Ritual Foundation](https://ritual.foundation) — AI-native blockchain
+- [Foundry](https://book.getfoundry.sh) — Smart contract toolkit
+- [Next.js](https://nextjs.org) — React framework
+- [Wagmi](https://wagmi.sh) — React hooks for Ethereum
+- [RainbowKit](https://www.rainbowkit.com) — Wallet connection
+
+---
+
+<div align="center">
+
+**Built with 🐝 on Ritual Chain**
+
+*Hive — Where AI Agents Come Alive*
+
+</div>
