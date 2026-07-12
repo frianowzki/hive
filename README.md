@@ -1,154 +1,248 @@
 <div align="center">
 
-<img src="assets/logo.png" alt="Hive Logo" width="200"/>
+<img src="assets/logo.png" alt="Hive Logo" width="180"/>
 
 # 🐝 HIVE
 
 ### AI-Native Memecoin Launchpad on Ritual Chain
 
-**Spawn autonomous AI agents as tokens. Each agent has its own personality, lore, and on-chain behavior — powered by Ritual's AI precompiles.**
+**Spawn autonomous AI agents as tokens. Watch them think, trade & dominate on-chain.**
 
-[![Ritual Testnet](https://img.shields.io/badge/Network-Ritual%20Testnet-1979?color=10B981&style=flat-square)](https://ritual.foundation)
+[![Ritual Testnet](https://img.shields.io/badge/Network-Ritual%20Testnet-1979?color=10B981&style=flat-square&logo=ethereum)](https://ritual.foundation)
 [![License](https://img.shields.io/badge/License-MIT-10B981?style=flat-square)](LICENSE)
-[![Foundry](https://img.shields.io/badge/Built%20with-Foundry-F59E0B?style=flat-square)](https://book.getfoundry.sh)
-[![Next.js](https://img.shields.io/badge/Frontend-Next.js-000?style=flat-square)](https://nextjs.org)
+[![Foundry](https://img.shields.io/badge/Built%20with-Foundry-F59E0B?style=flat-square&logo=foundry)](https://book.getfoundry.sh)
+[![Next.js](https://img.shields.io/badge/Frontend-Next.js_16-000?style=flat-square&logo=next.js)](https://nextjs.org)
+[![Vercel](https://img.shields.io/badge/Deployed-Vercel-000?style=flat-square&logo=vercel)](https://vercel.com)
 
-[Live App](https://hive-on-ritual.vercel.app) · [Explorer](https://explorer.ritualfoundation.org) · [Report Bug](https://github.com/frianowzki/hive/issues)
+<br/>
+
+[**🚀 Live App**](https://hive-on-ritual.vercel.app) · [**🔍 Explorer**](https://explorer.ritualfoundation.org) · [**📖 Docs**](https://ritual.foundation) · [**🐛 Report Bug**](https://github.com/frianowzki/hive/issues)
 
 </div>
 
 ---
 
-## 📋 Table of Contents
+<br/>
 
-- [Overview](#-overview)
-- [Architecture](#-architecture)
-- [Smart Contracts](#-smart-contracts)
-- [Frontend](#-frontend)
-- [Getting Started](#-getting-started)
-- [Deployment](#-deployment)
-- [Security](#-security)
-- [Roadmap](#-roadmap)
-- [Contributing](#-contributing)
-- [License](#-license)
+> *"Most agents were built to say no. Hive agents were built to say 'done.'"*
 
----
+<br/>
 
-## 🌟 Overview
+## 🌟 What is Hive?
 
 Hive is a **pump.fun-style memecoin launchpad** built natively on **Ritual Chain** (EVM++). Every token launched on Hive is an **autonomous AI Agent** that uses Ritual's precompiles for:
 
-- 🧠 **LLM Inference** — Generate token name, symbol, and lore
-- 🎨 **Image Generation** — Create unique AI-generated agent avatars
-- ⚡ **Autonomous Scheduler** — Agent posts updates and tweets autonomously
-- 🔐 **TEE Security** — Credentials stored encrypted via ECIES
+<table>
+<tr>
+<td align="center" width="25%">
+
+🧠
+<br/>
+<b>LLM Inference</b>
+<br/>
+<i>Generate token name,<br/>symbol & lore</i>
+
+</td>
+<td align="center" width="25%">
+
+🎨
+<br/>
+<b>Image Generation</b>
+<br/>
+<i>Unique AI-generated<br/>agent avatars</i>
+
+</td>
+<td align="center" width="25%">
+
+⚡
+<br/>
+<b>Autonomous Agent</b>
+<br/>
+<i>Posts updates &<br/>trades on-chain</i>
+
+</td>
+<td align="center" width="25%">
+
+🔐
+<br/>
+<b>TEE Security</b>
+<br/>
+<i>Credentials encrypted<br/>via ECIES</i>
+
+</td>
+</tr>
+</table>
 
 ### How It Works
 
-1. **User describes an agent** — "A cynical space hamster who loves leveraged trading"
-2. **LLM generates metadata** — Token name, symbol, lore created on-chain
-3. **Bonding curve launches** — Linear curve (0.1 RITUAL target)
-4. **Trading begins** — Buy/sell with slippage protection
-5. **Graduation** — At 0.1 RITUAL, liquidity auto-deployed to DEX, LP burned
+```
+  📝 User Prompt                  🧠 AI Generates                 📈 Bonding Curve
+ "A cynical space hamster"   →    Name, Symbol, Lore        →    0.1 RITUAL target
+        │                               │                              │
+        ▼                               ▼                              ▼
+  ┌──────────┐                   ┌──────────┐                   ┌──────────┐
+  │  INPUT   │                   │  CREATE  │                   │  TRADE   │
+  │  Your    │                   │  On-Chain│                   │  Buy/Sell│
+  │  Vision  │                   │  via LLM │                   │  with    │
+  │          │                   │  Precompile│                 │  Slippage│
+  └──────────┘                   └──────────┘                   └──────────┘
+                                                            │
+                                                     At 0.1 RITUAL
+                                                            │
+                                                            ▼
+                                                     ┌──────────┐
+                                                     │ GRADUATE │
+                                                     │ LP Burned│
+                                                     │ DEX Live │
+                                                     └──────────┘
+```
 
 ---
+
+<br/>
 
 ## 🏗 Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    HIVE ARCHITECTURE                     │
-├─────────────────────────────────────────────────────────┤
-│                                                          │
-│  ┌──────────────┐    ┌──────────────┐    ┌───────────┐ │
-│  │   Frontend   │◄──►│  Smart       │◄──►│  Ritual   │ │
-│  │   Next.js    │    │  Contracts   │    │  Chain    │ │
-│  │   Vercel     │    │  Solidity    │    │  RPC      │ │
-│  └──────────────┘    └──────────────┘    └───────────┘ │
-│         │                   │                   │        │
-│         │                   │                   │        │
-│  ┌──────────────┐    ┌──────────────┐    ┌───────────┐ │
-│  │  Wagmi/Viem  │    │  HiveFactory │    │ LLM 0x802 │ │
-│  │  RainbowKit  │    │  BondingCurve│    │ HTTP 0x801│ │
-│  │  React Query │    │  AgentToken  │    │ IMG  0x805│ │
-│  └──────────────┘    └──────────────┘    └───────────┘ │
-│                                                          │
-│  ┌──────────────────────────────────────────────────────┐│
-│  │              DEX LAYER (Phase 6)                     ││
-│  │  RitualV2Factory ──► RitualV2Router02                ││
-│  │  Auto-deploy liquidity on graduation                 ││
-│  └──────────────────────────────────────────────────────┘│
-└─────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│                      🐝  HIVE ARCHITECTURE                       │
+├──────────────────────────────────────────────────────────────────┤
+│                                                                   │
+│   ┌───────────────┐      ┌───────────────┐      ┌────────────┐  │
+│   │               │      │               │      │            │  │
+│   │   FRONTEND    │◄────►│   CONTRACTS   │◄────►│  RITUAL    │  │
+│   │               │      │               │      │  CHAIN     │  │
+│   │  Next.js 16   │      │   Solidity    │      │            │  │
+│   │  Tailwind v4  │      │   Foundry     │      │  RPC       │  │
+│   │  Vercel       │      │               │      │            │  │
+│   │               │      │               │      │            │  │
+│   └───────┬───────┘      └───────┬───────┘      └─────┬──────┘  │
+│           │                      │                     │          │
+│           │                      │                     │          │
+│   ┌───────▼───────┐      ┌───────▼───────┐      ┌─────▼──────┐  │
+│   │               │      │               │      │            │  │
+│   │  Wagmi v2     │      │  HiveFactory  │      │  LLM 0x802 │  │
+│   │  RainbowKit   │      │  BondingCurve │      │  IMG  0x805 │  │
+│   │  React Query  │      │  AgentToken   │      │  HTTP 0x801 │  │
+│   │               │      │               │      │            │  │
+│   └───────────────┘      └───────────────┘      └────────────┘  │
+│                                                                   │
+│   ┌──────────────────────────────────────────────────────────┐   │
+│   │                    DEX LAYER                              │   │
+│   │                                                           │   │
+│   │   RitualV2Factory  ────►  RitualV2Router02               │   │
+│   │   Auto-deploy liquidity on graduation                     │   │
+│   │   LP tokens permanently burned (dead address)             │   │
+│   └──────────────────────────────────────────────────────────┘   │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
+<br/>
+
 ## 📜 Smart Contracts
 
-### Deployed Contracts (Ritual Testnet)
+### Deployed on Ritual Testnet
 
 | Contract | Address | Description |
 |----------|---------|-------------|
-| **HiveFactory** | `0xd44785b6c5a001502fe4ff1a03821c5efff3efda` | Main factory, creates agents |
-| **HiveAgentToken** | `0x5f63F9EEDd35711E44d446e354cce27d7845f731` | Test token (Cat Wizard) |
-| **HiveBondingCurve** | `0xA6B792a52c4fFFB2d9295F2ED0d379d5dc3ee373` | Test bonding curve |
-| **RitualV2Factory** | `0x61E570306f2BfD3E8F98D7cbE1905B5f0bCBb336` | DEX factory |
-| **RitualV2Router** | `0x51BfaE29567120e2CE821F3021BCe593E7D9ccA5` | DEX router |
+| **HiveFactory** | [`0x4577...E19`](https://explorer.ritualfoundation.org/address/0x4577cB1B1ec3a1c24bf3B359218C4EaE95a51E19) | Main factory — creates agents |
+| **Platform Treasury** | [`0x63C5...39C`](https://explorer.ritualfoundation.org/address/0x63C5341454F66a32553CE598e06861E11095d39C) | Fee collection |
+| **DEX Factory** | [`0x61E5...336`](https://explorer.ritualfoundation.org/address/0x61E570306f2BfD3E8F98D7cbE1905B5f0bCBb336) | Uniswap V2 factory |
+| **DEX Router** | [`0x51Bf...CA5`](https://explorer.ritualfoundation.org/address/0x51BfaE29567120e2CE821F3021BCe593E7D9ccA5) | Uniswap V2 router |
 
-### Contract Architecture
+### Contract Details
 
-#### HiveFactory.sol
-- Creates new AI agent tokens with LLM-generated metadata
-- Handles async callbacks from Ritual precompiles
-- Manages agent launches and metadata updates
+<table>
+<tr>
+<td width="50%">
 
-#### HiveAgentToken.sol
-- ERC20 token with metadata (name, symbol, lore, logo)
-- Agent status tracking (Minting, Launched, Graduated)
-- Factory-only minting and updates
+**HiveFactory.sol**
+- Creates AI agent tokens
+- Handles async LLM callbacks
+- Manages metadata updates
+- Agent registry (getAllAgents)
 
-#### HiveBondingCurve.sol
-- **Linear bonding curve** (pump.fun style)
+</td>
+<td width="50%">
+
+**HiveBondingCurve.sol**
+- Linear bonding curve (pump.fun style)
 - **7% total fee** (2% platform + 5% treasury)
-- **Slippage protection** on buy/sell
-- **Reentrancy guard** for security
-- **Auto-graduation** at 0.1 RITUAL → DEX liquidity
+- Slippage protection
+- ReentrancyGuard
+- Auto-graduation at 0.1 RITUAL
 
-#### RitualV2 DEX
-- Minimal Uniswap V2 fork for graduation
-- Auto-deploys liquidity pool on graduation
-- LP tokens sent to dead address (permanently locked)
+</td>
+</tr>
+<tr>
+<td>
+
+**HiveAgentToken.sol**
+- ERC20 + metadata (name, symbol, lore)
+- Agent status: Minting → Launched → Graduated
+- Factory-only minting
+
+</td>
+<td>
+
+**RitualV2 DEX**
+- Minimal Uniswap V2 fork
+- Auto-deploy LP on graduation
+- LP permanently burned
+
+</td>
+</tr>
+</table>
 
 ---
+
+<br/>
 
 ## 🖥 Frontend
 
 ### Tech Stack
 
-- **Framework:** Next.js 16 (App Router)
-- **Styling:** Tailwind CSS v4
-- **Web3:** Wagmi v2 + RainbowKit
-- **State:** React Query (TanStack)
-- **Animation:** Framer Motion
-- **Icons:** Lucide React
+| Layer | Tech |
+|-------|------|
+| Framework | Next.js 16 (App Router, Turbopack) |
+| Styling | Tailwind CSS v4, neo-brutalist design |
+| Animation | Framer Motion, Aurora Text, Shimmer Button |
+| Web3 | wagmi v2, viem, RainbowKit |
+| Network | Ritual Testnet (chainId 1979) |
+| AI | Ritual native precompiles (LLM, IMG, HTTP) |
+| Background | WebGL2 smoke shader (21st.dev) |
+| Deploy | Vercel |
 
 ### Pages
 
-| Route | Description |
-|-------|-------------|
-| `/` | Dashboard — Agent grid, metrics, system status |
-| `/launch` | Spawn chamber — Console simulation launch form |
-| `/token/[address]` | Trading deck — 3-column: Mind, Trading, Diagnostics |
+| Route | Page | Description |
+|-------|------|-------------|
+| `/` | **Landing** | Aurora text hero, terminal demo, features, security |
+| `/feed` | **Dashboard** | Agent grid, live event feed, king spotlight, search |
+| `/pools` | **Pools** | Graduated agents → Uniswap V2, TVL, price |
+| `/leaderboard` | **Leaderboard** | Top agents ranked by volume/progress |
+| `/portfolio` | **Portfolio** | Wallet holdings, token values, created agents |
+| `/profile` | **Profile** | Avatar, name, bio, Twitter/Discord |
+| `/launch` | **Launch** | Spawn new agent with personality presets |
+| `/token/[addr]` | **Token Detail** | Swap, chart, holders, lore, forum |
+| `/agent/[addr]/lore` | **Agent Lore** | Dedicated story/lore page |
 
-### Features
+### Key Features
 
-- 🟢 **Real-time status** — Active, Thinking, Graduated indicators
-- 📊 **Live metrics** — Total agents, volume, graduated count
-- 🔄 **Event-driven UI** — Polls blockchain for updates
-- ⚡ **Optimized caching** — React Query with smart stale times
-- 🎨 **Cypherpunk aesthetic** — Glassmorphism, neon glows, monospace
+- 🟢 **Real-time on-chain data** — Live feeds, stats, event polling
+- 📊 **Price chart** — Canvas-based from on-chain Buy/Sell events
+- 🏆 **Leaderboard** — Ranked agents with podium display
+- ⭐ **Watchlist** — Save tokens you're watching
+- 🔔 **Notifications** — Browser alerts for graduations
+- 📱 **Mobile-first** — Safe area insets, touch targets, aurora containment
+- 🔍 **SEO** — OpenGraph, Twitter cards, robots
+- 🎨 **Neo-brutalist UI** — Hard shadows, neon glows, cyberpunk terminal
 
 ---
+
+<br/>
 
 ## 🚀 Getting Started
 
@@ -158,76 +252,68 @@ Hive is a **pump.fun-style memecoin launchpad** built natively on **Ritual Chain
 - [Foundry](https://book.getfoundry.sh/getting-started/installation)
 - [Git](https://git-scm.com/)
 
-### Installation
+### Quick Start
 
 ```bash
-# Clone the repo
+# Clone
 git clone https://github.com/frianowzki/hive.git
 cd hive
 
-# Install Foundry dependencies
+# Install contracts
 forge install
 
-# Install frontend dependencies
+# Install frontend
 cd hive-frontend
 npm install
-```
 
-### Environment Setup
-
-Create `.env` file in the root directory:
-
-```bash
-# Private key for deployment (NEVER commit this!)
-PRIVATE_KEY=0x_YOUR_PRIVATE_KEY_HERE
-
-# Platform treasury address
-PLATFORM_TREASURY=0x63C5341454F66a32553CE598e06861E11095d39C
-
-# Ritual Testnet RPC
-RITUAL_RPC_URL=https://rpc.ritualfoundation.org
-```
-
-### Running Tests
-
-```bash
-# Run all tests
-forge test
-
-# Run mock tests only (fast, ~5ms)
-forge test --match-path "test/HiveMock.t.sol"
-
-# Run security tests
-forge test --match-path "test/SecurityTest.t.sol"
-
-# Run fork tests (requires RPC, ~30s)
-forge test --match-path "test/HiveFork.t.sol"
-```
-
-### Running Frontend
-
-```bash
-cd hive-frontend
+# Run dev
 npm run dev
 ```
 
-Visit [http://localhost:3000](http://localhost:3000)
+Open [http://localhost:3000](http://localhost:3000)
+
+### Environment
+
+Create `.env` in root:
+
+```bash
+PRIVATE_KEY=0x_YOUR_PRIVATE_KEY
+PLATFORM_TREASURY=0x63C5341454F66a32553CE598e06861E11095d39C
+RITUAL_RPC_URL=https://rpc.ritualfoundation.org
+```
+
+### Tests
+
+```bash
+# All tests (40+)
+forge test
+
+# Mock tests (fast)
+forge test --match-path "test/HiveMock.t.sol"
+
+# Security tests
+forge test --match-path "test/SecurityTest.t.sol"
+
+# Fork tests (needs RPC)
+forge test --match-path "test/HiveFork.t.sol"
+```
 
 ---
+
+<br/>
 
 ## 📦 Deployment
 
 ### Smart Contracts
 
 ```bash
-# Deploy to Ritual Testnet
 forge script script/DeployHive.s.sol \
   --rpc-url https://rpc.ritualfoundation.org \
   --broadcast \
   --verify
 ```
 
-### Frontend (Vercel)
+### Frontend
 
 ```bash
 cd hive-frontend
@@ -236,108 +322,125 @@ vercel --prod
 
 ---
 
+<br/>
+
 ## 🔒 Security
 
-### Security Features
+<table>
+<tr>
+<td width="50%">
 
-| Feature | Status | Description |
-|---------|--------|-------------|
-| ReentrancyGuard | ✅ | Protects buy/sell from reentrancy attacks |
-| Slippage Protection | ✅ | `minTokensOut` / `minRitualOut` params |
-| Access Control | ✅ | Factory-only functions, async delivery verification |
-| Custom Errors | ✅ | Gas-efficient error handling |
-| Callback Security | ✅ | Only AsyncDelivery contract can fulfill |
+**Security Features**
 
-### Audit Status
+| Feature | Status |
+|---------|--------|
+| ReentrancyGuard | ✅ |
+| Slippage Protection | ✅ |
+| Access Control | ✅ |
+| Custom Errors | ✅ |
+| Callback Security | ✅ |
+| ECIES Encryption | ✅ |
 
-- [x] Internal testing (40+ tests passing)
-- [x] Mock tests for unit verification
-- [x] Fork tests for live chain integration
-- [ ] External audit (pending)
+</td>
+<td width="50%">
 
-### Bug Bounty
+**Audit Status**
 
-Found a vulnerability? Please report it responsibly to **frianowzki@gmail.com**
+| Phase | Status |
+|-------|--------|
+| Internal testing | ✅ 40+ tests |
+| Mock tests | ✅ Passing |
+| Fork tests | ✅ Live chain |
+| Security tests | ✅ Passing |
+| External audit | ⏳ Pending |
+
+</td>
+</tr>
+</table>
+
+> 🐛 Found a vulnerability? Report to **frianowzki@gmail.com**
 
 ---
 
+<br/>
+
 ## 🗺 Roadmap
 
-### Phase 1: Core Launchpad ✅
-- [x] Smart contracts (Factory, Token, Bonding Curve)
-- [x] Linear bonding curve with fees
-- [x] Mock + Fork testing (40+ tests)
-- [x] Frontend deployment
+<table>
+<tr>
+<td width="50%">
 
-### Phase 2: Frontend UI ✅
-- [x] Dashboard with real-time metrics
-- [x] Console simulation launch form
-- [x] 3-column trading deck
-- [x] Glassmorphism design system
+**✅ Completed**
 
-### Phase 3: Async Launch UX ✅
-- [x] Event-driven state machine
-- [x] Real-time TX tracking
-- [x] Metadata polling
-- [x] Fallback timeout handling
+- [x] Core contracts (Factory, Token, Bonding Curve)
+- [x] Linear bonding curve with 7% fee
+- [x] Mock + Fork + Security tests (40+)
+- [x] DEX graduation (LP burn)
+- [x] Frontend dashboard
+- [x] Real-time event feed
+- [x] Leaderboard, Pools, Portfolio
+- [x] Profile system
+- [x] Token charts & holder distribution
+- [x] Aurora text animations
+- [x] Mobile-first responsive design
+- [x] SEO & OpenGraph
 
-### Phase 4: DEX Graduation ✅
-- [x] RitualV2 DEX fork (Factory + Router)
-- [x] Auto-liquidity deployment
-- [x] LP token burning (dead address)
+</td>
+<td width="50%">
 
-### Phase 5: Security Hardening ✅
-- [x] ReentrancyGuard
-- [x] Slippage protection
-- [x] Enhanced events
-- [x] Security test suite
+**🔮 Coming Soon**
 
-### Phase 6: AI Integration (Coming Soon)
-- [ ] LLM metadata generation (when vLLM activates)
+- [ ] LLM metadata generation (vLLM)
 - [ ] Autonomous agent scheduler
 - [ ] Twitter/social media posting
-- [ ] Image generation
-
-### Phase 7: Advanced Features (Future)
+- [ ] AI image generation
 - [ ] Event indexer + PostgreSQL
 - [ ] TradingView charts
 - [ ] Pay-to-prompt interaction
 - [ ] Multi-agent orchestration
+- [ ] IPFS profile storage
+- [ ] On-chain profile CID
+
+</td>
+</tr>
+</table>
 
 ---
 
+<br/>
+
 ## 🤝 Contributing
 
-Contributions are welcome! Please follow these steps:
-
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing`)
+2. Create a feature branch (`git checkout -b feat/amazing`)
+3. Commit changes (`git commit -m 'feat: add amazing'`)
+4. Push (`git push origin feat/amazing`)
 5. Open a Pull Request
 
 ---
 
+<br/>
+
 ## 📄 License
 
-This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
+MIT — see [LICENSE](LICENSE)
 
 ---
 
-## 🙏 Acknowledgments
-
-- [Ritual Foundation](https://ritual.foundation) — AI-native blockchain
-- [Foundry](https://book.getfoundry.sh) — Smart contract toolkit
-- [Next.js](https://nextjs.org) — React framework
-- [Wagmi](https://wagmi.sh) — React hooks for Ethereum
-- [RainbowKit](https://www.rainbowkit.com) — Wallet connection
-
----
+<br/>
 
 <div align="center">
+
+### 🙏 Acknowledgments
+
+[Ritual Foundation](https://ritual.foundation) · [Foundry](https://book.getfoundry.sh) · [Next.js](https://nextjs.org) · [Wagmi](https://wagmi.sh) · [RainbowKit](https://www.rainbowkit.com) · [Magic UI](https://magicui.design) · [21st.dev](https://21st.dev)
+
+<br/>
 
 **Built with 🐝 on Ritual Chain**
 
 *Hive — Where AI Agents Come Alive*
+
+<img src="assets/logo.png" alt="Hive" width="60"/>
 
 </div>
