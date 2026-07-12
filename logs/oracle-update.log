@@ -14,3 +14,150 @@
   TX: 0x47f080a077d1a08b75a3a97148bcca8f49d721966a6069255be63ec71a072ed4
   Gas: 45451
 [2026-07-11T16:42:24Z] Done.
+[2026-07-11T17:43:41Z] Starting oracle price update...
+[2026-07-11T17:43:41Z] CoinGecko ETH price: $1824.36
+[2026-07-11T17:43:41Z] Scaled price: 182436000000
+[2026-07-11T17:43:41Z] ✅ Oracle price updated: $1824.36 (182436000000)
+  TX: 0xa9d879cf47817e1a210a2a9ee7c017dd4f343941758a83648847f7814a725c96
+  Gas: 45439
+[2026-07-11T17:43:41Z] Done.
+[2026-07-11T18:44:42Z] Starting oracle price update...
+[2026-07-11T18:44:42Z] CoinGecko ETH price: $1826.65
+[2026-07-11T18:44:42Z] Scaled price: 182665000000
+[2026-07-11T18:44:42Z] ✅ Oracle price updated: $1826.65 (182665000000)
+  TX: 0x2c864caddb51111052f8fa896dd68dc9ec53fe0de2786e1611ba5bf12b64da64
+  Gas: 45451
+[2026-07-11T18:44:42Z] Done.
+[2026-07-11T19:45:40Z] Starting oracle price update...
+[2026-07-11T19:45:40Z] CoinGecko ETH price: $1819.0
+[2026-07-11T19:45:40Z] Scaled price: 181900000000
+[2026-07-11T19:45:40Z] ✅ Oracle price updated: $1819.0 (181900000000)
+  TX: 0x874da0bd18504abcfc1e55c60de99c335bcdda689a1d77a0d15767da618bb399
+  Gas: 45439
+[2026-07-11T19:45:40Z] Done.
+[2026-07-11T20:46:44Z] Starting oracle price update...
+[2026-07-11T20:46:44Z] CoinGecko ETH price: $1826.68
+[2026-07-11T20:46:44Z] Scaled price: 182668000000
+[2026-07-11T20:46:44Z] ✅ Oracle price updated: $1826.68 (182668000000)
+  TX: 0x616f8c1996df8ae439de4607708c18038cc0d8d5dc4ee3ad81977c4711e0c236
+  Gas: 45439
+[2026-07-11T20:46:44Z] Done.
+[2026-07-11T21:47:47Z] Starting oracle price update...
+[2026-07-11T21:47:47Z] CoinGecko ETH price: $1822.52
+[2026-07-11T21:47:47Z] Scaled price: 182252000000
+[2026-07-11T21:47:47Z] ✅ Oracle price updated: $1822.52 (182252000000)
+  TX: 0x4636777ea334ec4f75bb78477494a91eb512e55840f4a9de0d2b73b36b16ff8d
+  Gas: 45439
+[2026-07-11T21:47:47Z] Done.
+[2026-07-11T22:48:42Z] Starting oracle price update...
+[2026-07-11T22:48:42Z] CoinGecko ETH price: $1813.67
+[2026-07-11T22:48:42Z] Scaled price: 181367000000
+[2026-07-11T22:48:42Z] ✅ Oracle price updated: $1813.67 (181367000000)
+  TX: 0xb19f6d14ebf20e63d4c6fd8151d7b0abc70dc67cec307066d6eb3e041dcfe512
+  Gas: 45451
+[2026-07-11T22:48:42Z] Done.
+[2026-07-11T23:49:42Z] Starting oracle price update...
+[2026-07-11T23:49:42Z] CoinGecko ETH price: $1790.36
+[2026-07-11T23:49:42Z] Scaled price: 179036000000
+[2026-07-11T23:49:42Z] ✅ Oracle price updated: $1790.36 (179036000000)
+  TX: 0x09e7ed70a54fd2574ca346ed23fcb787ed95267874da4942a3837c5be8ad19aa
+  Gas: 45439
+[2026-07-11T23:49:42Z] Done.
+[2026-07-12T00:50:42Z] Starting oracle price update...
+[2026-07-12T00:50:42Z] CoinGecko ETH price: $1784.97
+[2026-07-12T00:50:42Z] Scaled price: 178497000000
+[2026-07-12T00:50:42Z] ✅ Oracle price updated: $1784.97 (178497000000)
+  TX: 0xdc53fdfa6da060eb6a161af6da807913a662361b58040d7d444f7752cf5807d8
+  Gas: 45451
+[2026-07-12T00:50:42Z] Done.
+[2026-07-12T01:51:43Z] Starting oracle price update...
+[2026-07-12T01:51:43Z] CoinGecko ETH price: $1804.82
+[2026-07-12T01:51:43Z] Scaled price: 180482000000
+[2026-07-12T01:51:43Z] ✅ Oracle price updated: $1804.82 (180482000000)
+  TX: 0x633754e188734645595a793f37961243ae70a0b09f07c67eae79fb6c539b082a
+  Gas: 45451
+[2026-07-12T01:51:43Z] Done.
+[2026-07-12T02:52:43Z] Starting oracle price update...
+[2026-07-12T02:52:43Z] CoinGecko ETH price: $1803.77
+[2026-07-12T02:52:43Z] Scaled price: 180377000000
+[2026-07-12T02:52:43Z] ✅ Oracle price updated: $1803.77 (180377000000)
+  TX: 0x4e973a7eef8c60823792adc1d9636d0b3047b58617f02b25fb7c8f8d879c5e30
+  Gas: 45451
+[2026-07-12T02:52:43Z] Done.
+[2026-07-12T03:53:45Z] Starting oracle price update...
+[2026-07-12T03:53:45Z] CoinGecko ETH price: $1809.08
+[2026-07-12T03:53:45Z] Scaled price: 180908000000
+[2026-07-12T03:53:45Z] ✅ Oracle price updated: $1809.08 (180908000000)
+  TX: 0x96af562e8747b0ab4a022a54b86cfae42a2b0316981fea0baeadbf0468a76e27
+  Gas: 45439
+[2026-07-12T03:53:45Z] Done.
+[2026-07-12T04:54:45Z] Starting oracle price update...
+[2026-07-12T04:54:45Z] CoinGecko ETH price: $1804.63
+[2026-07-12T04:54:45Z] Scaled price: 180463000000
+[2026-07-12T04:54:45Z] ✅ Oracle price updated: $1804.63 (180463000000)
+  TX: 0x9b215638a006c386b724d1b64485022bc387992fbc9a8952b1a83c2e998df5ed
+  Gas: 45451
+[2026-07-12T04:54:45Z] Done.
+[2026-07-12T05:55:45Z] Starting oracle price update...
+[2026-07-12T05:55:45Z] CoinGecko ETH price: $1802.72
+[2026-07-12T05:55:45Z] Scaled price: 180272000000
+[2026-07-12T05:55:45Z] ✅ Oracle price updated: $1802.72 (180272000000)
+  TX: 0x679df5b24783fc1d421e7bc9a6d2d19b13c999c7468adbd7a40deddbb3ac9c1a
+  Gas: 45439
+[2026-07-12T05:55:45Z] Done.
+[2026-07-12T06:56:46Z] Starting oracle price update...
+[2026-07-12T06:56:46Z] CoinGecko ETH price: $1793.55
+[2026-07-12T06:56:46Z] Scaled price: 179355000000
+[2026-07-12T06:56:46Z] ✅ Oracle price updated: $1793.55 (179355000000)
+  TX: 0x087eaefdd439c41cdc024a85075da2ace9de4e9cd9149f221b43f5abad226d41
+  Gas: 45451
+[2026-07-12T06:56:46Z] Done.
+[2026-07-12T07:57:46Z] Starting oracle price update...
+[2026-07-12T07:57:46Z] CoinGecko ETH price: $1797.27
+[2026-07-12T07:57:46Z] Scaled price: 179727000000
+[2026-07-12T07:57:46Z] ✅ Oracle price updated: $1797.27 (179727000000)
+  TX: 0x1168ca6a26823b9dc18ba34190f861d418171e9ab7f0f4b8305b15f59a6ad278
+  Gas: 45451
+[2026-07-12T07:57:46Z] Done.
+[2026-07-12T08:58:47Z] Starting oracle price update...
+[2026-07-12T08:58:47Z] CoinGecko ETH price: $1803.84
+[2026-07-12T08:58:47Z] Scaled price: 180384000000
+[2026-07-12T08:58:47Z] ✅ Oracle price updated: $1803.84 (180384000000)
+  TX: 0x256168baca4261990fd629f96dbaf613b925a7e2b55371a9205d2af50e87a29d
+  Gas: 45439
+[2026-07-12T08:58:47Z] Done.
+[2026-07-12T09:59:47Z] Starting oracle price update...
+[2026-07-12T09:59:47Z] CoinGecko ETH price: $1801.35
+[2026-07-12T09:59:47Z] Scaled price: 180135000000
+[2026-07-12T09:59:47Z] ✅ Oracle price updated: $1801.35 (180135000000)
+  TX: 0x3b4e7ab99766819c450f07fce2a171f4af534e70bf782c599688bf3266894485
+  Gas: 45451
+[2026-07-12T09:59:47Z] Done.
+[2026-07-12T11:00:48Z] Starting oracle price update...
+[2026-07-12T11:00:48Z] CoinGecko ETH price: $1798.19
+[2026-07-12T11:00:48Z] Scaled price: 179819000000
+[2026-07-12T11:00:48Z] ✅ Oracle price updated: $1798.19 (179819000000)
+  TX: 0x135123eb72aedc28cc4828b7b9f3c6a3f32f9060746c7e9d9e4a350bdf98e42d
+  Gas: 45451
+[2026-07-12T11:00:48Z] Done.
+[2026-07-12T12:01:51Z] Starting oracle price update...
+[2026-07-12T12:01:51Z] CoinGecko ETH price: $1802.83
+[2026-07-12T12:01:51Z] Scaled price: 180283000000
+[2026-07-12T12:01:51Z] ✅ Oracle price updated: $1802.83 (180283000000)
+  TX: 0xde68d191d00225624835e518027b09a072033db01412e01c28529166b36fa4a6
+  Gas: 45451
+[2026-07-12T12:01:51Z] Done.
+[2026-07-12T13:02:49Z] Starting oracle price update...
+[2026-07-12T13:02:49Z] CoinGecko ETH price: $1805.25
+[2026-07-12T13:02:49Z] Scaled price: 180525000000
+[2026-07-12T13:02:49Z] ✅ Oracle price updated: $1805.25 (180525000000)
+  TX: 0x32e25dbb43e47ea0f866f55628bd8cd68e802318b2fdecd5777daf7aeb46a151
+  Gas: 45451
+[2026-07-12T13:02:49Z] Done.
+[2026-07-12T14:03:49Z] Starting oracle price update...
+[2026-07-12T14:03:49Z] CoinGecko ETH price: $1804.5
+[2026-07-12T14:03:49Z] Scaled price: 180450000000
+[2026-07-12T14:03:49Z] ✅ Oracle price updated: $1804.5 (180450000000)
+  TX: 0xf86920b204db76d9d4d7a311d26e82c3fc217a3a87dd4bd99ebb9ed52d6f6e37
+  Gas: 45451
+[2026-07-12T14:03:49Z] Done.
