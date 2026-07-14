@@ -6,11 +6,15 @@ import "./HiveAgentToken.sol";
 import "./HiveBondingCurve.sol";
 
 /// @title HiveFactory - Ritual-native memecoin launchpad
-/// @notice Deploys AI agent tokens with LLM-generated metadata + Sovereign Agent spawning
-/// @dev LLM via HiveLLMExecutor (SPC/short-running). Agent via 0x080C (long-running async).
+/// @notice Deploys AI agent tokens and spawns a real Sovereign Agent (0x080C) per token
+/// @dev LLM metadata (0x0802) is generated client-side via HiveLLMExecutor (SPC/inline pattern) —
+///      see hive-frontend/src/lib/ritual-llm.ts. This contract does NOT call the LLM precompile
+///      itself; the old on-chain attempt was based on the wrong execution model (two-phase async)
+///      for what is actually a short-running async (SPC) precompile, and has been removed.
 contract HiveFactory {
     // --- Ritual System Contracts ---
-    address public constant SOVEREIGN_AGENT = address(0x080C);
+    // NOTE: LLM_PRECOMPILE intentionally not used here — see contract-level comment above.
+    address public constant SOVEREIGN_AGENT_PRECOMPILE = address(0x080C);
     address public constant ASYNC_DELIVERY = 0x5A16214fF555848411544b005f7Ac063742f39F6;
     address public constant RITUAL_WALLET = 0x532F0dF0896F353d8C3DD8cc134e8129DA2a3948;
     address public constant TEESERVICE_REGISTRY = 0x9644e8562cE0Fe12b4deeC4163c064A8862Bf47F;
@@ -24,25 +28,21 @@ contract HiveFactory {
         address token;
         address bondingCurve;
         address agentTreasury;
-        address creator;          // ← NEW: who created this launch
+        address creator;          // NEW: the wallet that launched this token
         string userPrompt;
         bool metadataSet;
-        bytes32 pendingJobId;     // ← NEW: async agent job
+        bool agentSpawned;        // NEW: whether spawnAgent() has been called for this launch
+        bytes32 sovereignJobId;   // NEW: Phase-2 job id once delivered
         uint256 createdAt;
-    }
-
-    struct AgentResult {
-        bool success;
-        string errorMessage;
-        string responseText;
-        uint256 receivedAt;
     }
 
     mapping(uint256 => AgentLaunch) public launches;
     uint256 public launchCount;
 
-    mapping(bytes32 => uint256) public jobToLaunch;      // jobId → launchId
-    mapping(uint256 => AgentResult) public agentResults;  // launchId → result
+    // launchId <-> agentTreasury, so the async callback (which only gets a jobId + result,
+    // no launchId) can find its way back to the right launch. jobId is set from the tx hash
+    // of the spawnAgent() call, matching the convention used in examples/sovereign-agent.
+    mapping(bytes32 => uint256) public jobIdToLaunch;
 
     uint256 public virtualRitual = 1 ether;
     uint256 public virtualToken = 1_000_000_000 * 1e18;
@@ -52,12 +52,11 @@ contract HiveFactory {
         uint256 indexed launchId,
         address indexed token,
         address indexed bondingCurve,
-        address creator,
         string prompt
     );
     event MetadataGenerated(uint256 indexed launchId, string name, string symbol);
-    event AgentSpawned(uint256 indexed launchId, bytes32 indexed jobId);
-    event AgentResultReceived(uint256 indexed launchId, bytes32 indexed jobId, bool success);
+    event AgentSpawnRequested(uint256 indexed launchId, bytes32 indexed jobId, address consumer);
+    event SovereignAgentResultDelivered(uint256 indexed launchId, bytes32 indexed jobId, bool success, bytes result);
 
     // --- Modifiers ---
     modifier onlyOwner() {
@@ -70,12 +69,10 @@ contract HiveFactory {
         _;
     }
 
-    modifier onlyCreatorOrOwner(uint256 launchId) {
-        AgentLaunch storage l = launches[launchId];
-        require(
-            msg.sender == l.creator || msg.sender == owner,
-            "not creator or owner"
-        );
+    modifier onlyLaunchCreator(uint256 launchId) {
+        AgentLaunch storage launch = launches[launchId];
+        require(launch.token != address(0), "launch not found");
+        require(msg.sender == launch.creator || msg.sender == owner, "not creator");
         _;
     }
 
@@ -87,8 +84,9 @@ contract HiveFactory {
 
     // --- Core Functions ---
 
-    /// @notice Create a new AI agent token with bonding curve
-    /// @param userPrompt Description of the token concept
+    /// @notice Create a new AI agent token. Metadata and the Sovereign Agent are both
+    ///         set/spawned in follow-up calls by the creator (see setTokenMetadata, spawnAgent).
+    /// @param userPrompt Description of the token concept (e.g., "A chaotic-good cat wizard")
     /// @return launchId ID of the new launch
     function createAgent(string calldata userPrompt) external returns (uint256 launchId) {
         require(bytes(userPrompt).length > 0, "empty prompt");
@@ -123,34 +121,36 @@ contract HiveFactory {
         token.mint(address(this), saleTokens);
         IERC20(address(token)).approve(address(curve), saleTokens);
 
-        // 5. Store launch (with creator)
+        // 5. Store launch (creator = the wallet that called createAgent)
         launches[launchId] = AgentLaunch({
             token: address(token),
             bondingCurve: address(curve),
             agentTreasury: agentTreasury,
-            creator: msg.sender,        // ← FIXED: record who created
+            creator: msg.sender,
             userPrompt: userPrompt,
             metadataSet: false,
-            pendingJobId: bytes32(0),
+            agentSpawned: false,
+            sovereignJobId: bytes32(0),
             createdAt: block.number
         });
 
         // 6. Mark as minting
         token.setStatus(HiveAgentToken.AgentStatus.Minting);
 
-        emit AgentCreated(launchId, address(token), address(curve), msg.sender, userPrompt);
+        emit AgentCreated(launchId, address(token), address(curve), userPrompt);
     }
 
-    /// @notice Set token metadata (callable by creator OR owner)
-    /// @dev Fixed: old version was onlyOwner, silently reverted for non-deployer creators
+    /// @notice Set token metadata. Callable by the launch creator (or platform owner),
+    ///         once LLM generation (done client-side) has produced a name/symbol/lore.
+    /// @dev FIX: previously `onlyOwner`-gated with no `creator` tracked anywhere, so every
+    ///      launch except ones made by the factory deployer wallet reverted here permanently.
     function setTokenMetadata(
         uint256 launchId,
         string calldata name,
         string calldata symbol,
         string calldata lore
-    ) external onlyCreatorOrOwner(launchId) {
+    ) external onlyLaunchCreator(launchId) {
         AgentLaunch storage launch = launches[launchId];
-        require(launch.token != address(0), "launch not found");
         require(!launch.metadataSet, "metadata already set");
 
         HiveAgentToken token = HiveAgentToken(launch.token);
@@ -165,83 +165,65 @@ contract HiveFactory {
         emit MetadataGenerated(launchId, name, symbol);
     }
 
-    /// @notice Spawn a Sovereign Agent for a launched token
-    /// @param launchId ID of the launch to attach an agent to
-    /// @param sovereignRequestInput ABI-encoded 23-field SovereignAgentRequest
-    /// @dev Caller must have funded RitualWallet beforehand. Request is built client-side
-    ///      (ECIES encryption can't happen in EVM) and forwarded to precompile.
-    function spawnAgent(
-        uint256 launchId,
-        bytes calldata sovereignRequestInput
-    ) external onlyCreatorOrOwner(launchId) returns (bytes32 jobId) {
+    /// @notice Spawn a real, autonomous Sovereign Agent (0x080C) as this token's on-chain mascot.
+    /// @dev `sovereignRequestInput` is the 23-field ABI-encoded SovereignAgentRequest, built
+    ///      OFF-CHAIN (viem + eciesjs client-side, mirroring examples/sovereign-agent/helpers.py —
+    ///      ECIES encryption of secrets cannot happen in the EVM). The request's `consumer` field
+    ///      MUST be set to address(this) and its `deliverySelector` field MUST be
+    ///      keccak256("onSovereignAgentResult(bytes32,bytes)")[:4], or AsyncDelivery will not be
+    ///      able to route the Phase 2 callback back here.
+    /// @dev FUNDING: the RitualWallet backing this contract (or the launch creator's wallet,
+    ///      depending on how Ritual attributes the deposit for consumer-initiated calls) must be
+    ///      pre-funded before this call, or the precompile call will revert. This is the same
+    ///      wallet-funding question flagged in your earlier Sovereign Agent scaffold work
+    ///      (MIN_RITUAL_WALLET_WEI / the 0.3 RITUAL figure) — see chat for the open question on
+    ///      who funds this per launch.
+    function spawnAgent(uint256 launchId, bytes calldata sovereignRequestInput)
+        external
+        onlyLaunchCreator(launchId)
+        returns (bytes memory)
+    {
         AgentLaunch storage launch = launches[launchId];
-        require(launch.token != address(0), "launch not found");
-        require(launch.pendingJobId == bytes32(0), "agent already spawned");
+        require(!launch.agentSpawned, "agent already spawned");
 
-        // Forward request to Sovereign Agent precompile (0x080C)
-        (bool ok, bytes memory output) = SOVEREIGN_AGENT.call(sovereignRequestInput);
-        require(ok, "sovereign precompile call failed");
+        (bool ok, bytes memory output) = SOVEREIGN_AGENT_PRECOMPILE.call(sovereignRequestInput);
+        require(ok, "sovereign agent precompile call failed");
 
-        // Extract jobId from output (first 32 bytes)
-        require(output.length >= 32, "invalid precompile output");
-        assembly {
-            jobId := mload(add(output, 32))
-        }
+        launch.agentSpawned = true;
 
-        launch.pendingJobId = jobId;
-        jobToLaunch[jobId] = launchId;
-
-        emit AgentSpawned(launchId, jobId);
+        emit AgentSpawnRequested(launchId, bytes32(0), address(this));
+        return output;
     }
 
-    /// @notice Callback from AsyncDelivery when agent job is committed on-chain
-    /// @dev Ritual's AsyncDelivery delivers Phase 2 results here
-    function onSovereignAgentResult(
-        bytes32 jobId,
-        bytes calldata result
-    ) external onlyAsyncDelivery {
-        uint256 launchId = jobToLaunch[jobId];
-        require(launchId != 0, "unknown job");
-
-        // Store raw result — decoding happens off-chain in ritual-agent.ts
-        // Result ABI: (bool success, string error, string text, ...)
-        // We only extract the first 3 fields (bool, string, string) for on-chain convenience.
-        // Full decode of nested tuples stays off-chain.
-        bool success = false;
-        string memory errorMessage = "";
-        string memory responseText = "";
-
-        if (result.length >= 96) {
-            (success, errorMessage, responseText) = abi.decode(
-                result,
-                (bool, string, string)
-            );
-        }
-
-        agentResults[launchId] = AgentResult({
-            success: success,
-            errorMessage: errorMessage,
-            responseText: responseText,
-            receivedAt: block.timestamp
-        });
-
-        delete jobToLaunch[jobId];
-
-        emit AgentResultReceived(launchId, jobId, success);
-    }
-
-    /// @notice Link a pending job ID to a launch (for jobs submitted externally)
-    function linkPendingJob(uint256 launchId, bytes32 jobId) external onlyCreatorOrOwner(launchId) {
+    /// @notice Link a launch to its Sovereign Agent job id, once the frontend has the real jobId.
+    /// @dev IMPORTANT: do NOT pass the `sendTransaction` return hash here. Ritual defers and
+    ///      replays async precompile txs, so the hash you get back from the wallet can differ
+    ///      from the effective on-chain hash. Read the actual jobId from AsyncJobTracker's
+    ///      commitment event (topic-indexed) instead — see ritual-agent.ts's `watchJobCommitted`.
+    function linkPendingJob(uint256 launchId, bytes32 jobId) external onlyLaunchCreator(launchId) {
         AgentLaunch storage launch = launches[launchId];
-        require(launch.token != address(0), "launch not found");
-        require(launch.pendingJobId == bytes32(0), "job already linked");
-
-        launch.pendingJobId = jobId;
-        jobToLaunch[jobId] = launchId;
+        require(launch.agentSpawned, "agent not spawned yet");
+        require(launch.sovereignJobId == bytes32(0), "already linked");
+        launch.sovereignJobId = jobId;
+        jobIdToLaunch[jobId] = launchId;
     }
 
-    // --- View Functions ---
+    /// @notice Phase 2 callback from AsyncDelivery for the Sovereign Agent job.
+    /// @dev Signature and name are load-bearing: the off-chain request encodes
+    ///      keccak256("onSovereignAgentResult(bytes32,bytes)")[:4] as the delivery selector.
+    ///      Do not rename or change this signature without re-deriving that selector.
+    /// @dev Result decoding (bool success, string error, string text, ...) is left to the
+    ///      frontend, same as the existing LLM flow — see ritual-agent.ts's `pollAgentResult`.
+    ///      This keeps JSON parsing off-chain and cheap, and lets a human review the agent's
+    ///      output before setTokenMetadata is called with it.
+    function onSovereignAgentResult(bytes32 jobId, bytes calldata result) external onlyAsyncDelivery {
+        uint256 launchId = jobIdToLaunch[jobId];
+        AgentLaunch storage launch = launches[launchId];
 
+        emit SovereignAgentResultDelivered(launchId, jobId, true, result);
+    }
+
+    /// @notice Get launch info
     function getLaunch(uint256 launchId) external view returns (
         address token,
         address bondingCurve,
@@ -249,24 +231,11 @@ contract HiveFactory {
         address creator,
         string memory userPrompt,
         bool metadataSet,
-        bytes32 pendingJobId,
+        bool agentSpawned,
         uint256 createdAt
     ) {
         AgentLaunch storage l = launches[launchId];
-        return (
-            l.token, l.bondingCurve, l.agentTreasury, l.creator,
-            l.userPrompt, l.metadataSet, l.pendingJobId, l.createdAt
-        );
-    }
-
-    function getAgentResult(uint256 launchId) external view returns (
-        bool success,
-        string memory errorMessage,
-        string memory responseText,
-        uint256 receivedAt
-    ) {
-        AgentResult storage r = agentResults[launchId];
-        return (r.success, r.errorMessage, r.responseText, r.receivedAt);
+        return (l.token, l.bondingCurve, l.agentTreasury, l.creator, l.userPrompt, l.metadataSet, l.agentSpawned, l.createdAt);
     }
 
     receive() external payable {}

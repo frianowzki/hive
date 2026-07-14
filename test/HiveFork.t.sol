@@ -100,7 +100,7 @@ contract HiveForkTest is Test {
     }
 
     function test_FactoryHasCorrectPrecompileAddresses() public {
-        assertEq(factory.SOVEREIGN_AGENT(), 0x000000000000000000000000000000000000080C);
+        assertEq(factory.SOVEREIGN_AGENT_PRECOMPILE(), 0x000000000000000000000000000000000000080C);
         assertEq(factory.ASYNC_DELIVERY(), ASYNC_DELIVERY);
         assertEq(factory.RITUAL_WALLET(), RITUAL_WALLET);
     }
