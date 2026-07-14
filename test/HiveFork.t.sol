@@ -100,7 +100,7 @@ contract HiveForkTest is Test {
     }
 
     function test_FactoryHasCorrectPrecompileAddresses() public {
-        assertEq(factory.LLM_PRECOMPILE(), 0x0000000000000000000000000000000000000802);
+        assertEq(factory.SOVEREIGN_AGENT(), 0x000000000000000000000000000000000000080C);
         assertEq(factory.ASYNC_DELIVERY(), ASYNC_DELIVERY);
         assertEq(factory.RITUAL_WALLET(), RITUAL_WALLET);
     }
@@ -340,7 +340,7 @@ contract HiveForkTest is Test {
         // Verify launch was created
         assertEq(factory.launchCount(), 1);
 
-        (address tokenAddr, address curveAddr,, string memory prompt, bool metadataSet,) = factory.getLaunch(launchId);
+        (address tokenAddr, address curveAddr,, , string memory prompt, bool metadataSet,,) = factory.getLaunch(launchId);
 
         assertTrue(tokenAddr != address(0), "Token should be deployed");
         assertTrue(curveAddr != address(0), "Curve should be deployed");
@@ -362,8 +362,8 @@ contract HiveForkTest is Test {
 
         assertEq(factory.launchCount(), 2);
 
-        (address t1,,, , , ) = factory.getLaunch(id1);
-        (address t2,,, , , ) = factory.getLaunch(id2);
+        (address t1,,, , , ,,) = factory.getLaunch(id1);
+        (address t2,,, , , ,,) = factory.getLaunch(id2);
 
         assertTrue(t1 != t2, "Each launch should have unique token");
     }
@@ -375,12 +375,12 @@ contract HiveForkTest is Test {
     function test_CallbackRevertsIfNotDelivery() public {
         vm.prank(user1);
         vm.expectRevert("only async delivery");
-        factory.onAgentResult(keccak256("test"), "");
+        factory.onSovereignAgentResult(keccak256("test"), "");
     }
 
     function test_CallbackAcceptsFromDelivery() public {
         vm.prank(ASYNC_DELIVERY);
-        factory.onAgentResult(keccak256("test"), "");
+        factory.onSovereignAgentResult(keccak256("test"), "");
         // Should not revert
     }
 

@@ -50,7 +50,7 @@ contract HiveMockTest is Test {
 
         assertEq(factory.launchCount(), 1);
 
-        (address tokenAddr, address curveAddr,, string memory prompt, bool metadataSet,) = factory.getLaunch(launchId);
+        (address tokenAddr, address curveAddr,, , string memory prompt, bool metadataSet,,) = factory.getLaunch(launchId);
 
         assertTrue(tokenAddr != address(0), "Token deployed");
         assertTrue(curveAddr != address(0), "Curve deployed");
@@ -73,9 +73,9 @@ contract HiveMockTest is Test {
         assertEq(factory.launchCount(), 3);
 
         // Each should have unique token addresses
-        (address t1,, , , , ) = factory.getLaunch(0);
-        (address t2,, , , , ) = factory.getLaunch(1);
-        (address t3,, , , , ) = factory.getLaunch(2);
+        (address t1,, , , , , ,) = factory.getLaunch(0);
+        (address t2,, , , , , ,) = factory.getLaunch(1);
+        (address t3,, , , , , ,) = factory.getLaunch(2);
 
         assertTrue(t1 != t2);
         assertTrue(t2 != t3);
@@ -104,11 +104,11 @@ contract HiveMockTest is Test {
         vm.prank(deployer);
         factory.setTokenMetadata(launchId, "Cat Wizard", "CATWIZ", "A magical cat");
 
-        (, , , , bool metadataSet, ) = factory.getLaunch(launchId);
+        (, , , , , bool metadataSet, , ) = factory.getLaunch(launchId);
         assertTrue(metadataSet, "Metadata should be set");
 
         // Check token
-        (address tokenAddr,, , , , ) = factory.getLaunch(launchId);
+        (address tokenAddr,, , , , , ,) = factory.getLaunch(launchId);
         HiveAgentToken token = HiveAgentToken(tokenAddr);
 
         assertEq(token.name(), "Cat Wizard");
@@ -251,12 +251,12 @@ contract HiveMockTest is Test {
     function test_CallbackRevertsIfNotDelivery() public {
         vm.prank(user1);
         vm.expectRevert("only async delivery");
-        factory.onAgentResult(keccak256("test"), "");
+        factory.onSovereignAgentResult(keccak256("test"), "");
     }
 
     function test_CallbackAcceptsFromDelivery() public {
         vm.prank(0x5A16214fF555848411544b005f7Ac063742f39F6);
-        factory.onAgentResult(keccak256("test"), "");
+        factory.onSovereignAgentResult(keccak256("test"), "");
         // Should not revert
     }
 

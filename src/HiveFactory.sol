@@ -204,25 +204,18 @@ contract HiveFactory {
         require(launchId != 0, "unknown job");
 
         // Store raw result — decoding happens off-chain in ritual-agent.ts
-        // Result ABI: (bool success, string error, string text, (string,string,string), (string,string,string), (string,string,string)[])
+        // Result ABI: (bool success, string error, string text, ...)
+        // We only extract the first 3 fields (bool, string, string) for on-chain convenience.
+        // Full decode of nested tuples stays off-chain.
         bool success = false;
         string memory errorMessage = "";
         string memory responseText = "";
 
         if (result.length >= 96) {
-            // Best-effort decode of the outer tuple
-            try abi.decode(result, (bool, string, string, (string,string,string), (string,string,string), (string,string,string)[]))(
-                bool s, string memory e, string memory t,
-                (string,string,string), (string,string,string), (string,string,string)[]
-            ) {
-                success = s;
-                errorMessage = e;
-                responseText = t;
-            } catch {
-                // If decode fails, store raw hex for off-chain parsing
-                success = false;
-                errorMessage = "decode failed — parse raw result off-chain";
-            }
+            (success, errorMessage, responseText) = abi.decode(
+                result,
+                (bool, string, string)
+            );
         }
 
         agentResults[launchId] = AgentResult({
