@@ -2,6 +2,7 @@
 # Hive Oracle Price Updater
 # Calls updatePrice(address,uint256,string) on HiveOracle contract on Ritual Testnet
 # Uses owner private key from .env
+# Auto-recovers from NotAuthorized by re-registering as updater
 
 set -e
 
@@ -47,6 +48,9 @@ PRICE_SCALED=$(echo "$ETH_PRICE * 100000000" | bc | cut -d. -f1)
 
 echo "[$TIMESTAMP] Scaled price: ${PRICE_SCALED}" | tee -a "$LOG_FILE"
 
+# Get sender address for updater registration
+SENDER_ADDRESS=$($CAST wallet address "$PRIVATE_KEY" 2>/dev/null)
+
 # Call updatePrice(address,uint256,string) on oracle contract
 RESULT=$($CAST send "$ORACLE_CONTRACT" \
     "updatePrice(address,uint256,string)" \
@@ -55,9 +59,45 @@ RESULT=$($CAST send "$ORACLE_CONTRACT" \
     "coingecko" \
     --rpc-url "$RPC_URL" \
     --private-key "$PRIVATE_KEY" \
-    --gas-limit 200000 2>&1)
+    --gas-limit 200000 \
+    --timeout 120000 2>&1) || true
 
 EXIT_CODE=$?
+
+# If updatePrice failed with NotAuthorized, try re-registering as updater first
+if [ $EXIT_CODE -ne 0 ] && echo "$RESULT" | grep -qi "NotAuthorized\|not authorized"; then
+    echo "[$TIMESTAMP] ⚠️ NotAuthorized — re-registering as updater..." | tee -a "$LOG_FILE"
+    
+    ADD_RESULT=$($CAST send "$ORACLE_CONTRACT" \
+        "addUpdater(address)" \
+        "$SENDER_ADDRESS" \
+        --rpc-url "$RPC_URL" \
+        --private-key "$PRIVATE_KEY" \
+        --gas-limit 100000 \
+        --timeout 120000 2>&1) || true
+    
+    if echo "$ADD_RESULT" | grep -q "status.*1"; then
+        echo "[$TIMESTAMP] ✅ Re-registered as updater" | tee -a "$LOG_FILE"
+        sleep 2
+        
+        # Retry updatePrice
+        RESULT=$($CAST send "$ORACLE_CONTRACT" \
+            "updatePrice(address,uint256,string)" \
+            "$ETH_TOKEN" \
+            "$PRICE_SCALED" \
+            "coingecko" \
+            --rpc-url "$RPC_URL" \
+            --private-key "$PRIVATE_KEY" \
+            --gas-limit 200000 \
+            --timeout 120000 2>&1) || true
+        
+        EXIT_CODE=$?
+    else
+        echo "[$TIMESTAMP] ❌ Failed to re-register as updater" | tee -a "$LOG_FILE"
+        echo "  Error: $ADD_RESULT" | tee -a "$LOG_FILE"
+        exit 1
+    fi
+fi
 
 if [ $EXIT_CODE -eq 0 ]; then
     STATUS=$(echo "$RESULT" | grep "status" | head -1 | awk '{print $2}')

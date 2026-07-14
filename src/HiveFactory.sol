@@ -34,7 +34,7 @@ contract HiveFactory {
 
     mapping(bytes32 => bool) public pendingCallbacks;
 
-    uint256 public virtualRitual = 5 ether;
+    uint256 public virtualRitual = 1 ether;
     uint256 public virtualToken = 1_000_000_000 * 1e18;
 
     // --- Events ---
