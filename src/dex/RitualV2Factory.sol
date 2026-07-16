@@ -26,7 +26,6 @@ contract RitualV2Factory {
     function createPair(address tokenA, address tokenB) external returns (address pair) {
         require(tokenA != tokenB, "IDENTICAL_ADDRESSES");
         (address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
-        require(token0 != address(0), "ZERO_ADDRESS");
         require(getPair[token0][token1] == address(0), "PAIR_EXISTS");
 
         bytes memory bytecode = type(RitualV2Pair).creationCode;
@@ -37,7 +36,7 @@ contract RitualV2Factory {
         require(pair != address(0), "CREATE2_FAILED");
 
         // Pass router to pair so it can authorize Router calls
-        RitualV2Pair(pair).initialize(token0, token1, router);
+        RitualV2Pair(payable(pair)).initialize(token0, token1, router);
         getPair[token0][token1] = pair;
         getPair[token1][token0] = pair; // populate mapping in reverse
         allPairs.push(pair);

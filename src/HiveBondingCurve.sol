@@ -8,9 +8,10 @@ interface IERC20Bonding {
     function approve(address spender, uint256 amount) external returns (bool);
 }
 
-/// @title HiveBondingCurveV4 - Secure linear bonding curve with DEX graduation
-/// @notice Virtual liquidity pool with reentrancy protection and slippage guards
-/// @dev When threshold reached, auto-deploys liquidity to DEX and locks LP
+/// @title HiveBondingCurveV5 - Production-grade bonding curve with resilient graduation
+/// @notice Virtual liquidity pool with reentrancy protection, slippage guards, and retry-safe graduation
+/// @dev When threshold reached, executes graduation via external call (try/catch) so buy() never reverts
+///      on graduation failure. Failed graduation sets migrationPending + emits GraduationPending for retry.
 contract HiveBondingCurve {
     // --- Constants ---
     uint256 public constant PRECISION = 1e18;
@@ -39,9 +40,10 @@ contract HiveBondingCurve {
 
     bool public migrationReady;
     bool public isGraduated;
+    bool public migrationPending; // NEW: graduation failed, can retry
     address public graduationPool;
 
-    // Reentrancy guard
+    // Reentrancy guard — only used by buy()/sell() standalone entry points
     uint256 private _locked = 1;
 
     // --- Events ---
@@ -72,6 +74,7 @@ contract HiveBondingCurve {
         uint256 tokenAmount
     );
     event CurveInitialized(uint256 virtualRitual, uint256 virtualToken);
+    event GraduationPending(uint256 ritualAmount, uint256 tokenAmount, bytes reason); // NEW
 
     // --- Errors ---
     error InsufficientRitual();
@@ -83,6 +86,7 @@ contract HiveBondingCurve {
     error GraduationFailed();
     error NotOwner();
     error ReentrancyGuard();
+    error RetryNotAllowed(); // NEW
 
     // --- Modifiers ---
     modifier nonReentrant() {
@@ -153,7 +157,7 @@ contract HiveBondingCurve {
     /// @param ritualIn Amount of RITUAL (wei) to spend
     /// @param minTokensOut Minimum tokens to receive (slippage protection)
     function buy(uint256 ritualIn, uint256 minTokensOut) external payable nonReentrant returns (uint256 tokensOut) {
-        if (migrationReady) revert MigrationAlreadyDone();
+        if (migrationReady || migrationPending) revert MigrationAlreadyDone();
         if (msg.value < ritualIn) revert InsufficientRitual();
 
         uint256 fee;
@@ -171,7 +175,7 @@ contract HiveBondingCurve {
         realRitualSold += (ritualIn - fee);
         realTokensSold += tokensOut;
 
-        // FIX: Transfer tokens from THIS contract (curve holds all tokens) to buyer
+        // Transfer tokens from THIS contract (curve holds all tokens) to buyer
         (bool sent,) = token.call(
             abi.encodeWithSignature("transfer(address,uint256)", msg.sender, tokensOut)
         );
@@ -201,9 +205,16 @@ contract HiveBondingCurve {
             virtualTokenReserve
         );
 
-        // Check for graduation
-        if (realRitualSold >= GRADUATION_THRESHOLD && !isGraduated) {
-            _graduateToken();
+        // Graduation via external call (try/catch) — buy() NEVER reverts on failure
+        if (realRitualSold >= GRADUATION_THRESHOLD && !isGraduated && !migrationPending) {
+            try this.executeGraduation() {
+                // Graduation succeeded
+            } catch (bytes memory reason) {
+                // Graceful failure: set pending state, emit event, allow buy() to succeed
+                migrationPending = true;
+                migrationReady = true;
+                emit GraduationPending(realRitualSold, realTokensSold, reason);
+            }
         }
     }
 
@@ -211,7 +222,7 @@ contract HiveBondingCurve {
     /// @param tokensIn Amount of tokens to sell
     /// @param minRitualOut Minimum RITUAL to receive (slippage protection)
     function sell(uint256 tokensIn, uint256 minRitualOut) external nonReentrant returns (uint256 ritualOut) {
-        if (migrationReady) revert MigrationAlreadyDone();
+        if (migrationReady || migrationPending) revert MigrationAlreadyDone();
         if (isGraduated) revert MigrationAlreadyDone();
 
         uint256 fee;
@@ -276,11 +287,19 @@ contract HiveBondingCurve {
         return progress;
     }
 
-    /// @notice Internal graduation: deploy liquidity to DEX and lock LP
-    /// @dev FIX: (1) curve holds tokens directly, (2) approve router for tokens,
-    ///      (3) forward {value: ritualAmount} to router for addLiquidityETH
-    function _graduateToken() internal {
-        isGraduated = true;
+    /// @notice External graduation function — callable by anyone, protected by try/catch
+    /// @dev Called via this.executeGraduation() from buy() so msg.sender == address(this)
+    ///      For standalone calls (retryGraduation, graduateToken, triggerMigration), caller must be factory
+    function executeGraduation() external {
+        require(msg.sender == address(this) || (msg.sender == factory && migrationPending), "not authorized");
+        if (isGraduated) revert MigrationAlreadyDone();
+
+        // Codesize guard: prevent false-positive graduation via low-level .call() to EOA/address(0)
+        address _dexRouter = dexRouter;
+        uint256 routerCodeSize;
+        assembly { routerCodeSize := extcodesize(_dexRouter) }
+        require(routerCodeSize > 0, "dexRouter: no code");
+
         migrationReady = true;
 
         uint256 ritualAmount = realRitualSold;
@@ -289,15 +308,16 @@ contract HiveBondingCurve {
         // Safety check: curve must hold enough tokens
         uint256 curveBalance = IERC20Bonding(token).balanceOf(address(this));
         if (curveBalance < tokenAmount) {
-            // Fallback: use whatever tokens the curve has
             tokenAmount = curveBalance;
         }
 
-        // 1. Approve DEX Router to spend tokens from this contract
+        // Sanity check
+        require(ritualAmount > 0 && tokenAmount > 0, "nothing to graduate");
+
+        // Approve DEX Router to spend tokens from this contract
         IERC20Bonding(token).approve(dexRouter, tokenAmount);
 
-        // 2. Call addLiquidityETH with {value} — router needs ETH to create pair
-        //    Router will: transferFrom(curve → pair, tokens) + pair.call{value}(ETH) + pair.mint(LP)
+        // Call addLiquidityETH with {value} — router needs ETH to create pair
         (bool r1,) = dexRouter.call{value: ritualAmount}(
             abi.encodeWithSignature(
                 "addLiquidityETH(address,uint256,uint256,uint256,address,uint256)",
@@ -311,21 +331,27 @@ contract HiveBondingCurve {
         );
 
         if (r1) {
+            isGraduated = true;
             graduationPool = dexRouter;
             emit TokenGraduated(token, dexRouter, ritualAmount, tokenAmount);
         } else {
-            // Fallback: if DEX fails, revert graduation
-            isGraduated = false;
-            migrationReady = false;
             revert GraduationFailed();
         }
     }
 
-    /// @notice Manual graduation trigger (for testing or if auto-trigger fails)
+    /// @notice Retry a previously failed graduation
+    /// @dev Anyone can call if migrationPending is true. Re-checks codesize guard.
+    function retryGraduation() external {
+        require(migrationPending, "no pending migration");
+        require(!isGraduated, "already graduated");
+        this.executeGraduation(); // external call — same authorization path
+    }
+
+    /// @notice Manual graduation trigger (backward compatible)
     function graduateToken() external onlyFactory {
         if (isGraduated) revert MigrationAlreadyDone();
         if (!isReadyForGraduation()) revert NotReadyForMigration();
-        _graduateToken();
+        _graduateTokenInternal();
     }
 
     // --- Migration (backward compatible) ---
@@ -333,7 +359,15 @@ contract HiveBondingCurve {
     function triggerMigration() external onlyFactory {
         if (migrationReady) revert MigrationAlreadyDone();
         if (!isReadyForGraduation()) revert NotReadyForMigration();
-        _graduateToken();
+        _graduateTokenInternal();
+    }
+
+    /// @dev Internal fallback — calls executeGraduation via this. for proper authorization
+    function _graduateTokenInternal() private {
+        // Reset migrationReady so executeGraduation's require passes
+        migrationReady = false;
+        migrationPending = false;
+        this.executeGraduation();
     }
 
     receive() external payable {}

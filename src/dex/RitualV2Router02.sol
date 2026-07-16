@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./RitualV2Factory.sol";
 import "./RitualV2Pair.sol";
 
@@ -44,13 +45,11 @@ contract RitualV2Router02 {
         require(success, "ETH_TRANSFER_FAILED");
 
         // Mint LP tokens
-        liquidity = RitualV2Pair(pair).mint(to);
+        liquidity = RitualV2Pair(payable(pair)).mint(to);
 
         // Refund dust
-        uint256 balanceToken = IERC20(token).balanceOf(pair);
-        uint256 balanceETH = address(pair).balance;
-        amountToken = balanceToken;
-        amountETH = balanceETH;
+        amountToken = IERC20(token).balanceOf(pair);
+        amountETH = address(pair).balance;
 
         require(amountToken >= amountTokenMin, "INSUFFICIENT_TOKEN_AMOUNT");
         require(amountETH >= amountETHMin, "INSUFFICIENT_ETH_AMOUNT");
@@ -76,7 +75,7 @@ contract RitualV2Router02 {
         IERC20(tokenA).transferFrom(msg.sender, pair, amountADesired);
         IERC20(tokenB).transferFrom(msg.sender, pair, amountBDesired);
 
-        liquidity = RitualV2Pair(pair).mint(to);
+        liquidity = RitualV2Pair(payable(pair)).mint(to);
 
         amountA = IERC20(tokenA).balanceOf(pair);
         amountB = IERC20(tokenB).balanceOf(pair);
@@ -99,9 +98,9 @@ contract RitualV2Router02 {
         address pair = RitualV2Factory(factory).getPair(tokenA, tokenB);
         require(pair != address(0), "PAIR_NOT_FOUND");
 
-        RitualV2Pair(pair).transferFrom(msg.sender, pair, liquidity);
+        RitualV2Pair(payable(pair)).transferFrom(msg.sender, pair, liquidity);
 
-        (uint256 amount0, uint256 amount1) = RitualV2Pair(pair).burn(to);
+        (uint256 amount0, uint256 amount1) = RitualV2Pair(payable(pair)).burn(to);
 
         (address token0,) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
         (amountA, amountB) = tokenA == token0 ? (amount0, amount1) : (amount1, amount0);
@@ -122,18 +121,18 @@ contract RitualV2Router02 {
         require(deadline >= block.timestamp, "EXPIRED");
         require(path.length == 2, "INVALID_PATH");
         require(msg.value > 0, "INSUFFICIENT_ETH_AMOUNT");
+        require(path[0] == address(0), "PATH_MUST_START_WITH_ETH"); // FIX: enforce native ETH
 
         address pair = RitualV2Factory(factory).getPair(path[0], path[1]);
         require(pair != address(0), "PAIR_NOT_FOUND");
 
-        // Calculate amounts using getAmountOut
         amounts = new uint256[](2);
         amounts[0] = msg.value;
-        amounts[1] = _getAmountOut(msg.value, address(0), path[1], pair);
+        amounts[1] = _getAmountOut(msg.value, path[0], path[1], pair);
 
         require(amounts[1] >= amountOutMin, "INSUFFICIENT_OUTPUT_AMOUNT");
 
-        // Transfer ETH to pair (path[0] is address(0) = native RITUAL)
+        // Transfer ETH to pair
         (bool success,) = pair.call{value: amounts[0]}("");
         require(success, "ETH_TRANSFER_FAILED");
 
@@ -152,6 +151,7 @@ contract RitualV2Router02 {
         require(deadline >= block.timestamp, "EXPIRED");
         require(path.length == 2, "INVALID_PATH");
         require(amountIn > 0, "INSUFFICIENT_INPUT_AMOUNT");
+        require(path[1] == address(0), "PATH_MUST_END_WITH_ETH"); // FIX: enforce native ETH
 
         address pair = RitualV2Factory(factory).getPair(path[0], path[1]);
         require(pair != address(0), "PAIR_NOT_FOUND");
@@ -159,10 +159,9 @@ contract RitualV2Router02 {
         // Transfer tokens from msg.sender to pair
         IERC20(path[0]).transferFrom(msg.sender, pair, amountIn);
 
-        // Calculate output
         amounts = new uint256[](2);
         amounts[0] = amountIn;
-        amounts[1] = _getAmountOut(amountIn, path[0], address(0), pair);
+        amounts[1] = _getAmountOut(amountIn, path[0], path[1], pair);
 
         require(amounts[1] >= amountOutMin, "INSUFFICIENT_OUTPUT_AMOUNT");
 
@@ -217,7 +216,7 @@ contract RitualV2Router02 {
             address pair = RitualV2Factory(factory).getPair(path[i], path[i + 1]);
             require(pair != address(0), "PAIR_NOT_FOUND");
 
-            (uint112 reserve0, uint112 reserve1,) = RitualV2Pair(pair).getReserves();
+            (uint112 reserve0, uint112 reserve1,) = RitualV2Pair(payable(pair)).getReserves();
             (address token0,) = path[i] < path[i + 1] ? (path[i], path[i + 1]) : (path[i + 1], path[i]);
             uint256 reserveIn = path[i] == token0 ? reserve0 : reserve1;
             uint256 reserveOut = path[i] == token0 ? reserve1 : reserve0;
@@ -228,7 +227,7 @@ contract RitualV2Router02 {
     // --- Internal ---
 
     function _getAmountOut(uint256 amountIn, address tokenIn, address tokenOut, address pair) internal view returns (uint256) {
-        (uint112 reserve0, uint112 reserve1,) = RitualV2Pair(pair).getReserves();
+        (uint112 reserve0, uint112 reserve1,) = RitualV2Pair(payable(pair)).getReserves();
         (address token0,) = tokenIn < tokenOut ? (tokenIn, tokenOut) : (tokenOut, tokenIn);
         uint256 reserveIn = tokenIn == token0 ? reserve0 : reserve1;
         uint256 reserveOut = tokenIn == token0 ? reserve1 : reserve0;

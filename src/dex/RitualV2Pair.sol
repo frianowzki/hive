@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 /// @title Minimal Uniswap V2-style Pair for Ritual Testnet graduation
-/// @notice Simplified x*y=k AMM with ERC20 LP tokens
+/// @notice Simplified x*y=k AMM with ERC20 LP tokens + native ETH (address(0)) support
 contract RitualV2Pair {
     address public factory;
     address public router;
@@ -88,6 +88,36 @@ contract RitualV2Pair {
         emit Transfer(from, address(0), amount);
     }
 
+    // --- Helpers for native ETH (address(0)) handling ---
+
+    /// @dev Get balance of an asset — native ETH balance for address(0), ERC20 balance otherwise
+    function _balanceOf(address asset) internal view returns (uint256) {
+        if (asset == address(0)) {
+            return address(this).balance;
+        }
+        return IERC20Pair(asset).balanceOf(address(this));
+    }
+
+    /// @dev Safe transfer — native ETH .call{value} for address(0), ERC20 transfer otherwise
+    function _safeTransferAny(address asset, address to, uint256 value) internal {
+        if (asset == address(0)) {
+            (bool success,) = to.call{value: value}("");
+            require(success, "ETH_TRANSFER_FAILED");
+        } else {
+            _safeTransfer(asset, to, value);
+        }
+    }
+
+    /// @dev Get reserves in the correct order for a given token pair
+    /// @return reserveIn Reserve of the input token
+    /// @return reserveOut Reserve of the output token
+    function _getReserves(address tokenIn, address tokenOut) internal view returns (uint112 reserveIn, uint112 reserveOut) {
+        (uint112 _reserve0, uint112 _reserve1,) = getReserves();
+        (address token0,) = tokenIn < tokenOut ? (tokenIn, tokenOut) : (tokenOut, tokenIn);
+        reserveIn = tokenIn == token0 ? _reserve0 : _reserve1;
+        reserveOut = tokenIn == token0 ? _reserve1 : _reserve0;
+    }
+
     // --- AMM Functions ---
     function getReserves() public view returns (uint112 _reserve0, uint112 _reserve1, uint32 _blockTimestampLast) {
         return (reserve0, reserve1, blockTimestampLast);
@@ -109,8 +139,8 @@ contract RitualV2Pair {
 
     function mint(address to) external onlyFactoryOrRouter returns (uint256 liquidity) {
         (uint112 _reserve0, uint112 _reserve1,) = getReserves();
-        uint256 balance0 = IERC20(token0).balanceOf(address(this));
-        uint256 balance1 = IERC20(token1).balanceOf(address(this));
+        uint256 balance0 = _balanceOf(token0);
+        uint256 balance1 = _balanceOf(token1);
         uint256 amount0 = balance0 - _reserve0;
         uint256 amount1 = balance1 - _reserve1;
 
@@ -132,10 +162,8 @@ contract RitualV2Pair {
 
     function burn(address to) external onlyFactoryOrRouter returns (uint256 amount0, uint256 amount1) {
         (uint112 _reserve0, uint112 _reserve1,) = getReserves();
-        address _token0 = token0;
-        address _token1 = token1;
-        uint256 balance0 = IERC20(_token0).balanceOf(address(this));
-        uint256 balance1 = IERC20(_token1).balanceOf(address(this));
+        uint256 balance0 = _balanceOf(token0);
+        uint256 balance1 = _balanceOf(token1);
         uint256 liquidity = balanceOf[address(this)];
 
         uint256 _totalSupply = totalSupply;
@@ -143,10 +171,10 @@ contract RitualV2Pair {
         amount1 = (liquidity * balance1) / _totalSupply;
         require(amount0 > 0 && amount1 > 0, "NO_LIQUIDITY");
         _burn(address(this), liquidity);
-        _safeTransfer(_token0, to, amount0);
-        _safeTransfer(_token1, to, amount1);
-        balance0 = IERC20(_token0).balanceOf(address(this));
-        balance1 = IERC20(_token1).balanceOf(address(this));
+        _safeTransferAny(token0, to, amount0);
+        _safeTransferAny(token1, to, amount1);
+        balance0 = _balanceOf(token0);
+        balance1 = _balanceOf(token1);
         _update(balance0, balance1);
         emit Burn(msg.sender, amount0, amount1, to);
     }
@@ -159,13 +187,11 @@ contract RitualV2Pair {
         uint256 balance0;
         uint256 balance1;
         {
-            address _token0 = token0;
-            address _token1 = token1;
-            require(to != _token0 && to != _token1, "INVALID_TO");
-            if (amount0Out > 0) _safeTransfer(_token0, to, amount0Out);
-            if (amount1Out > 0) _safeTransfer(_token1, to, amount1Out);
-            balance0 = IERC20(_token0).balanceOf(address(this));
-            balance1 = IERC20(_token1).balanceOf(address(this));
+            require(to != token0 && to != token1, "INVALID_TO");
+            if (amount0Out > 0) _safeTransferAny(token0, to, amount0Out);
+            if (amount1Out > 0) _safeTransferAny(token1, to, amount1Out);
+            balance0 = _balanceOf(token0);
+            balance1 = _balanceOf(token1);
         }
         uint256 amount0In = balance0 > _reserve0 - amount0Out ? balance0 - (_reserve0 - amount0Out) : 0;
         uint256 amount1In = balance1 > _reserve1 - amount1Out ? balance1 - (_reserve1 - amount1Out) : 0;
@@ -182,13 +208,13 @@ contract RitualV2Pair {
 
     // Force reserves to match balances
     function sync() external onlyFactoryOrRouter {
-        _update(IERC20(token0).balanceOf(address(this)), IERC20(token1).balanceOf(address(this)));
+        _update(_balanceOf(token0), _balanceOf(token1));
     }
 
     // --- Helpers ---
     function _safeTransfer(address token, address to, uint256 value) private {
         (bool success, bytes memory data) = token.call(
-            abi.encodeWithSelector(IERC20.transfer.selector, to, value)
+            abi.encodeWithSelector(IERC20Pair.transfer.selector, to, value)
         );
         require(success && (data.length == 0 || abi.decode(data, (bool))), "TRANSFER_FAILED");
     }
@@ -209,9 +235,11 @@ contract RitualV2Pair {
     function min(uint256 x, uint256 y) internal pure returns (uint256) {
         return x < y ? x : y;
     }
+
+    receive() external payable {}
 }
 
-interface IERC20 {
+interface IERC20Pair {
     function balanceOf(address) external view returns (uint256);
     function transfer(address to, uint256 amount) external returns (bool);
     function transferFrom(address from, address to, uint256 amount) external returns (bool);

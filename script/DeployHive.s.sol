@@ -45,8 +45,8 @@ contract DeployHive is Script {
         vm.startBroadcast(deployerKey);
 
         // 1. Deploy factory with new DEX router
-        // NEW DEX Router: 0xA412c9FC0D9235bd50506CCdA5f1FDfd72D0B87e
-        address newDexRouter = 0xA412c9FC0D9235bd50506CCdA5f1FDfd72D0B87e;
+        // NEW DEX Router: 0xBF0871FB5984A9C884dd46d9da5c5805E67Da715
+        address newDexRouter = 0xBF0871FB5984A9C884dd46d9da5c5805E67Da715;
         HiveFactory factory = new HiveFactory(platformTreasury, newDexRouter);
         address factoryAddr = address(factory);
         console.log("Factory deployed:", factoryAddr);
