@@ -802,3 +802,43 @@
   TX: 0xe0ccbf57844f87343cdd35e912d07d608bee46a1c029c53527943653c1a838ef
   Gas: 45451
 [2026-07-16T11:05:17Z] Done.
+[2026-07-16T12:06:17Z] Starting oracle price update...
+[2026-07-16T12:06:17Z] CoinGecko ETH price: $1881.64
+[2026-07-16T12:06:17Z] Scaled price: 188164000000
+[2026-07-16T12:06:17Z] ✅ Oracle price updated: $1881.64 (188164000000)
+  TX: 0x814fe65289239957d81619dffafb364356a48e567d659d71c36e71a626c9bddc
+  Gas: 45439
+[2026-07-16T12:06:17Z] Done.
+[2026-07-16T13:07:19Z] Starting oracle price update...
+[2026-07-16T13:07:19Z] CoinGecko ETH price: $1870.46
+[2026-07-16T13:07:19Z] Scaled price: 187046000000
+[2026-07-16T13:07:19Z] ✅ Oracle price updated: $1870.46 (187046000000)
+  TX: 0x577865b513bd6815b5a01f21e24223984509cf27239cf8f443571e5f86a064b7
+  Gas: 45451
+[2026-07-16T13:07:19Z] Done.
+[2026-07-16T14:08:19Z] Starting oracle price update...
+[2026-07-16T14:08:19Z] CoinGecko ETH price: $1883.05
+[2026-07-16T14:08:19Z] Scaled price: 188305000000
+[2026-07-16T14:08:19Z] ✅ Oracle price updated: $1883.05 (188305000000)
+  TX: 0x42ce5ea25feafeb2a0759c3cafaaf82cf825179211e9ab3fe031b9b9ab90f9a7
+  Gas: 45451
+[2026-07-16T14:08:19Z] Done.
+[2026-07-16T15:09:17Z] Starting oracle price update...
+[2026-07-16T15:09:17Z] CoinGecko ETH price: $1874.62
+[2026-07-16T15:09:17Z] Scaled price: 187462000000
+[2026-07-16T15:09:17Z] ✅ Oracle price updated: $1874.62 (187462000000)
+  TX: 0x966861f48f3785542bccdcb2590eb48d9f7f849386eef2ebdbd6b593024612c7
+  Gas: 45451
+[2026-07-16T15:09:17Z] Done.
+[2026-07-16T16:10:29Z] Starting oracle price update...
+[2026-07-16T16:10:29Z] CoinGecko ETH price: $1876.83
+[2026-07-16T16:10:29Z] Scaled price: 187683000000
+[2026-07-16T16:10:29Z] ✅ Oracle price updated: $1876.83 (187683000000)
+  TX: 0x45ce8c3e16ec7038b98d73f376935a094c7d4d6bc348fc02cc565d9fd39b8b26
+  Gas: 45451
+[2026-07-16T16:10:29Z] Done.
+[2026-07-16T17:11:17Z] Starting oracle price update...
+[2026-07-16T17:11:17Z] CoinGecko ETH price: $1874.34
+[2026-07-16T17:11:17Z] Scaled price: 187434000000
+[2026-07-16T17:11:17Z] ❌ Oracle price update REVERTED (status 0)
+  TX: 
