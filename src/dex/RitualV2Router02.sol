@@ -7,6 +7,7 @@ import "./RitualV2Pair.sol";
 
 /// @title Minimal Uniswap V2-style Router for Ritual Testnet
 /// @notice Supports addLiquidityETH, swapExactETHForTokens, swapExactTokensForETH
+/// @dev All swaps go through pair.swap() — the pair pushes tokens to recipient
 contract RitualV2Router02 {
     address public immutable factory;
 
@@ -112,6 +113,7 @@ contract RitualV2Router02 {
     // --- Swaps ---
 
     /// @notice Swap exact ETH for tokens (RITUAL → Token)
+    /// @dev Router sends ETH to pair, then pair.swap() pushes tokens to recipient
     function swapExactETHForTokens(
         uint256 amountOutMin,
         address[] calldata path,
@@ -121,7 +123,7 @@ contract RitualV2Router02 {
         require(deadline >= block.timestamp, "EXPIRED");
         require(path.length == 2, "INVALID_PATH");
         require(msg.value > 0, "INSUFFICIENT_ETH_AMOUNT");
-        require(path[0] == address(0), "PATH_MUST_START_WITH_ETH"); // FIX: enforce native ETH
+        require(path[0] == address(0), "PATH_MUST_START_WITH_ETH");
 
         address pair = RitualV2Factory(factory).getPair(path[0], path[1]);
         require(pair != address(0), "PAIR_NOT_FOUND");
@@ -132,15 +134,17 @@ contract RitualV2Router02 {
 
         require(amounts[1] >= amountOutMin, "INSUFFICIENT_OUTPUT_AMOUNT");
 
-        // Transfer ETH to pair
+        // Send ETH to pair
         (bool success,) = pair.call{value: amounts[0]}("");
         require(success, "ETH_TRANSFER_FAILED");
 
-        // Transfer tokens out of pair
-        IERC20(path[1]).transferFrom(pair, to, amounts[1]);
+        // pair.swap() pushes tokens directly to recipient (no transferFrom needed)
+        // For ETH→Token: amount0Out=0, amount1Out=amounts[1]
+        RitualV2Pair(payable(pair)).swap(0, amounts[1], to);
     }
 
     /// @notice Swap exact tokens for ETH (Token → RITUAL)
+    /// @dev Router sends tokens to pair, then pair.swap() pushes ETH to recipient
     function swapExactTokensForETH(
         uint256 amountIn,
         uint256 amountOutMin,
@@ -151,7 +155,7 @@ contract RitualV2Router02 {
         require(deadline >= block.timestamp, "EXPIRED");
         require(path.length == 2, "INVALID_PATH");
         require(amountIn > 0, "INSUFFICIENT_INPUT_AMOUNT");
-        require(path[1] == address(0), "PATH_MUST_END_WITH_ETH"); // FIX: enforce native ETH
+        require(path[1] == address(0), "PATH_MUST_END_WITH_ETH");
 
         address pair = RitualV2Factory(factory).getPair(path[0], path[1]);
         require(pair != address(0), "PAIR_NOT_FOUND");
@@ -165,9 +169,9 @@ contract RitualV2Router02 {
 
         require(amounts[1] >= amountOutMin, "INSUFFICIENT_OUTPUT_AMOUNT");
 
-        // Transfer ETH from pair to recipient
-        (bool success,) = to.call{value: amounts[1]}("");
-        require(success, "ETH_TRANSFER_FAILED");
+        // pair.swap() pushes ETH directly to recipient (no .call{value} needed)
+        // For Token→ETH: amount0Out=amounts[1] (ETH is token0), amount1Out=0
+        RitualV2Pair(payable(pair)).swap(amounts[1], 0, to);
     }
 
     /// @notice Swap exact tokens for tokens
@@ -188,9 +192,21 @@ contract RitualV2Router02 {
             address pair = RitualV2Factory(factory).getPair(path[i], path[i + 1]);
             require(pair != address(0), "PAIR_NOT_FOUND");
 
+            // Transfer input tokens to pair
             IERC20(path[i]).transferFrom(msg.sender, pair, amounts[i]);
+
             amounts[i + 1] = _getAmountOut(amounts[i], path[i], path[i + 1], pair);
-            IERC20(path[i + 1]).transferFrom(pair, i + 1 == path.length - 1 ? to : pair, amounts[i + 1]);
+
+            // Determine swap direction based on token ordering
+            (address token0,) = path[i] < path[i + 1] ? (path[i], path[i + 1]) : (path[i + 1], path[i]);
+            bool zeroForOne = path[i] == token0;
+
+            address nextRecipient = (i + 1 == path.length - 1) ? to : pair;
+            if (zeroForOne) {
+                RitualV2Pair(payable(pair)).swap(0, amounts[i + 1], nextRecipient);
+            } else {
+                RitualV2Pair(payable(pair)).swap(amounts[i + 1], 0, nextRecipient);
+            }
         }
 
         require(amounts[amounts.length - 1] >= amountOutMin, "INSUFFICIENT_OUTPUT_AMOUNT");

@@ -12,7 +12,7 @@ contract DeployHive is Script {
 
         vm.startBroadcast(deployerPrivateKey);
 
-        HiveFactory factory = new HiveFactory(platformTreasury, address(0));
+        HiveFactory factory = new HiveFactory(platformTreasury, 0x8918Aafa24d74e8e0868fE97A77a9882874b81E0);
 
         console.log("HiveFactory deployed to:", address(factory));
         console.log("Owner:", vm.addr(deployerPrivateKey));
