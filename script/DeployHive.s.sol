@@ -49,12 +49,7 @@ contract DeployHive is Script {
         address factoryAddr = address(factory);
         console.log("Factory deployed:", factoryAddr);
 
-        // 2. Fund factory with 0.05 RITUAL for first precompile calls
-        (bool funded,) = factoryAddr.call{value: 0.05 ether}("");
-        require(funded, "Factory funding failed");
-        console.log("Factory funded: 0.05 RITUAL");
-
-        // 3. Verify owner
+        // 2. Verify owner
         require(factory.owner() == deployer, "Owner mismatch");
         console.log("Owner verified:", deployer);
 

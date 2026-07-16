@@ -223,6 +223,35 @@ contract HiveFactory {
         emit SovereignAgentResultDelivered(launchId, jobId, true, result);
     }
 
+    /// @notice Get all launched token addresses
+    function getAllAgents() external view returns (address[] memory) {
+        address[] memory agents = new address[](launchCount);
+        for (uint256 i = 0; i < launchCount; i++) {
+            agents[i] = launches[i].token;
+        }
+        return agents;
+    }
+
+    /// @notice Get agent info by token address
+    function getAgent(address token) external view returns (
+        address token_,
+        address bondingCurve,
+        address agentTreasury,
+        address creator,
+        string memory userPrompt,
+        bool metadataSet,
+        bool agentSpawned,
+        uint256 createdAt
+    ) {
+        for (uint256 i = 0; i < launchCount; i++) {
+            if (launches[i].token == token) {
+                AgentLaunch storage l = launches[i];
+                return (l.token, l.bondingCurve, l.agentTreasury, l.creator, l.userPrompt, l.metadataSet, l.agentSpawned, l.createdAt);
+            }
+        }
+        revert("Agent not found");
+    }
+
     /// @notice Get launch info
     function getLaunch(uint256 launchId) external view returns (
         address token,

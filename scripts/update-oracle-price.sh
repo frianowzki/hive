@@ -64,8 +64,8 @@ RESULT=$($CAST send "$ORACLE_CONTRACT" \
 
 EXIT_CODE=$?
 
-# If updatePrice failed with NotAuthorized, try re-registering as updater first
-if [ $EXIT_CODE -ne 0 ] && echo "$RESULT" | grep -qi "NotAuthorized\|not authorized"; then
+# If updatePrice failed with NotAuthorized or any revert, try re-registering as updater first
+if [ $EXIT_CODE -ne 0 ] && echo "$RESULT" | grep -qi "NotAuthorized\|not authorized\|execution reverted"; then
     echo "[$TIMESTAMP] ⚠️ NotAuthorized — re-registering as updater..." | tee -a "$LOG_FILE"
     
     ADD_RESULT=$($CAST send "$ORACLE_CONTRACT" \
