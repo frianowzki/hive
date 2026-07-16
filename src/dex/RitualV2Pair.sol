@@ -5,6 +5,7 @@ pragma solidity ^0.8.20;
 /// @notice Simplified x*y=k AMM with ERC20 LP tokens
 contract RitualV2Pair {
     address public factory;
+    address public router;
     address public token0;
     address public token1;
 
@@ -30,8 +31,9 @@ contract RitualV2Pair {
     event Swap(address indexed sender, uint256 amount0In, uint256 amount1In, uint256 amount0Out, uint256 amount1Out, address indexed to);
     event Sync(uint112 reserve0, uint112 reserve1);
 
-    modifier onlyFactory() {
-        require(msg.sender == factory, "NOT_FACTORY");
+    // FIX: allow both factory and router to call mint/swap/burn
+    modifier onlyFactoryOrRouter() {
+        require(msg.sender == factory || msg.sender == router, "NOT_AUTHORIZED");
         _;
     }
 
@@ -39,10 +41,11 @@ contract RitualV2Pair {
         factory = msg.sender;
     }
 
-    function initialize(address _token0, address _token1) external {
+    function initialize(address _token0, address _token1, address _router) external {
         require(msg.sender == factory, "NOT_FACTORY");
         token0 = _token0;
         token1 = _token1;
+        router = _router;
     }
 
     // --- ERC20 LP Functions ---
@@ -96,7 +99,6 @@ contract RitualV2Pair {
         unchecked {
             if (blockTimestamp > blockTimestampLast) {
                 uint32 timeElapsed = blockTimestamp - blockTimestampLast;
-                // No k=const multiplier for simplicity — just track reserves
                 blockTimestampLast = blockTimestamp;
             }
         }
@@ -105,7 +107,7 @@ contract RitualV2Pair {
         emit Sync(reserve0, reserve1);
     }
 
-    function mint(address to) external onlyFactory returns (uint256 liquidity) {
+    function mint(address to) external onlyFactoryOrRouter returns (uint256 liquidity) {
         (uint112 _reserve0, uint112 _reserve1,) = getReserves();
         uint256 balance0 = IERC20(token0).balanceOf(address(this));
         uint256 balance1 = IERC20(token1).balanceOf(address(this));
@@ -128,7 +130,7 @@ contract RitualV2Pair {
         emit Mint(msg.sender, amount0, amount1, liquidity);
     }
 
-    function burn(address to) external onlyFactory returns (uint256 amount0, uint256 amount1) {
+    function burn(address to) external onlyFactoryOrRouter returns (uint256 amount0, uint256 amount1) {
         (uint112 _reserve0, uint112 _reserve1,) = getReserves();
         address _token0 = token0;
         address _token1 = token1;
@@ -149,7 +151,7 @@ contract RitualV2Pair {
         emit Burn(msg.sender, amount0, amount1, to);
     }
 
-    function swap(uint256 amount0Out, uint256 amount1Out, address to) external onlyFactory {
+    function swap(uint256 amount0Out, uint256 amount1Out, address to) external onlyFactoryOrRouter {
         require(amount0Out > 0 || amount1Out > 0, "INSUFFICIENT_OUTPUT_AMOUNT");
         (uint112 _reserve0, uint112 _reserve1,) = getReserves();
         require(amount0Out < _reserve0 && amount1Out < _reserve1, "INSUFFICIENT_LIQUIDITY");
@@ -179,7 +181,7 @@ contract RitualV2Pair {
     }
 
     // Force reserves to match balances
-    function sync() external onlyFactory {
+    function sync() external onlyFactoryOrRouter {
         _update(IERC20(token0).balanceOf(address(this)), IERC20(token1).balanceOf(address(this)));
     }
 

@@ -1,7 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-/// @title HiveBondingCurveV3 - Secure linear bonding curve with DEX graduation
+interface IERC20Bonding {
+    function balanceOf(address) external view returns (uint256);
+    function transfer(address to, uint256 amount) external returns (bool);
+    function transferFrom(address from, address to, uint256 amount) external returns (bool);
+    function approve(address spender, uint256 amount) external returns (bool);
+}
+
+/// @title HiveBondingCurveV4 - Secure linear bonding curve with DEX graduation
 /// @notice Virtual liquidity pool with reentrancy protection and slippage guards
 /// @dev When threshold reached, auto-deploys liquidity to DEX and locks LP
 contract HiveBondingCurve {
@@ -136,7 +143,6 @@ contract HiveBondingCurve {
         if (tokensIn == 0) return (0, 0);
 
         ritualOut = (tokensIn * virtualRitualReserve) / (virtualTokenReserve + tokensIn);
-
         fee = (ritualOut * TOTAL_FEE_BPS) / 10_000;
         ritualOut = ritualOut - fee;
     }
@@ -165,9 +171,9 @@ contract HiveBondingCurve {
         realRitualSold += (ritualIn - fee);
         realTokensSold += tokensOut;
 
-        // Transfer tokens from factory to buyer
+        // FIX: Transfer tokens from THIS contract (curve holds all tokens) to buyer
         (bool sent,) = token.call(
-            abi.encodeWithSignature("transferFrom(address,address,uint256)", factory, msg.sender, tokensOut)
+            abi.encodeWithSignature("transfer(address,uint256)", msg.sender, tokensOut)
         );
         if (!sent) revert TransferFailed();
 
@@ -271,6 +277,8 @@ contract HiveBondingCurve {
     }
 
     /// @notice Internal graduation: deploy liquidity to DEX and lock LP
+    /// @dev FIX: (1) curve holds tokens directly, (2) approve router for tokens,
+    ///      (3) forward {value: ritualAmount} to router for addLiquidityETH
     function _graduateToken() internal {
         isGraduated = true;
         migrationReady = true;
@@ -278,8 +286,19 @@ contract HiveBondingCurve {
         uint256 ritualAmount = realRitualSold;
         uint256 tokenAmount = RESERVE_FOR_LP;
 
-        // 1. Transfer RITUAL from this contract to DEX Router
-        (bool r1,) = dexRouter.call(
+        // Safety check: curve must hold enough tokens
+        uint256 curveBalance = IERC20Bonding(token).balanceOf(address(this));
+        if (curveBalance < tokenAmount) {
+            // Fallback: use whatever tokens the curve has
+            tokenAmount = curveBalance;
+        }
+
+        // 1. Approve DEX Router to spend tokens from this contract
+        IERC20Bonding(token).approve(dexRouter, tokenAmount);
+
+        // 2. Call addLiquidityETH with {value} — router needs ETH to create pair
+        //    Router will: transferFrom(curve → pair, tokens) + pair.call{value}(ETH) + pair.mint(LP)
+        (bool r1,) = dexRouter.call{value: ritualAmount}(
             abi.encodeWithSignature(
                 "addLiquidityETH(address,uint256,uint256,uint256,address,uint256)",
                 token,
@@ -295,7 +314,7 @@ contract HiveBondingCurve {
             graduationPool = dexRouter;
             emit TokenGraduated(token, dexRouter, ritualAmount, tokenAmount);
         } else {
-            // Fallback: if DEX fails, just keep the funds
+            // Fallback: if DEX fails, revert graduation
             isGraduated = false;
             migrationReady = false;
             revert GraduationFailed();

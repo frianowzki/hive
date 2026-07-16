@@ -4,7 +4,6 @@ pragma solidity ^0.8.20;
 import "forge-std/Script.sol";
 import "../src/dex/RitualV2Factory.sol";
 import "../src/dex/RitualV2Router02.sol";
-
 /// @title DeployDEX - Deploy Ritual V2 DEX fork on Ritual Testnet
 contract DeployDEX is Script {
     function run() public {
@@ -23,6 +22,10 @@ contract DeployDEX is Script {
         // 2. Deploy Router
         RitualV2Router02 router = new RitualV2Router02(address(factory));
         console.log("Router deployed at:", address(router));
+
+        // 3. Set router on factory so pairs can authorize Router calls
+        factory.setRouter(address(router));
+        console.log("Router set on factory");
 
         vm.stopBroadcast();
 

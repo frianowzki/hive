@@ -2,10 +2,10 @@
 pragma solidity ^0.8.20;
 
 import "./RitualV2Pair.sol";
-
 /// @title Minimal Uniswap V2-style Factory for Ritual Testnet
 contract RitualV2Factory {
     address public feeTo;
+    address public router;
     mapping(address => mapping(address => address)) public getPair;
     address[] public allPairs;
 
@@ -13,6 +13,10 @@ contract RitualV2Factory {
 
     constructor(address _feeTo) {
         feeTo = _feeTo;
+    }
+
+    function setRouter(address _router) external {
+        router = _router;
     }
 
     function allPairsLength() external view returns (uint256) {
@@ -32,7 +36,8 @@ contract RitualV2Factory {
         }
         require(pair != address(0), "CREATE2_FAILED");
 
-        RitualV2Pair(pair).initialize(token0, token1);
+        // Pass router to pair so it can authorize Router calls
+        RitualV2Pair(pair).initialize(token0, token1, router);
         getPair[token0][token1] = pair;
         getPair[token1][token0] = pair; // populate mapping in reverse
         allPairs.push(pair);

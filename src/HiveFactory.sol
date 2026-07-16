@@ -116,10 +116,11 @@ contract HiveFactory {
             virtualToken
         );
 
-        // 4. Mint tokens to factory, factory approves curve for spending
-        uint256 saleTokens = virtualToken / 2; // 500M tokens for sale
-        token.mint(address(this), saleTokens);
-        IERC20(address(token)).approve(address(curve), saleTokens);
+        // 4. Mint ALL tokens to bonding curve — curve holds & distributes them
+        //    Curve's buy() calls transfer() to buyer, sell() calls transferFrom() from seller
+        //    Curve's _graduateToken() approves router and calls addLiquidityETH with {value}
+        uint256 totalTokens = virtualToken; // 1B tokens
+        token.mint(address(curve), totalTokens);
 
         // 5. Store launch (creator = the wallet that called createAgent)
         launches[launchId] = AgentLaunch({
