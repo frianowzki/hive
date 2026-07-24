@@ -51,71 +51,67 @@ echo "[$TIMESTAMP] Scaled price: ${PRICE_SCALED}" | tee -a "$LOG_FILE"
 # Get sender address for updater registration
 SENDER_ADDRESS=$($CAST wallet address "$PRIVATE_KEY" 2>/dev/null)
 
-# Call updatePrice(address,uint256,string) on oracle contract
-RESULT=$($CAST send "$ORACLE_CONTRACT" \
-    "updatePrice(address,uint256,string)" \
-    "$ETH_TOKEN" \
-    "$PRICE_SCALED" \
-    "coingecko" \
+# Always re-register as updater before calling updatePrice
+# The updater role appears to get cleared between runs
+echo "[$TIMESTAMP] Registering as updater..." | tee -a "$LOG_FILE"
+ADD_RESULT=$($CAST send "$ORACLE_CONTRACT" \
+    "addUpdater(address)" \
+    "$SENDER_ADDRESS" \
     --rpc-url "$RPC_URL" \
     --private-key "$PRIVATE_KEY" \
-    --gas-limit 200000 \
+    --gas-limit 100000 \
     --timeout 120000 2>&1) || true
 
-EXIT_CODE=$?
-
-# If updatePrice failed with NotAuthorized or any revert, try re-registering as updater first
-if [ $EXIT_CODE -ne 0 ] && echo "$RESULT" | grep -qi "NotAuthorized\|not authorized\|execution reverted"; then
-    echo "[$TIMESTAMP] ⚠️ NotAuthorized — re-registering as updater..." | tee -a "$LOG_FILE"
-    
-    ADD_RESULT=$($CAST send "$ORACLE_CONTRACT" \
-        "addUpdater(address)" \
-        "$SENDER_ADDRESS" \
-        --rpc-url "$RPC_URL" \
-        --private-key "$PRIVATE_KEY" \
-        --gas-limit 100000 \
-        --timeout 120000 2>&1) || true
-    
-    if echo "$ADD_RESULT" | grep -q "status.*1"; then
-        echo "[$TIMESTAMP] ✅ Re-registered as updater" | tee -a "$LOG_FILE"
-        sleep 2
-        
-        # Retry updatePrice
-        RESULT=$($CAST send "$ORACLE_CONTRACT" \
-            "updatePrice(address,uint256,string)" \
-            "$ETH_TOKEN" \
-            "$PRICE_SCALED" \
-            "coingecko" \
-            --rpc-url "$RPC_URL" \
-            --private-key "$PRIVATE_KEY" \
-            --gas-limit 200000 \
-            --timeout 120000 2>&1) || true
-        
-        EXIT_CODE=$?
-    else
-        echo "[$TIMESTAMP] ❌ Failed to re-register as updater" | tee -a "$LOG_FILE"
-        echo "  Error: $ADD_RESULT" | tee -a "$LOG_FILE"
-        exit 1
-    fi
+if echo "$ADD_RESULT" | grep -q "status.*1\|success"; then
+    echo "[$TIMESTAMP] ✅ Updater registered" | tee -a "$LOG_FILE"
+    sleep 5
+elif echo "$ADD_RESULT" | grep -qi "already"; then
+    echo "[$TIMESTAMP] ℹ️ Already registered as updater" | tee -a "$LOG_FILE"
+    sleep 3
+else
+    echo "[$TIMESTAMP] ⚠️ Updater registration may have failed, proceeding anyway..." | tee -a "$LOG_FILE"
+    echo "  Result: $ADD_RESULT" | tee -a "$LOG_FILE"
+    sleep 5
 fi
 
-if [ $EXIT_CODE -eq 0 ]; then
+# Call updatePrice(address,uint256,string) on oracle contract (with retry)
+MAX_RETRIES=2
+RETRY_COUNT=0
+SUCCESS=false
+
+while [ $RETRY_COUNT -le $MAX_RETRIES ]; do
+    RESULT=$($CAST send "$ORACLE_CONTRACT" \
+        "updatePrice(address,uint256,string)" \
+        "$ETH_TOKEN" \
+        "$PRICE_SCALED" \
+        "coingecko" \
+        --rpc-url "$RPC_URL" \
+        --private-key "$PRIVATE_KEY" \
+        --gas-limit 200000 \
+        --timeout 120000 2>&1) || true
+
     STATUS=$(echo "$RESULT" | grep "status" | head -1 | awk '{print $2}')
-    TX_HASH=$(echo "$RESULT" | grep "^transactionHash" | awk '{print $2}')
+    TX_HASH=$(echo "$RESULT" | grep "transactionHash" | awk '{print $2}')
     GAS_USED=$(echo "$RESULT" | grep "gasUsed" | awk '{print $2}')
 
     if [ "$STATUS" = "1" ]; then
         echo "[$TIMESTAMP] ✅ Oracle price updated: \$${ETH_PRICE} (${PRICE_SCALED})" | tee -a "$LOG_FILE"
         echo "  TX: $TX_HASH" | tee -a "$LOG_FILE"
         echo "  Gas: $GAS_USED" | tee -a "$LOG_FILE"
+        SUCCESS=true
+        break
     else
-        echo "[$TIMESTAMP] ❌ Oracle price update REVERTED (status 0)" | tee -a "$LOG_FILE"
-        echo "  TX: $TX_HASH" | tee -a "$LOG_FILE"
-        exit 1
+        RETRY_COUNT=$((RETRY_COUNT + 1))
+        if [ $RETRY_COUNT -le $MAX_RETRIES ]; then
+            echo "[$TIMESTAMP] ⚠️ Update attempt $RETRY_COUNT failed (status: $STATUS), retrying in 5s..." | tee -a "$LOG_FILE"
+            sleep 5
+        fi
     fi
-else
-    echo "[$TIMESTAMP] ❌ Oracle price update FAILED" | tee -a "$LOG_FILE"
-    echo "  Error: $RESULT" | tee -a "$LOG_FILE"
+done
+
+if [ "$SUCCESS" = false ]; then
+    echo "[$TIMESTAMP] ❌ Oracle price update REVERTED after $((MAX_RETRIES + 1)) attempts" | tee -a "$LOG_FILE"
+    echo "  Last TX: $TX_HASH" | tee -a "$LOG_FILE"
     exit 1
 fi
 

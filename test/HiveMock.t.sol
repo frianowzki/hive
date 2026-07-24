@@ -46,7 +46,7 @@ contract HiveMockTest is Test {
         vm.deal(deployer, 10 ether);
 
         vm.prank(deployer);
-        uint256 launchId = factory.createAgent("A chaotic cat wizard");
+        uint256 launchId = factory.createAgent("A chaotic cat wizard", 0.1 ether);
 
         assertEq(factory.launchCount(), 1);
 
@@ -62,13 +62,13 @@ contract HiveMockTest is Test {
         vm.deal(deployer, 20 ether);
 
         vm.prank(deployer);
-        factory.createAgent("Agent 1");
+        factory.createAgent("Agent 1", 0.1 ether);
 
         vm.prank(deployer);
-        factory.createAgent("Agent 2");
+        factory.createAgent("Agent 2", 0.1 ether);
 
         vm.prank(deployer);
-        factory.createAgent("Agent 3");
+        factory.createAgent("Agent 3", 0.1 ether);
 
         assertEq(factory.launchCount(), 3);
 
@@ -87,7 +87,7 @@ contract HiveMockTest is Test {
 
         vm.prank(deployer);
         vm.expectRevert("empty prompt");
-        factory.createAgent("");
+        factory.createAgent("", 0.1 ether);
     }
 
     // ==========================================
@@ -98,7 +98,7 @@ contract HiveMockTest is Test {
         vm.deal(deployer, 10 ether);
 
         vm.prank(deployer);
-        uint256 launchId = factory.createAgent("Test");
+        uint256 launchId = factory.createAgent("Test", 0.1 ether);
 
         // Set metadata
         vm.prank(deployer);
@@ -121,7 +121,7 @@ contract HiveMockTest is Test {
         vm.deal(deployer, 10 ether);
 
         vm.prank(deployer);
-        uint256 launchId = factory.createAgent("Test");
+        uint256 launchId = factory.createAgent("Test", 0.1 ether);
 
         vm.startPrank(deployer);
         factory.setTokenMetadata(launchId, "First", "FIRST", "First lore");
@@ -136,7 +136,7 @@ contract HiveMockTest is Test {
         vm.deal(deployer, 10 ether);
 
         vm.prank(deployer);
-        uint256 launchId = factory.createAgent("Test");
+        uint256 launchId = factory.createAgent("Test", 0.1 ether);
 
         vm.prank(user1);
         vm.expectRevert("not owner");
@@ -445,7 +445,7 @@ contract HiveMockTest is Test {
             agentTreasury,
             address(0), // dexRouter
             5 ether,
-            1_000_000_000e18
+            1_000_000_000e18, 0.1 ether
         );
         vm.stopPrank();
         return curve;

@@ -170,7 +170,7 @@ contract HiveForkTest is Test {
             makeAddr("agentTreasury"),
             address(0), // dexRouter
             5 ether,
-            1_000_000_000e18
+            1_000_000_000e18, 0.1 ether
         );
 
         assertEq(c.virtualRitualReserve(), 5 ether);
@@ -187,7 +187,7 @@ contract HiveForkTest is Test {
             makeAddr("agentTreasury"),
             address(0), // dexRouter
             5 ether,
-            1_000_000_000e18
+            1_000_000_000e18, 0.1 ether
         );
 
         // Buy with 1 RITUAL
@@ -215,7 +215,7 @@ contract HiveForkTest is Test {
             makeAddr("agentTreasury"),
             address(0), // dexRouter
             5 ether,
-            1_000_000_000e18
+            1_000_000_000e18, 0.1 ether
         );
 
         // Sell 100M tokens
@@ -243,7 +243,7 @@ contract HiveForkTest is Test {
             makeAddr("agentTreasury"),
             address(0), // dexRouter
             5 ether,
-            1_000_000_000e18
+            1_000_000_000e18, 0.1 ether
         );
 
         uint256 priceBefore = c.getCurrentPrice();
@@ -335,7 +335,7 @@ contract HiveForkTest is Test {
 
         // Create agent (this will also attempt LLM call)
         vm.prank(deployer);
-        uint256 launchId = factory.createAgent("A chaotic-good cat wizard");
+        uint256 launchId = factory.createAgent("A chaotic-good cat wizard", 0.1 ether);
 
         // Verify launch was created
         assertEq(factory.launchCount(), 1);
@@ -355,10 +355,10 @@ contract HiveForkTest is Test {
         vm.deal(deployer, 20 ether);
 
         vm.prank(deployer);
-        uint256 id1 = factory.createAgent("A chaotic cat wizard");
+        uint256 id1 = factory.createAgent("A chaotic cat wizard", 0.1 ether);
 
         vm.prank(deployer);
-        uint256 id2 = factory.createAgent("A degen frog on ETH");
+        uint256 id2 = factory.createAgent("A degen frog on ETH", 0.1 ether);
 
         assertEq(factory.launchCount(), 2);
 
@@ -392,7 +392,7 @@ contract HiveForkTest is Test {
         vm.deal(deployer, 10 ether);
         vm.prank(deployer);
         vm.expectRevert("empty prompt");
-        factory.createAgent("");
+        factory.createAgent("", 0.1 ether);
     }
 
     function test_BondingCurveZeroAmountBuy() public {
@@ -404,7 +404,7 @@ contract HiveForkTest is Test {
             makeAddr("agentTreasury"),
             address(0), // dexRouter
             5 ether,
-            1_000_000_000e18
+            1_000_000_000e18, 0.1 ether
         );
 
         (uint256 tokensOut, uint256 fee) = c.calculateBuy(0);
@@ -421,7 +421,7 @@ contract HiveForkTest is Test {
             makeAddr("agentTreasury"),
             address(0), // dexRouter
             5 ether,
-            1_000_000_000e18
+            1_000_000_000e18, 0.1 ether
         );
 
         // Try to buy more than available

@@ -37,7 +37,7 @@ contract SecurityTest is Test {
             AGENT_TREASURY,
             DEX_ROUTER,
             5 ether,
-            1_000_000_000e18
+            1_000_000_000e18, 0.1 ether
         );
 
         // V5: Mint ALL tokens to curve (curve holds & distributes)
@@ -305,7 +305,7 @@ contract GraduationE2E is Test {
             AGENT_TREASURY,
             address(dexRouter),
             1 ether,
-            1_000_000_000e18
+            1_000_000_000e18, 0.1 ether
         );
 
         // Mint ALL tokens to curve
@@ -399,7 +399,7 @@ contract MigrationRetryTest is Test {
             AGENT_TREASURY,
             address(0x3333), // no-code address
             1 ether,
-            1_000_000_000e18
+            1_000_000_000e18, 0.1 ether
         );
 
         token.mint(address(curve), 1_000_000_000e18);

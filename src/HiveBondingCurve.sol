@@ -19,7 +19,7 @@ contract HiveBondingCurve {
     uint256 public constant TREASURY_FEE_BPS = 500; // 5%
     uint256 public constant TOTAL_FEE_BPS = 700;    // 7%
     uint256 public constant MAX_SUPPLY = 1_000_000_000 * 1e18; // 1B tokens
-    uint256 public constant GRADUATION_THRESHOLD = 0.1 * 1e18; // 0.1 RITUAL
+    uint256 public graduationThreshold; // configurable per-token
     address public constant LP_LOCK_ADDRESS = 0x000000000000000000000000000000000000dEaD;
     uint256 public constant RESERVE_FOR_LP = 800_000_000 * 1e18; // 80% of supply for LP
 
@@ -108,7 +108,8 @@ contract HiveBondingCurve {
         address agentTreasury_,
         address dexRouter_,
         uint256 virtualRitual_,
-        uint256 virtualToken_
+        uint256 virtualToken_,
+        uint256 graduationThreshold_
     ) {
         token = token_;
         factory = factory_;
@@ -119,6 +120,7 @@ contract HiveBondingCurve {
         initialVirtualToken = virtualToken_;
         virtualRitualReserve = virtualRitual_;
         virtualTokenReserve = virtualToken_;
+        graduationThreshold = graduationThreshold_;
 
         emit CurveInitialized(virtualRitual_, virtualToken_);
     }
@@ -130,7 +132,7 @@ contract HiveBondingCurve {
         return (virtualRitualReserve * PRECISION) / virtualTokenReserve;
     }
 
-    function calculateBuy(uint256 ritualIn) public view returns (uint256 tokensOut, uint256 fee) {
+    function calculateBuy(uint256 ritualIn) public view virtual returns (uint256 tokensOut, uint256 fee) {
         if (ritualIn == 0) return (0, 0);
 
         fee = (ritualIn * TOTAL_FEE_BPS) / 10_000;
@@ -143,7 +145,7 @@ contract HiveBondingCurve {
         }
     }
 
-    function calculateSell(uint256 tokensIn) public view returns (uint256 ritualOut, uint256 fee) {
+    function calculateSell(uint256 tokensIn) public view virtual returns (uint256 ritualOut, uint256 fee) {
         if (tokensIn == 0) return (0, 0);
 
         ritualOut = (tokensIn * virtualRitualReserve) / (virtualTokenReserve + tokensIn);
@@ -156,7 +158,7 @@ contract HiveBondingCurve {
     /// @notice Buy tokens with RITUAL, with slippage protection
     /// @param ritualIn Amount of RITUAL (wei) to spend
     /// @param minTokensOut Minimum tokens to receive (slippage protection)
-    function buy(uint256 ritualIn, uint256 minTokensOut) external payable nonReentrant returns (uint256 tokensOut) {
+    function buy(uint256 ritualIn, uint256 minTokensOut) external payable virtual nonReentrant returns (uint256 tokensOut) {
         if (migrationReady || migrationPending) revert MigrationAlreadyDone();
         if (msg.value < ritualIn) revert InsufficientRitual();
 
@@ -206,7 +208,7 @@ contract HiveBondingCurve {
         );
 
         // Graduation via external call (try/catch) — buy() NEVER reverts on failure
-        if (realRitualSold >= GRADUATION_THRESHOLD && !isGraduated && !migrationPending) {
+        if (realRitualSold >= graduationThreshold && !isGraduated && !migrationPending) {
             try this.executeGraduation() {
                 // Graduation succeeded
             } catch (bytes memory reason) {
@@ -221,7 +223,7 @@ contract HiveBondingCurve {
     /// @notice Sell tokens for RITUAL, with slippage protection
     /// @param tokensIn Amount of tokens to sell
     /// @param minRitualOut Minimum RITUAL to receive (slippage protection)
-    function sell(uint256 tokensIn, uint256 minRitualOut) external nonReentrant returns (uint256 ritualOut) {
+    function sell(uint256 tokensIn, uint256 minRitualOut) external virtual nonReentrant returns (uint256 ritualOut) {
         if (migrationReady || migrationPending) revert MigrationAlreadyDone();
         if (isGraduated) revert MigrationAlreadyDone();
 
@@ -277,12 +279,12 @@ contract HiveBondingCurve {
     // --- Graduation ---
 
     function isReadyForGraduation() public view returns (bool) {
-        return realRitualSold >= GRADUATION_THRESHOLD && !isGraduated;
+        return realRitualSold >= graduationThreshold && !isGraduated;
     }
 
     function getProgress() public view returns (uint256) {
-        if (GRADUATION_THRESHOLD == 0) return 0;
-        uint256 progress = (realRitualSold * 10_000) / GRADUATION_THRESHOLD;
+        if (graduationThreshold == 0) return 0;
+        uint256 progress = (realRitualSold * 10_000) / graduationThreshold;
         if (progress > 10_000) progress = 10_000;
         return progress;
     }

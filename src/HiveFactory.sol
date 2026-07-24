@@ -36,13 +36,30 @@ contract HiveFactory {
         uint256 createdAt;
     }
 
+    struct TokenLaunch {
+        address token;
+        address bondingCurve;
+        address creator;
+        string name;
+        string symbol;
+        string lore;
+        bool metadataSet;
+        uint256 createdAt;
+    }
+
     mapping(uint256 => AgentLaunch) public launches;
     uint256 public launchCount;
+
+    mapping(uint256 => TokenLaunch) public tokenLaunches;
+    uint256 public tokenLaunchCount;
 
     // launchId <-> agentTreasury, so the async callback (which only gets a jobId + result,
     // no launchId) can find its way back to the right launch. jobId is set from the tx hash
     // of the spawnAgent() call, matching the convention used in examples/sovereign-agent.
     mapping(bytes32 => uint256) public jobIdToLaunch;
+
+    // Token launch fee
+    uint256 public constant TOKEN_LAUNCH_FEE = 0.01 ether;
 
     uint256 public virtualRitual = 1 ether;
     uint256 public virtualToken = 1_000_000_000 * 1e18;
@@ -53,6 +70,13 @@ contract HiveFactory {
         address indexed token,
         address indexed bondingCurve,
         string prompt
+    );
+    event TokenCreated(
+        uint256 indexed tokenLaunchId,
+        address indexed token,
+        address indexed bondingCurve,
+        string name,
+        string symbol
     );
     event MetadataGenerated(uint256 indexed launchId, string name, string symbol);
     event AgentSpawnRequested(uint256 indexed launchId, bytes32 indexed jobId, address consumer);
@@ -87,9 +111,12 @@ contract HiveFactory {
     /// @notice Create a new AI agent token. Metadata and the Sovereign Agent are both
     ///         set/spawned in follow-up calls by the creator (see setTokenMetadata, spawnAgent).
     /// @param userPrompt Description of the token concept (e.g., "A chaotic-good cat wizard")
+    /// @param graduationThreshold_ RITUAL amount needed to graduate to DEX (in wei)
     /// @return launchId ID of the new launch
-    function createAgent(string calldata userPrompt) external returns (uint256 launchId) {
+    function createAgent(string calldata userPrompt, uint256 graduationThreshold_) external returns (uint256 launchId) {
         require(bytes(userPrompt).length > 0, "empty prompt");
+        require(graduationThreshold_ >= 0.01 ether, "threshold too low");
+        require(graduationThreshold_ <= 100 ether, "threshold too high");
 
         launchId = launchCount++;
 
@@ -105,7 +132,7 @@ contract HiveFactory {
         // 2. Deploy agent treasury
         address agentTreasury = address(new AgentTreasury(address(token)));
 
-        // 3. Deploy bonding curve
+        // 3. Deploy bonding curve with configurable graduation threshold
         HiveBondingCurve curve = new HiveBondingCurve(
             address(token),
             address(this),
@@ -113,7 +140,8 @@ contract HiveFactory {
             agentTreasury,
             dexRouter,
             virtualRitual,
-            virtualToken
+            virtualToken,
+            graduationThreshold_
         );
 
         // 4. Mint ALL tokens to bonding curve — curve holds & distributes them
@@ -266,6 +294,92 @@ contract HiveFactory {
     ) {
         AgentLaunch storage l = launches[launchId];
         return (l.token, l.bondingCurve, l.agentTreasury, l.creator, l.userPrompt, l.metadataSet, l.agentSpawned, l.createdAt);
+    }
+
+    // --- Token Launch Functions (pump.fun style) ---
+
+    /// @notice Launch a token directly — no AI agent, no sovereign agent
+    /// @dev User provides name, symbol, lore. Token gets a bonding curve and starts trading immediately.
+    ///      Fee: 0.01 RITUAL (paid as msg.value).
+    function createToken(
+        string calldata name_,
+        string calldata symbol_,
+        string calldata lore_,
+        uint256 graduationThreshold_
+    ) external payable returns (uint256 tokenLaunchId) {
+        require(msg.value >= TOKEN_LAUNCH_FEE, "insufficient launch fee");
+        require(bytes(name_).length > 0, "empty name");
+        require(bytes(symbol_).length > 0, "empty symbol");
+        require(graduationThreshold_ >= 0.01 ether, "threshold too low");
+        require(graduationThreshold_ <= 100 ether, "threshold too high");
+
+        tokenLaunchId = tokenLaunchCount++;
+
+        // 1. Deploy token with user-provided metadata
+        HiveAgentToken token = new HiveAgentToken(name_, symbol_, lore_, address(this));
+
+        // 2. Deploy bonding curve (no separate agent treasury — platform gets all fees)
+        HiveBondingCurve curve = new HiveBondingCurve(
+            address(token),
+            address(this),
+            platformTreasury,
+            platformTreasury, // no agent treasury, platform gets all fees
+            dexRouter,
+            virtualRitual,
+            virtualToken,
+            graduationThreshold_
+        );
+
+        // 3. Mint ALL tokens to bonding curve
+        uint256 totalTokens = virtualToken; // 1B tokens
+        token.mint(address(curve), totalTokens);
+
+        // 4. Set launch block + status
+        token.setLaunchBlock(block.number);
+        token.setTotalRaise(virtualRitual);
+        token.setStatus(HiveAgentToken.AgentStatus.Launched);
+
+        // 5. Store launch
+        tokenLaunches[tokenLaunchId] = TokenLaunch({
+            token: address(token),
+            bondingCurve: address(curve),
+            creator: msg.sender,
+            name: name_,
+            symbol: symbol_,
+            lore: lore_,
+            metadataSet: true,
+            createdAt: block.number
+        });
+
+        // 6. Forward launch fee to platform treasury
+        (bool sent,) = platformTreasury.call{value: msg.value}("");
+        require(sent, "fee transfer failed");
+
+        emit TokenCreated(tokenLaunchId, address(token), address(curve), name_, symbol_);
+    }
+
+    /// @notice Get all launched token addresses (token launches only)
+    function getAllTokens() external view returns (address[] memory) {
+        address[] memory tokens = new address[](tokenLaunchCount);
+        for (uint256 i = 0; i < tokenLaunchCount; i++) {
+            tokens[i] = tokenLaunches[i].token;
+        }
+        return tokens;
+    }
+
+    /// @notice Get token launch info by launch ID
+    function getTokenLaunch(uint256 tokenLaunchId) external view returns (
+        address token_,
+        address bondingCurve_,
+        address creator_,
+        string memory name_,
+        string memory symbol_,
+        string memory lore_,
+        bool metadataSet_,
+        uint256 createdAt_
+    ) {
+        TokenLaunch storage l = tokenLaunches[tokenLaunchId];
+        return (l.token, l.bondingCurve, l.creator, l.name, l.symbol, l.lore, l.metadataSet, l.createdAt);
     }
 
     receive() external payable {}

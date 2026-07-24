@@ -1,0 +1,6 @@
+{
+  "risk_scoring": "hf/frianowzki/hive-onnx-models/risk_scoring.onnx@6171ecf05ed5ffcec9056bc24ba7519b63c80829",
+  "anomaly_detection": "hf/frianowzki/hive-onnx-models/anomaly_detection.onnx@4a41c6ea0d03fb66143c769ff9ea5e525f981b49",
+  "scam_classification": "hf/frianowzki/hive-onnx-models/scam_classification.onnx@201dc216b4e9ac3c1afafe21d55841b68591819c",
+  "volatility_prediction": "hf/frianowzki/hive-onnx-models/volatility_prediction.onnx@7965dfc446a42f62b28176c9502e0e3fb9f0b022"
+}
